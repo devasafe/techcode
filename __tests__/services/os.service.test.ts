@@ -8,7 +8,10 @@ import {
   buscarOSPorId,
   atualizarOS,
   listarOSFila,
+  adicionarRetornoGarantia,
+  registrarDevolucao,
 } from "@/lib/services/os.service"
+import type { TipoDevolucao } from "@/types"
 
 let clienteId: string
 let centralId: string
@@ -106,5 +109,57 @@ describe("OS service", () => {
     const fila = await listarOSFila()
     expect(fila.length).toBe(1)
     expect(String(fila[0]._id)).toBe(osAtiva._id.toString())
+  })
+
+  it("adiciona retorno de garantia a OS concluída", async () => {
+    const os = await criarOS({ cliente_id: clienteId, central_id: centralId, defeito_descricao: "Teste" })
+    await atualizarOS(os._id.toString(), { status: "concluida", valor_cobrado: 100 })
+    const atualizado = await adicionarRetornoGarantia(os._id.toString(), { descricao: "Voltou com mesmo defeito" })
+    expect(atualizado?.retornos_garantia).toHaveLength(1)
+    expect(atualizado?.retornos_garantia[0].descricao).toBe("Voltou com mesmo defeito")
+  })
+
+  it("adicionarRetornoGarantia retorna null para id inexistente", async () => {
+    const result = await adicionarRetornoGarantia("000000000000000000000000", { descricao: "Teste" })
+    expect(result).toBeNull()
+  })
+
+  it("registra devolução tipo reembolso e muda status para devolvida", async () => {
+    const os = await criarOS({ cliente_id: clienteId, central_id: centralId, defeito_descricao: "Teste" })
+    await atualizarOS(os._id.toString(), { status: "concluida", valor_cobrado: 100 })
+    const devolvida = await registrarDevolucao(os._id.toString(), {
+      tipo: "reembolso",
+      motivo: "Cliente insatisfeito",
+      valor_reembolsado: 100,
+    })
+    expect(devolvida?.status).toBe("devolvida")
+    expect(devolvida?.devolucao?.tipo).toBe("reembolso")
+    expect(devolvida?.devolucao?.valor_reembolsado).toBe(100)
+  })
+
+  it("registra substituição e muda status para substituida", async () => {
+    const os = await criarOS({ cliente_id: clienteId, central_id: centralId, defeito_descricao: "Teste" })
+    await atualizarOS(os._id.toString(), { status: "concluida", valor_cobrado: 100 })
+    const sub = await registrarDevolucao(os._id.toString(), {
+      tipo: "substituicao",
+      motivo: "Central danificada",
+      central_adquirida: "Bosch ME7",
+      custo_central: 350,
+      novo_valor_cobrado: 500,
+    })
+    expect(sub?.status).toBe("substituida")
+    expect(sub?.devolucao?.tipo).toBe("substituicao")
+    expect(sub?.devolucao?.central_adquirida).toBe("Bosch ME7")
+  })
+
+  it("registrarDevolucao retorna null para id inexistente", async () => {
+    const result = await registrarDevolucao("000000000000000000000000", { tipo: "reembolso", motivo: "Teste" })
+    expect(result).toBeNull()
+  })
+
+  it("registrarDevolucao retorna null se OS não estiver concluída", async () => {
+    const os = await criarOS({ cliente_id: clienteId, central_id: centralId, defeito_descricao: "Teste" })
+    const result = await registrarDevolucao(os._id.toString(), { tipo: "reembolso", motivo: "Teste" })
+    expect(result).toBeNull()
   })
 })

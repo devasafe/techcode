@@ -1,6 +1,6 @@
 import { connectDB } from "@/lib/db"
 import OS from "@/models/OS"
-import type { OSStatus } from "@/types"
+import type { OSStatus, TipoDevolucao } from "@/types"
 
 export type CreateOSInput = {
   cliente_id: string
@@ -97,5 +97,61 @@ export async function listarOSFila() {
     .populate("cliente_id", "nome")
     .populate("central_id", "marca modelo")
     .sort({ created_at: 1 })
+    .lean()
+}
+
+export type RetornoGarantiaInput = {
+  descricao: string
+}
+
+export type DevolucaoInput = {
+  tipo: TipoDevolucao
+  motivo: string
+  valor_reembolsado?: number
+  central_adquirida?: string
+  custo_central?: number
+  novo_valor_cobrado?: number
+}
+
+export async function adicionarRetornoGarantia(id: string, data: RetornoGarantiaInput) {
+  await connectDB()
+  const os = await OS.findById(id).lean()
+  if (!os) return null
+  return OS.findByIdAndUpdate(
+    id,
+    { $push: { retornos_garantia: { data: new Date(), descricao: data.descricao } } },
+    { returnDocument: "after" }
+  )
+    .populate("cliente_id", "nome telefone")
+    .populate("central_id", "marca modelo codigo")
+    .lean()
+}
+
+export async function registrarDevolucao(id: string, data: DevolucaoInput) {
+  await connectDB()
+  const os = await OS.findById(id).lean()
+  if (!os) return null
+  if (os.status !== "concluida") return null
+  const novoStatus: OSStatus = data.tipo === "substituicao" ? "substituida" : "devolvida"
+  return OS.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        status: novoStatus,
+        devolucao: {
+          tipo: data.tipo,
+          motivo: data.motivo,
+          valor_reembolsado: data.valor_reembolsado,
+          central_adquirida: data.central_adquirida,
+          custo_central: data.custo_central,
+          novo_valor_cobrado: data.novo_valor_cobrado,
+          data: new Date(),
+        },
+      },
+    },
+    { returnDocument: "after" }
+  )
+    .populate("cliente_id", "nome telefone")
+    .populate("central_id", "marca modelo codigo")
     .lean()
 }
