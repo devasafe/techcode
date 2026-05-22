@@ -7,7 +7,7 @@ export type CreateUsuarioInput = {
   nome: string
   email: string
   senha: string
-  perfis: Perfil[]
+  perfis: readonly Perfil[]
   comissao_pct?: number
 }
 
