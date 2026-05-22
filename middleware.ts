@@ -12,7 +12,7 @@ export default auth((req) => {
   }
 
   if (logado && pathname === "/login") {
-    return NextResponse.redirect(new URL("/login", req.url))
+    return NextResponse.redirect(new URL("/", req.url))
   }
 
   const rotaAdmin = ROTAS_ADMIN.some((r) => pathname.startsWith(r))
