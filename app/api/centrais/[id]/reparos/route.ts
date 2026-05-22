@@ -1,0 +1,13 @@
+import { NextResponse } from "next/server"
+import { auth } from "@/auth"
+import { listarReparosDaCentral } from "@/lib/services/central.service"
+
+type Params = { params: Promise<{ id: string }> }
+
+export async function GET(_req: Request, { params }: Params) {
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
+  const { id } = await params
+  const reparos = await listarReparosDaCentral(id)
+  return NextResponse.json(reparos)
+}
