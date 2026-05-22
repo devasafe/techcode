@@ -4,7 +4,7 @@ import { listarUsuarios, criarUsuario } from "@/lib/services/usuario.service"
 
 export async function GET() {
   const session = await auth()
-  if (!session?.user.perfis.includes("admin")) {
+  if (!session?.user?.perfis?.includes("admin")) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 })
   }
   const usuarios = await listarUsuarios()
@@ -13,7 +13,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await auth()
-  if (!session?.user.perfis.includes("admin")) {
+  if (!session?.user?.perfis?.includes("admin")) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 })
   }
   try {

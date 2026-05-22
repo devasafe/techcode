@@ -35,7 +35,9 @@ export async function criarUsuario(data: CreateUsuarioInput) {
   const existente = await Usuario.findOne({ email: data.email.toLowerCase() })
   if (existente) throw new Error("Email já cadastrado")
   const hash = await bcrypt.hash(data.senha, 10)
-  return Usuario.create({ ...data, senha: hash })
+  const doc = await Usuario.create({ ...data, senha: hash })
+  // Busca novamente sem a senha para retornar ao chamador
+  return Usuario.findById(doc._id).select("-senha").lean()
 }
 
 export async function atualizarUsuario(id: string, data: UpdateUsuarioInput) {

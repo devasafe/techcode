@@ -23,6 +23,7 @@ export default function EquipePage() {
 
   async function carregar() {
     const res = await fetch("/api/usuarios")
+    if (!res.ok) return
     const data = await res.json()
     setUsuarios(data)
   }

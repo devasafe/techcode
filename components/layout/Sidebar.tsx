@@ -16,7 +16,7 @@ import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["admin"] },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "atendente", "tecnico"] },
   { href: "/clientes", label: "Clientes", icon: Users, roles: ["admin", "atendente", "tecnico"] },
   { href: "/os", label: "Ordens de Serviço", icon: FileText, roles: ["admin", "atendente", "tecnico"] },
   { href: "/fila", label: "Fila", icon: ListTodo, roles: ["admin", "atendente", "tecnico"] },

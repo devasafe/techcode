@@ -10,7 +10,7 @@ type Params = { params: Promise<{ id: string }> }
 
 export async function GET(_req: Request, { params }: Params) {
   const session = await auth()
-  if (!session?.user.perfis.includes("admin")) {
+  if (!session?.user?.perfis?.includes("admin")) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 })
   }
   const { id } = await params
@@ -21,7 +21,7 @@ export async function GET(_req: Request, { params }: Params) {
 
 export async function PUT(req: Request, { params }: Params) {
   const session = await auth()
-  if (!session?.user.perfis.includes("admin")) {
+  if (!session?.user?.perfis?.includes("admin")) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 })
   }
   const { id } = await params
@@ -33,10 +33,11 @@ export async function PUT(req: Request, { params }: Params) {
 
 export async function DELETE(_req: Request, { params }: Params) {
   const session = await auth()
-  if (!session?.user.perfis.includes("admin")) {
+  if (!session?.user?.perfis?.includes("admin")) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 })
   }
   const { id } = await params
-  await desativarUsuario(id)
+  const resultado = await desativarUsuario(id)
+  if (!resultado) return NextResponse.json({ error: "Não encontrado" }, { status: 404 })
   return NextResponse.json({ ok: true })
 }
