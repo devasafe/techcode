@@ -24,7 +24,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const session = await auth()
-  if (!session?.user?.perfis?.some((p) => ["admin", "atendente"].includes(p))) {
+  if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
+  if (!session.user?.perfis?.some((p) => ["admin", "atendente"].includes(p))) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 })
   }
   try {
