@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,7 @@ export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [busca, setBusca] = useState("")
   const [abrirForm, setAbrirForm] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   async function carregar(q?: string) {
     const params = q ? `?q=${encodeURIComponent(q)}` : ""
@@ -33,7 +34,8 @@ export default function ClientesPage() {
   function handleBusca(e: React.ChangeEvent<HTMLInputElement>) {
     const q = e.target.value
     setBusca(q)
-    carregar(q)
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => carregar(q), 300)
   }
 
   return (

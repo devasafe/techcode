@@ -56,18 +56,21 @@ export default function ClientePerfilPage() {
 
   async function carregar() {
     setCarregando(true)
-    const [resCliente, resOS] = await Promise.all([
-      fetch(`/api/clientes/${id}`),
-      fetch(`/api/clientes/${id}/os`),
-    ])
-    if (!resCliente.ok) { router.push("/clientes"); return }
-    const [dadosCliente, dadosOS] = await Promise.all([
-      resCliente.json(),
-      resOS.ok ? resOS.json() : [],
-    ])
-    setCliente(dadosCliente)
-    setOS(dadosOS)
-    setCarregando(false)
+    try {
+      const [resCliente, resOS] = await Promise.all([
+        fetch(`/api/clientes/${id}`),
+        fetch(`/api/clientes/${id}/os`),
+      ])
+      if (!resCliente.ok) { router.push("/clientes"); return }
+      const [dadosCliente, dadosOS] = await Promise.all([
+        resCliente.json(),
+        resOS.ok ? resOS.json() : [],
+      ])
+      setCliente(dadosCliente)
+      setOS(dadosOS)
+    } finally {
+      setCarregando(false)
+    }
   }
 
   useEffect(() => { carregar() }, [id])
