@@ -23,6 +23,39 @@ function rangeParaPeriodo(periodo: Periodo): { $gte: Date; $lte?: Date } | null 
   }
 }
 
+// OS substituídas têm valores financeiros no subdoc devolucao, não nos campos raiz.
+// Esses stages calculam os valores efetivos de receita/custo/lucro para ambos os status.
+const ADD_FINANCEIRO = {
+  $addFields: {
+    _receita: {
+      $cond: [
+        { $eq: ["$status", "substituida"] },
+        { $ifNull: ["$devolucao.novo_valor_cobrado", 0] },
+        "$valor_cobrado",
+      ],
+    },
+    _custo: {
+      $cond: [
+        { $eq: ["$status", "substituida"] },
+        { $ifNull: ["$devolucao.custo_central", 0] },
+        "$custo_total_pecas",
+      ],
+    },
+    _lucro: {
+      $cond: [
+        { $eq: ["$status", "substituida"] },
+        {
+          $subtract: [
+            { $ifNull: ["$devolucao.novo_valor_cobrado", 0] },
+            { $ifNull: ["$devolucao.custo_central", 0] },
+          ],
+        },
+        "$lucro_liquido",
+      ],
+    },
+  },
+}
+
 export async function buscarEstatisticas() {
   await connectDB()
   const now = new Date()
@@ -31,24 +64,33 @@ export async function buscarEstatisticas() {
   const [porStatusRaw, totaisGeral, totaisMes, recentes] = await Promise.all([
     OS.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
     OS.aggregate([
-      { $match: { status: "concluida" } },
+      { $match: { status: { $in: ["concluida", "substituida"] } } },
+      ADD_FINANCEIRO,
       {
         $group: {
           _id: null,
-          receita: { $sum: "$valor_cobrado" },
-          custo: { $sum: "$custo_total_pecas" },
-          lucro: { $sum: "$lucro_liquido" },
+          receita: { $sum: "$_receita" },
+          custo: { $sum: "$_custo" },
+          lucro: { $sum: "$_lucro" },
           total: { $sum: 1 },
         },
       },
     ]),
     OS.aggregate([
-      { $match: { status: "concluida", closed_at: { $gte: inicioMes } } },
+      {
+        $match: {
+          $or: [
+            { status: "concluida", closed_at: { $gte: inicioMes } },
+            { status: "substituida", "devolucao.data": { $gte: inicioMes } },
+          ],
+        },
+      },
+      ADD_FINANCEIRO,
       {
         $group: {
           _id: null,
-          receita: { $sum: "$valor_cobrado" },
-          lucro: { $sum: "$lucro_liquido" },
+          receita: { $sum: "$_receita" },
+          lucro: { $sum: "$_lucro" },
           total: { $sum: 1 },
         },
       },
@@ -75,23 +117,31 @@ export async function buscarEstatisticas() {
 export async function buscarRelatorioFinanceiro(periodo: Periodo) {
   await connectDB()
   const range = rangeParaPeriodo(periodo)
-  const matchConcluida: Record<string, unknown> = { status: "concluida" }
-  if (range) matchConcluida.closed_at = range
+
+  const matchBase = range
+    ? {
+        $or: [
+          { status: "concluida", closed_at: range },
+          { status: "substituida", "devolucao.data": range },
+        ],
+      }
+    : { status: { $in: ["concluida", "substituida"] } }
 
   const [totaisRaw, os] = await Promise.all([
     OS.aggregate([
-      { $match: matchConcluida },
+      { $match: matchBase },
+      ADD_FINANCEIRO,
       {
         $group: {
           _id: null,
-          receita: { $sum: "$valor_cobrado" },
-          custo: { $sum: "$custo_total_pecas" },
-          lucro: { $sum: "$lucro_liquido" },
+          receita: { $sum: "$_receita" },
+          custo: { $sum: "$_custo" },
+          lucro: { $sum: "$_lucro" },
           count: { $sum: 1 },
         },
       },
     ]),
-    OS.find(matchConcluida)
+    OS.find(matchBase)
       .sort({ closed_at: -1 })
       .populate("cliente_id", "nome")
       .populate("central_id", "marca modelo")

@@ -8,9 +8,11 @@ type Periodo = "este_mes" | "mes_anterior" | "este_ano" | "tudo"
 type OSFinanceiro = {
   _id: string
   numero_os: number
+  status: string
   valor_cobrado: number
   custo_total_pecas: number
   lucro_liquido: number
+  devolucao?: { novo_valor_cobrado?: number; custo_central?: number; data?: string }
   closed_at?: string
   cliente_id: { nome: string } | null
   central_id: { marca: string; modelo: string } | null
@@ -133,27 +135,39 @@ export default function FinanceiroPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {relatorio.os.map((o) => (
-                      <tr key={o._id} className="border-b border-zinc-900 text-zinc-300">
-                        <td className="py-2 pr-4 text-white font-medium">#{o.numero_os}</td>
-                        <td className="py-2 pr-4">{o.cliente_id?.nome ?? "—"}</td>
-                        <td className="py-2 pr-4">
-                          {o.central_id ? `${o.central_id.marca} ${o.central_id.modelo}` : "—"}
-                        </td>
-                        <td className="py-2 pr-4 text-right">
-                          R$ {o.valor_cobrado.toFixed(2).replace(".", ",")}
-                        </td>
-                        <td className="py-2 pr-4 text-right">
-                          R$ {o.custo_total_pecas.toFixed(2).replace(".", ",")}
-                        </td>
-                        <td className={`py-2 pr-4 text-right font-medium ${o.lucro_liquido >= 0 ? "text-green-400" : "text-red-400"}`}>
-                          R$ {o.lucro_liquido.toFixed(2).replace(".", ",")}
-                        </td>
-                        <td className="py-2 text-right text-zinc-500">
-                          {o.closed_at ? new Date(o.closed_at).toLocaleDateString("pt-BR") : "—"}
-                        </td>
-                      </tr>
-                    ))}
+                    {relatorio.os.map((o) => {
+                      const substituida = o.status === "substituida"
+                      const receita = substituida ? (o.devolucao?.novo_valor_cobrado ?? 0) : o.valor_cobrado
+                      const custo = substituida ? (o.devolucao?.custo_central ?? 0) : o.custo_total_pecas
+                      const lucro = substituida ? receita - custo : o.lucro_liquido
+                      const data = substituida ? o.devolucao?.data : o.closed_at
+                      return (
+                        <tr key={o._id} className="border-b border-zinc-900 text-zinc-300">
+                          <td className="py-2 pr-4 text-white font-medium">
+                            #{o.numero_os}
+                            {substituida && (
+                              <span className="ml-2 text-xs text-orange-400 font-normal">subst.</span>
+                            )}
+                          </td>
+                          <td className="py-2 pr-4">{o.cliente_id?.nome ?? "—"}</td>
+                          <td className="py-2 pr-4">
+                            {o.central_id ? `${o.central_id.marca} ${o.central_id.modelo}` : "—"}
+                          </td>
+                          <td className="py-2 pr-4 text-right">
+                            R$ {receita.toFixed(2).replace(".", ",")}
+                          </td>
+                          <td className="py-2 pr-4 text-right">
+                            R$ {custo.toFixed(2).replace(".", ",")}
+                          </td>
+                          <td className={`py-2 pr-4 text-right font-medium ${lucro >= 0 ? "text-green-400" : "text-red-400"}`}>
+                            R$ {lucro.toFixed(2).replace(".", ",")}
+                          </td>
+                          <td className="py-2 text-right text-zinc-500">
+                            {data ? new Date(data).toLocaleDateString("pt-BR") : "—"}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>

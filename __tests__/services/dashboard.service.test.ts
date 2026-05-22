@@ -2,7 +2,7 @@ import { connectDB } from "@/lib/db"
 import Cliente from "@/models/Cliente"
 import Central from "@/models/Central"
 import { buscarEstatisticas, buscarRelatorioFinanceiro } from "@/lib/services/dashboard.service"
-import { criarOS, atualizarOS } from "@/lib/services/os.service"
+import { criarOS, atualizarOS, registrarDevolucao } from "@/lib/services/os.service"
 
 let clienteId: string
 let centralId: string
@@ -64,5 +64,26 @@ describe("dashboard service", () => {
     const rel = await buscarRelatorioFinanceiro("tudo")
     expect(rel.os.length).toBeGreaterThanOrEqual(1)
     expect(rel.totais.count).toBeGreaterThanOrEqual(1)
+  })
+
+  it("substituição conta com novo_valor_cobrado e custo_central nos totais", async () => {
+    const os = await criarOS({ cliente_id: clienteId, central_id: centralId, defeito_descricao: "A" })
+    await atualizarOS(os._id.toString(), { status: "concluida", valor_cobrado: 750 })
+    await registrarDevolucao(os._id.toString(), {
+      tipo: "substituicao",
+      motivo: "Reparo não resolveu o problema",
+      custo_central: 1500,
+      novo_valor_cobrado: 2000,
+    })
+    const stats = await buscarEstatisticas()
+    // OS original (750) foi substituída — não conta mais como receita
+    // Substituição conta: receita 2000, custo 1500, lucro 500
+    expect(stats.totais.receita).toBeGreaterThanOrEqual(2000)
+    expect(stats.totais.lucro).toBeGreaterThanOrEqual(500)
+
+    const rel = await buscarRelatorioFinanceiro("tudo")
+    const osSubstituida = rel.os.find((o) => o._id.toString() === os._id.toString())
+    expect(osSubstituida).toBeDefined()
+    expect(osSubstituida!.status).toBe("substituida")
   })
 })
