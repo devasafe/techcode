@@ -12,6 +12,7 @@ type OSFinanceiro = {
   valor_cobrado: number
   custo_total_pecas: number
   lucro_liquido: number
+  valor_comissao: number
   devolucao?: { novo_valor_cobrado?: number; custo_central?: number; data?: string }
   closed_at?: string
   cliente_id: { nome: string } | null
@@ -20,7 +21,7 @@ type OSFinanceiro = {
 
 type Relatorio = {
   periodo: Periodo
-  totais: { receita: number; custo: number; lucro: number; count: number }
+  totais: { receita: number; custo: number; lucro: number; comissoes: number; count: number }
   os: OSFinanceiro[]
 }
 
@@ -80,7 +81,7 @@ export default function FinanceiroPage() {
         <p className="text-zinc-400 text-sm">Carregando...</p>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <Card className="bg-zinc-900 border-zinc-800">
               <CardHeader className="pb-1 pt-4 px-4">
                 <CardTitle className="text-xs text-zinc-500 font-normal uppercase tracking-wide">Receita</CardTitle>
@@ -89,7 +90,7 @@ export default function FinanceiroPage() {
                 <p className="text-2xl font-bold text-white">
                   R$ {(relatorio?.totais.receita ?? 0).toFixed(2).replace(".", ",")}
                 </p>
-                <p className="text-xs text-zinc-500 mt-0.5">{relatorio?.totais.count ?? 0} OS concluídas</p>
+                <p className="text-xs text-zinc-500 mt-0.5">{relatorio?.totais.count ?? 0} OS</p>
               </CardContent>
             </Card>
 
@@ -100,6 +101,17 @@ export default function FinanceiroPage() {
               <CardContent className="px-4 pb-4">
                 <p className="text-2xl font-bold text-white">
                   R$ {(relatorio?.totais.custo ?? 0).toFixed(2).replace(".", ",")}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-zinc-900 border-zinc-800">
+              <CardHeader className="pb-1 pt-4 px-4">
+                <CardTitle className="text-xs text-zinc-500 font-normal uppercase tracking-wide">Comissões</CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4">
+                <p className="text-2xl font-bold text-orange-400">
+                  R$ {(relatorio?.totais.comissoes ?? 0).toFixed(2).replace(".", ",")}
                 </p>
               </CardContent>
             </Card>
@@ -130,6 +142,7 @@ export default function FinanceiroPage() {
                       <th className="text-left py-2 pr-4 font-normal">Central</th>
                       <th className="text-right py-2 pr-4 font-normal">Receita</th>
                       <th className="text-right py-2 pr-4 font-normal">Custo</th>
+                      <th className="text-right py-2 pr-4 font-normal">Comissão</th>
                       <th className="text-right py-2 pr-4 font-normal">Lucro</th>
                       <th className="text-right py-2 font-normal">Data</th>
                     </tr>
@@ -139,7 +152,7 @@ export default function FinanceiroPage() {
                       const substituida = o.status === "substituida"
                       const receita = substituida ? (o.devolucao?.novo_valor_cobrado ?? 0) : o.valor_cobrado
                       const custo = substituida ? (o.devolucao?.custo_central ?? 0) : o.custo_total_pecas
-                      const lucro = substituida ? receita - custo : o.lucro_liquido
+                      const lucro = (substituida ? receita - custo : o.lucro_liquido) - o.valor_comissao
                       const data = substituida ? o.devolucao?.data : o.closed_at
                       return (
                         <tr key={o._id} className="border-b border-zinc-900 text-zinc-300">
@@ -158,6 +171,9 @@ export default function FinanceiroPage() {
                           </td>
                           <td className="py-2 pr-4 text-right">
                             R$ {custo.toFixed(2).replace(".", ",")}
+                          </td>
+                          <td className="py-2 pr-4 text-right text-orange-400">
+                            {o.valor_comissao > 0 ? `R$ ${o.valor_comissao.toFixed(2).replace(".", ",")}` : "—"}
                           </td>
                           <td className={`py-2 pr-4 text-right font-medium ${lucro >= 0 ? "text-green-400" : "text-red-400"}`}>
                             R$ {lucro.toFixed(2).replace(".", ",")}
