@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { buscarOSPorId, atualizarOS } from "@/lib/services/os.service"
+import { gerarComissao } from "@/lib/services/comissao.service"
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -26,6 +27,13 @@ export async function PUT(req: Request, { params }: Params) {
     const body = await req.json()
     const os = await atualizarOS(id, body)
     if (!os) return NextResponse.json({ error: "Não encontrado" }, { status: 404 })
+    if (body.status === "concluida" && body.tecnico_id) {
+      try {
+        await gerarComissao(id, body.tecnico_id)
+      } catch {
+        // falha na comissão não reverte conclusão da OS
+      }
+    }
     return NextResponse.json(os)
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Erro ao atualizar OS"
