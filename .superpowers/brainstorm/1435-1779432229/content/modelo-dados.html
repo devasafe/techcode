@@ -1,0 +1,71 @@
+<h2>Design — Modelo de Dados</h2>
+<p class="subtitle">As 5 coleções do MongoDB e o que cada uma armazena.</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px">
+
+  <div style="background:#1a1a2e;border:1px solid #7c6af7;border-radius:12px;padding:18px">
+    <div style="color:#7c6af7;font-weight:700;font-size:14px;margin-bottom:10px">👤 Usuario</div>
+    <div style="font-size:12px;color:#ccc;line-height:2">
+      nome<br>
+      email<br>
+      senha (hash)<br>
+      perfil: <span style="color:#f59e0b">admin | atendente | tecnico</span><br>
+      comissao_pct (% — só técnico)<br>
+      ativo: true/false
+    </div>
+  </div>
+
+  <div style="background:#1a1a2e;border:1px solid #22c55e;border-radius:12px;padding:18px">
+    <div style="color:#22c55e;font-weight:700;font-size:14px;margin-bottom:10px">👤 Cliente</div>
+    <div style="font-size:12px;color:#ccc;line-height:2">
+      nome<br>
+      telefone<br>
+      email<br>
+      cpf/cnpj (opcional)<br>
+      endereco (opcional)<br>
+      created_at
+    </div>
+  </div>
+
+  <div style="background:#1a1a2e;border:1px solid #06b6d4;border-radius:12px;padding:18px">
+    <div style="color:#06b6d4;font-weight:700;font-size:14px;margin-bottom:10px">🖥️ Central (ECU)</div>
+    <div style="font-size:12px;color:#ccc;line-height:2">
+      marca (ex: Bosch)<br>
+      modelo (ex: ME17.9.53)<br>
+      codigo (ex: 4CFR)<br>
+      descricao (opcional)<br>
+      <span style="color:#06b6d4">← base de conhecimento referencia esta coleção</span>
+    </div>
+  </div>
+
+  <div style="background:#1a1a2e;border:1px solid #f59e0b;border-radius:12px;padding:18px">
+    <div style="color:#f59e0b;font-weight:700;font-size:14px;margin-bottom:10px">🔧 Ordem de Serviço (OS)</div>
+    <div style="font-size:12px;color:#ccc;line-height:2">
+      numero_os (auto)<br>
+      cliente_id →<br>
+      central_id →<br>
+      tecnico_id →<br>
+      status: <span style="color:#22c55e">aberta | em_andamento | concluida</span><br>
+      defeito_descricao<br>
+      solucao_descricao<br>
+      fotos[ ] (URLs Cloudinary)<br>
+      pecas[ ] { nome, custo }<br>
+      valor_cobrado<br>
+      custo_total_pecas<br>
+      lucro_liquido<br>
+      created_at / closed_at
+    </div>
+  </div>
+
+</div>
+
+<div style="background:#1a1a2e;border:1px solid #f43f5e;border-radius:12px;padding:18px;margin-top:14px">
+  <div style="color:#f43f5e;font-weight:700;font-size:14px;margin-bottom:10px">💰 Comissão (gerada ao fechar OS)</div>
+  <div style="font-size:12px;color:#ccc;display:flex;gap:32px;flex-wrap:wrap;line-height:2">
+    <div>os_id →<br>tecnico_id →<br></div>
+    <div>valor_os<br>pct_comissao<br></div>
+    <div>valor_comissao<br>pago: true/false<br>data_pagamento</div>
+  </div>
+</div>
+
+<p style="margin-top:20px;color:#aaa;font-size:13px;text-align:center">Esse modelo de dados está correto? Falta algum campo importante?</p>

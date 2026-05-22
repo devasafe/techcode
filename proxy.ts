@@ -1,7 +1,10 @@
-import { auth } from "@/auth"
+import NextAuth from "next-auth"
+import { authConfig } from "./auth.config"
 import { NextResponse } from "next/server"
 
 const ROTAS_ADMIN = ["/financeiro", "/equipe"]
+
+const { auth } = NextAuth(authConfig)
 
 export default auth((req) => {
   const { pathname } = req.nextUrl
@@ -16,7 +19,7 @@ export default auth((req) => {
   }
 
   const rotaAdmin = ROTAS_ADMIN.some((r) => pathname.startsWith(r))
-  const ehAdmin = req.auth?.user.perfis.includes("admin")
+  const ehAdmin = req.auth?.user?.perfis?.includes("admin")
 
   if (rotaAdmin && !ehAdmin) {
     return NextResponse.redirect(new URL("/", req.url))

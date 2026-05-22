@@ -1,0 +1,4 @@
+{"type":"click","text":"A\n      \n        Devolver o dinheiro\n        Reembolso parcial ou total ao cliente. Valor cobrado original: R$ 500,00. Define quanto devolver.","choice":"reembolso","id":null,"timestamp":1779434497667}
+{"type":"click","text":"B\n      \n        Substituir a central\n        Laboratório compra uma central nova ou recuperada. Define custo da central e novo valor cobrado ao cliente.","choice":"substituicao","id":null,"timestamp":1779434498933}
+{"type":"click","text":"B\n      \n        Substituir a central\n        Laboratório compra uma central nova ou recuperada. Define custo da central e novo valor cobrado ao cliente.","choice":"substituicao","id":null,"timestamp":1779434499089}
+{"type":"click","text":"B\n      \n        Substituir a central\n        Laboratório compra uma central nova ou recuperada. Define custo da central e novo valor cobrado ao cliente.","choice":"substituicao","id":null,"timestamp":1779434499229}

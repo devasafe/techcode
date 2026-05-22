@@ -1,0 +1,53 @@
+<h2>Estrutura do Tech Code</h2>
+<p class="subtitle">Navegação principal e módulos do sistema — confirme se faz sentido antes de detalharmos cada tela.</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px">
+
+  <div style="background:var(--surface,#1e1e2e);border:1px solid var(--border,#333);border-radius:12px;padding:20px">
+    <div class="label" style="color:#7c6af7;margin-bottom:8px">📊 Dashboard</div>
+    <p style="font-size:13px;color:#aaa;margin:0">Métricas em tempo real: OS abertas, receita do mês, lucro, comissões pendentes. Acesso: Admin.</p>
+  </div>
+
+  <div style="background:var(--surface,#1e1e2e);border:1px solid var(--border,#333);border-radius:12px;padding:20px">
+    <div class="label" style="color:#22c55e;margin-bottom:8px">👤 Clientes</div>
+    <p style="font-size:13px;color:#aaa;margin:0">Lista de clientes. Perfil com histórico completo de OS, contatos e veículos. Todos os perfis.</p>
+  </div>
+
+  <div style="background:var(--surface,#1e1e2e);border:1px solid var(--border,#333);border-radius:12px;padding:20px">
+    <div class="label" style="color:#f59e0b;margin-bottom:8px">🔧 Ordens de Serviço</div>
+    <p style="font-size:13px;color:#aaa;margin:0">Lista de OS com filtros por status. Criar nova OS com fotos, comentário, defeito, peças usadas e técnico responsável.</p>
+  </div>
+
+  <div style="background:var(--surface,#1e1e2e);border:1px solid var(--border,#333);border-radius:12px;padding:20px">
+    <div class="label" style="color:#06b6d4;margin-bottom:8px">🖥️ Centrais (Base de Conhecimento)</div>
+    <p style="font-size:13px;color:#aaa;margin:0">Lista de modelos de ECU. Ao clicar: todos os defeitos já resolvidos naquele modelo + cliente vinculado.</p>
+  </div>
+
+  <div style="background:var(--surface,#1e1e2e);border:1px solid var(--border,#333);border-radius:12px;padding:20px">
+    <div class="label" style="color:#f43f5e;margin-bottom:8px">💰 Financeiro</div>
+    <p style="font-size:13px;color:#aaa;margin:0">Receita, custo de peças, lucro líquido, relatórios mensais e comissões por técnico. Acesso: Admin.</p>
+  </div>
+
+  <div style="background:var(--surface,#1e1e2e);border:1px solid var(--border,#333);border-radius:12px;padding:20px">
+    <div class="label" style="color:#a78bfa;margin-bottom:8px">👥 Equipe</div>
+    <p style="font-size:13px;color:#aaa;margin:0">Cadastro e gestão de usuários (admin, atendente, técnico). Define comissão % por técnico. Acesso: Admin.</p>
+  </div>
+
+</div>
+
+<div style="margin-top:24px;background:var(--surface,#1e1e2e);border:1px solid #333;border-radius:12px;padding:20px">
+  <div class="label" style="margin-bottom:12px">Fluxo principal de uma OS</div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:#aaa">
+    <span style="background:#333;padding:4px 10px;border-radius:6px">Cliente chega</span>
+    <span>→</span>
+    <span style="background:#333;padding:4px 10px;border-radius:6px">Atendente abre OS</span>
+    <span>→</span>
+    <span style="background:#333;padding:4px 10px;border-radius:6px">Técnico registra defeito + fotos + peças</span>
+    <span>→</span>
+    <span style="background:#333;padding:4px 10px;border-radius:6px">Admin aprova e fecha OS</span>
+    <span>→</span>
+    <span style="background:#333;padding:4px 10px;border-radius:6px">PDF gerado</span>
+  </div>
+</div>
+
+<p style="margin-top:20px;color:#aaa;font-size:13px;text-align:center">Veja no terminal e me diga se algo está faltando ou precisa mudar.</p>

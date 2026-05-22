@@ -3,8 +3,10 @@ import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { connectDB } from "@/lib/db"
 import Usuario from "@/models/Usuario"
+import { authConfig } from "./auth.config"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
@@ -32,27 +34,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user._id.toString(),
           name: user.nome,
           email: user.email,
-          perfis: user.perfis,
+          perfis: Array.from(user.perfis as string[]),
         }
       },
     }),
   ],
-  callbacks: {
-    jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.perfis = user.perfis
-      }
-      return token
-    },
-    session({ session, token }) {
-      session.user.id = token.id as string
-      session.user.perfis = token.perfis as string[]
-      return session
-    },
-  },
-  pages: {
-    signIn: "/login",
-  },
-  session: { strategy: "jwt" },
 })

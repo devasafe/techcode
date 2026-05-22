@@ -1,0 +1,96 @@
+<h2>Devolução de Serviço</h2>
+<p class="subtitle">Quando o reparo não foi possível — duas saídas disponíveis.</p>
+
+<div style="margin-top:20px">
+
+  <!-- Botão na OS -->
+  <div class="label" style="margin-bottom:10px">Na OS em andamento — admin marca como não resolvida</div>
+  <div class="mockup" style="margin-bottom:20px">
+    <div class="mockup-header">OS #018 · João Silva · Bosch ME17.9.53</div>
+    <div class="mockup-body" style="padding:14px;font-size:12px">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+        <span style="background:#7c6af722;color:#7c6af7;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600">🔧 Em andamento</span>
+        <span style="color:#aaa;font-size:11px">Valor cobrado: R$ 500,00</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="background:#22c55e;color:#000;padding:5px 14px;border-radius:6px;font-size:11px;font-weight:700">✅ Concluir OS</div>
+        <div style="background:#f43f5e22;color:#f43f5e;border:1px solid #f43f5e44;padding:5px 14px;border-radius:6px;font-size:11px;font-weight:600">❌ Não foi possível resolver</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Escolha do tipo de devolução -->
+  <div class="label" style="margin-bottom:10px">Escolher ação — o que fazer com o cliente</div>
+  <div class="options" style="margin-bottom:20px">
+    <div class="option" data-choice="reembolso" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Devolver o dinheiro</h3>
+        <p>Reembolso parcial ou total ao cliente. Valor cobrado original: R$ 500,00. Define quanto devolver.</p>
+      </div>
+    </div>
+    <div class="option" data-choice="substituicao" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Substituir a central</h3>
+        <p>Laboratório compra uma central nova ou recuperada. Define custo da central e novo valor cobrado ao cliente.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal reembolso -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+    <div>
+      <div class="label" style="margin-bottom:8px;color:#f43f5e">Modal — Devolução (Reembolso)</div>
+      <div style="background:#1a1a2e;border:1px solid #f43f5e;border-radius:12px;padding:16px;font-size:12px">
+        <div style="color:#f43f5e;font-weight:700;margin-bottom:12px">💸 Devolução de Dinheiro</div>
+        <div style="margin-bottom:8px">
+          <div style="color:#aaa;font-size:11px;margin-bottom:3px">Motivo</div>
+          <div class="mock-input" style="font-size:11px;height:40px">Central com dano irreversível no processador...</div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="color:#aaa;font-size:11px;margin-bottom:3px">Valor a reembolsar</div>
+          <div class="mock-input" style="font-size:11px">R$ 500,00</div>
+        </div>
+        <div style="background:#f43f5e11;border:1px solid #f43f5e33;border-radius:6px;padding:8px;font-size:11px;color:#f43f5e;margin-bottom:12px">
+          Impacto financeiro: <strong>−R$ 500,00</strong> na receita do mês
+        </div>
+        <div class="mock-button" style="font-size:11px;background:#f43f5e;color:#fff;text-align:center">Confirmar Devolução</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="label" style="margin-bottom:8px;color:#f59e0b">Modal — Substituição de Central</div>
+      <div style="background:#1a1a2e;border:1px solid #f59e0b;border-radius:12px;padding:16px;font-size:12px">
+        <div style="color:#f59e0b;font-weight:700;margin-bottom:12px">🔄 Substituição de Central</div>
+        <div style="margin-bottom:8px">
+          <div style="color:#aaa;font-size:11px;margin-bottom:3px">Motivo / o que foi tentado</div>
+          <div class="mock-input" style="font-size:11px;height:40px">Tentamos reprogramar mas BGA danificado...</div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="color:#aaa;font-size:11px;margin-bottom:3px">Central adquirida</div>
+          <div class="mock-input" style="font-size:11px">Bosch ME17.9.53 remanufaturada</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
+          <div>
+            <div style="color:#aaa;font-size:11px;margin-bottom:3px">Custo da central</div>
+            <div class="mock-input" style="font-size:11px">R$ 800,00</div>
+          </div>
+          <div>
+            <div style="color:#aaa;font-size:11px;margin-bottom:3px">Novo valor cobrado</div>
+            <div class="mock-input" style="font-size:11px">R$ 1.200,00</div>
+          </div>
+        </div>
+        <div style="background:#f59e0b11;border:1px solid #f59e0b33;border-radius:6px;padding:8px;font-size:11px;color:#f59e0b;margin-bottom:12px">
+          Diferença cobrada do cliente: <strong>+R$ 700,00</strong>
+        </div>
+        <div class="mock-button" style="font-size:11px;text-align:center">Confirmar Substituição</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<p style="margin-top:20px;color:#aaa;font-size:13px;text-align:center">Esse fluxo de devolução faz sentido?</p>
