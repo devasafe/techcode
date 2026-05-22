@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { StatusBadge } from "@/components/os/StatusBadge"
 import { ArrowLeft, Trash2 } from "lucide-react"
@@ -30,6 +31,16 @@ type OS = {
   closed_at?: string
   cliente_id: { _id: string; nome: string; telefone: string } | null
   central_id: { _id: string; marca: string; modelo: string; codigo: string } | null
+  retornos_garantia: { _id: string; data: string; descricao: string }[]
+  devolucao?: {
+    tipo: string
+    motivo: string
+    valor_reembolsado?: number
+    central_adquirida?: string
+    custo_central?: number
+    novo_valor_cobrado?: number
+    data: string
+  }
 }
 
 export default function OSDetalhePage() {
@@ -48,6 +59,21 @@ export default function OSDetalhePage() {
   const [salvando, setSalvando] = useState(false)
   const [erroConcluir, setErroConcluir] = useState("")
   const [atualizando, setAtualizando] = useState(false)
+
+  const [abrirRetorno, setAbrirRetorno] = useState(false)
+  const [descricaoRetorno, setDescricaoRetorno] = useState("")
+  const [salvandoRetorno, setSalvandoRetorno] = useState(false)
+  const [erroRetorno, setErroRetorno] = useState("")
+
+  const [abrirDevolucao, setAbrirDevolucao] = useState(false)
+  const [tipoDevolucao, setTipoDevolucao] = useState<"reembolso" | "substituicao">("reembolso")
+  const [motivoDevolucao, setMotivoDevolucao] = useState("")
+  const [valorReembolsado, setValorReembolsado] = useState("0")
+  const [centralAdquirida, setCentralAdquirida] = useState("")
+  const [custoCentral, setCustoCentral] = useState("0")
+  const [novoValorCobrado, setNovoValorCobrado] = useState("0")
+  const [salvandoDevolucao, setSalvandoDevolucao] = useState(false)
+  const [erroDevolucao, setErroDevolucao] = useState("")
 
   async function carregar() {
     setCarregando(true)
@@ -76,6 +102,65 @@ export default function OSDetalhePage() {
       if (res.ok) carregar()
     } finally {
       setAtualizando(false)
+    }
+  }
+
+  async function enviarRetorno() {
+    if (!descricaoRetorno.trim()) return
+    setSalvandoRetorno(true)
+    setErroRetorno("")
+    try {
+      const res = await fetch(`/api/os/${id}/retorno`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ descricao: descricaoRetorno }),
+      })
+      if (!res.ok) {
+        let data: { error?: string } = {}
+        try { data = await res.json() } catch { /* ignore */ }
+        setErroRetorno(data.error ?? "Erro ao registrar retorno.")
+        return
+      }
+      setAbrirRetorno(false)
+      setDescricaoRetorno("")
+      carregar()
+    } catch {
+      setErroRetorno("Erro de conexão. Tente novamente.")
+    } finally {
+      setSalvandoRetorno(false)
+    }
+  }
+
+  async function enviarDevolucao() {
+    if (!motivoDevolucao.trim()) return
+    setSalvandoDevolucao(true)
+    setErroDevolucao("")
+    try {
+      const body: Record<string, unknown> = { tipo: tipoDevolucao, motivo: motivoDevolucao }
+      if (tipoDevolucao === "reembolso") {
+        body.valor_reembolsado = parseFloat(valorReembolsado) || 0
+      } else {
+        body.central_adquirida = centralAdquirida
+        body.custo_central = parseFloat(custoCentral) || 0
+        body.novo_valor_cobrado = parseFloat(novoValorCobrado) || 0
+      }
+      const res = await fetch(`/api/os/${id}/devolucao`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        let data: { error?: string } = {}
+        try { data = await res.json() } catch { /* ignore */ }
+        setErroDevolucao(data.error ?? "Erro ao registrar devolução.")
+        return
+      }
+      setAbrirDevolucao(false)
+      carregar()
+    } catch {
+      setErroDevolucao("Erro de conexão. Tente novamente.")
+    } finally {
+      setSalvandoDevolucao(false)
     }
   }
 
@@ -249,6 +334,65 @@ export default function OSDetalhePage() {
         </Card>
       )}
 
+      {/* Retornos de garantia */}
+      {os.status === "concluida" && (
+        <Card className="bg-zinc-900 border-zinc-800">
+          <CardHeader className="pb-1 pt-3 px-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xs text-zinc-500 font-normal uppercase tracking-wide">
+                Retornos de garantia ({os.retornos_garantia.length})
+              </CardTitle>
+              <Button size="sm" variant="outline" onClick={() => setAbrirRetorno(true)}>
+                + Registrar retorno
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="px-4 pb-3">
+            {os.retornos_garantia.length === 0 ? (
+              <p className="text-zinc-600 text-xs">Nenhum retorno registrado.</p>
+            ) : (
+              <div className="space-y-2">
+                {os.retornos_garantia.map((r) => (
+                  <div key={r._id} className="text-sm">
+                    <p className="text-zinc-300">{r.descricao}</p>
+                    <p className="text-xs text-zinc-500">{new Date(r.data).toLocaleDateString("pt-BR")}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Devolução */}
+      {os.devolucao && (
+        <Card className="bg-zinc-900 border-red-900/40">
+          <CardHeader className="pb-1 pt-3 px-4">
+            <CardTitle className="text-xs text-red-400 font-normal uppercase tracking-wide">
+              {os.devolucao.tipo === "reembolso" ? "Devolução — Reembolso" : "Devolução — Substituição"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-3 text-sm space-y-1">
+            <p className="text-zinc-300">{os.devolucao.motivo}</p>
+            {os.devolucao.valor_reembolsado != null && (
+              <p className="text-zinc-400">Reembolso: R$ {os.devolucao.valor_reembolsado.toFixed(2).replace(".", ",")}</p>
+            )}
+            {os.devolucao.central_adquirida && (
+              <p className="text-zinc-400">Central substituta: {os.devolucao.central_adquirida}</p>
+            )}
+            <p className="text-zinc-500 text-xs">{new Date(os.devolucao.data).toLocaleDateString("pt-BR")}</p>
+          </CardContent>
+        </Card>
+      )}
+      {os.status === "concluida" && !os.devolucao && (
+        <div>
+          <Button variant="outline" className="text-red-400 border-red-900/40 hover:bg-red-900/20"
+            onClick={() => setAbrirDevolucao(true)}>
+            Registrar devolução
+          </Button>
+        </div>
+      )}
+
       <Dialog open={abrirConcluir} onOpenChange={setAbrirConcluir}>
         <DialogContent className="bg-zinc-900 border-zinc-800 max-w-lg">
           <DialogHeader>
@@ -324,6 +468,106 @@ export default function OSDetalhePage() {
                 {salvando ? "Salvando..." : "Confirmar conclusão"}
               </Button>
               <Button variant="outline" onClick={() => setAbrirConcluir(false)}>Cancelar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog — Retorno de garantia */}
+      <Dialog open={abrirRetorno} onOpenChange={setAbrirRetorno}>
+        <DialogContent className="bg-zinc-900 border-zinc-800">
+          <DialogHeader>
+            <DialogTitle className="text-white">Registrar retorno de garantia</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Descrição do problema *</Label>
+              <textarea
+                value={descricaoRetorno}
+                onChange={(e) => setDescricaoRetorno(e.target.value)}
+                rows={3}
+                placeholder="Descreva o que o cliente relatou..."
+                className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-zinc-600"
+              />
+            </div>
+            {erroRetorno && <p className="text-red-400 text-sm">{erroRetorno}</p>}
+            <div className="flex gap-2">
+              <Button onClick={enviarRetorno} disabled={salvandoRetorno || !descricaoRetorno.trim()}>
+                {salvandoRetorno ? "Salvando..." : "Confirmar"}
+              </Button>
+              <Button variant="outline" onClick={() => setAbrirRetorno(false)}>Cancelar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog — Devolução */}
+      <Dialog open={abrirDevolucao} onOpenChange={setAbrirDevolucao}>
+        <DialogContent className="bg-zinc-900 border-zinc-800 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">Registrar devolução</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Tipo de devolução</Label>
+              <Select value={tipoDevolucao} onValueChange={(v) => setTipoDevolucao(v as "reembolso" | "substituicao")}>
+                <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-800 border-zinc-700">
+                  <SelectItem value="reembolso">Reembolso</SelectItem>
+                  <SelectItem value="substituicao">Substituição de central</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Motivo *</Label>
+              <textarea
+                value={motivoDevolucao}
+                onChange={(e) => setMotivoDevolucao(e.target.value)}
+                rows={2}
+                placeholder="Motivo da devolução..."
+                className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-zinc-600"
+              />
+            </div>
+            {tipoDevolucao === "reembolso" && (
+              <div className="space-y-2">
+                <Label>Valor reembolsado (R$)</Label>
+                <Input value={valorReembolsado} onChange={(e) => setValorReembolsado(e.target.value)}
+                  type="number" step="0.01" min="0"
+                  className="bg-zinc-800 border-zinc-700 text-white" />
+              </div>
+            )}
+            {tipoDevolucao === "substituicao" && (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label>Central substituta</Label>
+                  <Input value={centralAdquirida} onChange={(e) => setCentralAdquirida(e.target.value)}
+                    placeholder="Ex: Bosch ME17 recondicionada"
+                    className="bg-zinc-800 border-zinc-700 text-white" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Custo da central (R$)</Label>
+                    <Input value={custoCentral} onChange={(e) => setCustoCentral(e.target.value)}
+                      type="number" step="0.01" min="0"
+                      className="bg-zinc-800 border-zinc-700 text-white" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Novo valor cobrado (R$)</Label>
+                    <Input value={novoValorCobrado} onChange={(e) => setNovoValorCobrado(e.target.value)}
+                      type="number" step="0.01" min="0"
+                      className="bg-zinc-800 border-zinc-700 text-white" />
+                  </div>
+                </div>
+              </div>
+            )}
+            {erroDevolucao && <p className="text-red-400 text-sm">{erroDevolucao}</p>}
+            <div className="flex gap-2">
+              <Button onClick={enviarDevolucao} disabled={salvandoDevolucao || !motivoDevolucao.trim()}>
+                {salvandoDevolucao ? "Salvando..." : "Confirmar devolução"}
+              </Button>
+              <Button variant="outline" onClick={() => setAbrirDevolucao(false)}>Cancelar</Button>
             </div>
           </div>
         </DialogContent>
