@@ -7,8 +7,13 @@ export async function GET(req: Request) {
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
   const { searchParams } = new URL(req.url)
   const q = searchParams.get("q") ?? undefined
-  const clientes = await listarClientes(q)
-  return NextResponse.json(clientes)
+  try {
+    const clientes = await listarClientes(q)
+    return NextResponse.json(clientes)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Erro interno"
+    return NextResponse.json({ error: msg }, { status: 400 })
+  }
 }
 
 export async function POST(req: Request) {

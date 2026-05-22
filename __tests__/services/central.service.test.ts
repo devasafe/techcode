@@ -5,6 +5,8 @@ import {
   atualizarCentral,
   listarReparosDaCentral,
 } from "@/lib/services/central.service"
+import { criarCliente } from "@/lib/services/cliente.service"
+import OS from "@/models/OS"
 
 describe("central.service", () => {
   const dadosBase = {
@@ -74,5 +76,22 @@ describe("central.service", () => {
     const criada = await criarCentral(dadosBase)
     const reparos = await listarReparosDaCentral(criada._id.toString())
     expect(reparos).toEqual([])
+  })
+
+  it("listarReparosDaCentral retorna OS concluídas com nome do cliente populado", async () => {
+    const central = await criarCentral(dadosBase)
+    const cliente = await criarCliente({ nome: "João Teste", telefone: "11900000000" })
+    await OS.create({
+      cliente_id: cliente._id,
+      central_id: central._id,
+      status: "concluida",
+      defeito_descricao: "Não liga",
+      closed_at: new Date(),
+    })
+    const reparos = await listarReparosDaCentral(central._id.toString())
+    expect(reparos.length).toBe(1)
+    const clientePopulado = reparos[0].cliente_id as { nome: string } | null
+    expect(clientePopulado).not.toBeNull()
+    expect(clientePopulado?.nome).toBe("João Teste")
   })
 })

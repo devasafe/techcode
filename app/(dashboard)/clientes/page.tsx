@@ -20,13 +20,23 @@ export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [busca, setBusca] = useState("")
   const [abrirForm, setAbrirForm] = useState(false)
+  const [carregando, setCarregando] = useState(true)
+  const [erro, setErro] = useState("")
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   async function carregar(q?: string) {
-    const params = q ? `?q=${encodeURIComponent(q)}` : ""
-    const res = await fetch(`/api/clientes${params}`)
-    if (!res.ok) return
-    setClientes(await res.json())
+    setCarregando(true)
+    setErro("")
+    try {
+      const params = q ? `?q=${encodeURIComponent(q)}` : ""
+      const res = await fetch(`/api/clientes${params}`)
+      if (!res.ok) { setErro("Erro ao carregar clientes."); return }
+      setClientes(await res.json())
+    } catch {
+      setErro("Erro ao carregar clientes.")
+    } finally {
+      setCarregando(false)
+    }
   }
 
   useEffect(() => { carregar() }, [])
@@ -37,6 +47,8 @@ export default function ClientesPage() {
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => carregar(q), 300)
   }
+
+  if (carregando && !busca) return <p className="text-zinc-400 text-sm py-8 text-center">Carregando...</p>
 
   return (
     <div>
@@ -59,6 +71,7 @@ export default function ClientesPage() {
       </div>
 
       <div className="grid gap-3">
+        {erro && <p className="text-red-400 text-sm text-center py-4">{erro}</p>}
         {clientes.map((c) => (
           <Link key={c._id} href={`/clientes/${c._id}`}>
             <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-600 transition-colors cursor-pointer">
