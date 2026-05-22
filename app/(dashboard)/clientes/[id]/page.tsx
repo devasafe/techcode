@@ -129,10 +129,12 @@ export default function ClientePerfilPage() {
               <span className="ml-2 text-sm text-zinc-500 font-normal">({os.length})</span>
             )}
           </h2>
-          <Button size="sm" disabled>
-            <Plus size={14} className="mr-1" />
-            Nova OS
-          </Button>
+          <Link href={`/os/nova?cliente=${id}`}>
+            <Button size="sm">
+              <Plus size={14} className="mr-1" />
+              Nova OS
+            </Button>
+          </Link>
         </div>
 
         <div className="grid gap-3">
