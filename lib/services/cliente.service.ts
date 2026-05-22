@@ -14,10 +14,10 @@ export type UpdateClienteInput = Partial<CreateClienteInput>
 
 export async function listarClientes(q?: string) {
   await connectDB()
-  const filtro = q
-    ? { $or: [{ nome: new RegExp(q, "i") }, { telefone: new RegExp(q, "i") }] }
-    : {}
-  return Cliente.find(filtro).sort({ nome: 1 }).lean()
+  if (!q) return Cliente.find({}).sort({ nome: 1 }).lean()
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  const regex = new RegExp(escaped, "i")
+  return Cliente.find({ $or: [{ nome: regex }, { telefone: regex }] }).sort({ nome: 1 }).lean()
 }
 
 export async function buscarClientePorId(id: string) {
