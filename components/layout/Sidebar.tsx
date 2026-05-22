@@ -10,6 +10,7 @@ import {
   Cpu,
   DollarSign,
   UserCog,
+  Receipt,
   LogOut,
 } from "lucide-react"
 import { signOut } from "next-auth/react"
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { href: "/fila", label: "Fila", icon: ListTodo, roles: ["admin", "atendente", "tecnico"] },
   { href: "/centrais", label: "Centrais", icon: Cpu, roles: ["admin", "atendente", "tecnico"] },
   { href: "/financeiro", label: "Financeiro", icon: DollarSign, roles: ["admin"] },
+  { href: "/comissoes", label: "Comissões", icon: Receipt, roles: ["admin"] },
   { href: "/equipe", label: "Equipe", icon: UserCog, roles: ["admin"] },
 ]
 

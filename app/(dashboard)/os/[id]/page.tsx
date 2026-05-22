@@ -58,6 +58,8 @@ export default function OSDetalhePage() {
   const [custoPeca, setCustoPeca] = useState("")
   const [salvando, setSalvando] = useState(false)
   const [erroConcluir, setErroConcluir] = useState("")
+  const [tecnicos, setTecnicos] = useState<{ _id: string; nome: string; comissao_pct: number }[]>([])
+  const [tecnicoId, setTecnicoId] = useState("")
   const [atualizando, setAtualizando] = useState(false)
 
   const [abrirRetorno, setAbrirRetorno] = useState(false)
@@ -89,6 +91,15 @@ export default function OSDetalhePage() {
   }
 
   useEffect(() => { carregar() }, [id])
+
+  useEffect(() => {
+    fetch("/api/usuarios")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((lista: { _id: string; nome: string; perfis: string[]; comissao_pct: number }[]) => {
+        setTecnicos(lista.filter((u) => u.perfis.includes("tecnico")))
+      })
+      .catch(() => {})
+  }, [])
 
   async function atualizarStatus(novoStatus: OSStatus) {
     if (atualizando) return
@@ -184,6 +195,7 @@ export default function OSDetalhePage() {
           pecas,
           valor_cobrado: parseFloat(valorCobrado) || 0,
           garantia_dias: parseInt(garantiaDias) || 0,
+          ...(tecnicoId && { tecnico_id: tecnicoId }),
         }),
       })
       if (!res.ok) {
@@ -399,6 +411,24 @@ export default function OSDetalhePage() {
             <DialogTitle className="text-white">Concluir OS #{os.numero_os}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {tecnicos.length > 0 && (
+              <div className="space-y-2">
+                <Label>Técnico responsável</Label>
+                <Select value={tecnicoId} onValueChange={(v) => setTecnicoId(v ?? "")}>
+                  <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                    <SelectValue placeholder="Sem técnico (sem comissão)" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-800 border-zinc-700">
+                    {tecnicos.map((t) => (
+                      <SelectItem key={t._id} value={t._id}>
+                        {t.nome} — {t.comissao_pct}%
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>Solução aplicada *</Label>
               <textarea
