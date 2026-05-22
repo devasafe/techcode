@@ -8,6 +8,7 @@ export interface IComissao extends Document {
   valor_comissao: number
   pago: boolean
   data_pagamento?: Date
+  created_at: Date
 }
 
 const ComissaoSchema = new Schema<IComissao>({
@@ -18,6 +19,7 @@ const ComissaoSchema = new Schema<IComissao>({
   valor_comissao: { type: Number, required: true },
   pago: { type: Boolean, default: false },
   data_pagamento: Date,
+  created_at: { type: Date, default: Date.now },
 })
 
 export default mongoose.models.Comissao ||
