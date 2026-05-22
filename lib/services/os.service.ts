@@ -59,24 +59,30 @@ export async function atualizarOS(id: string, data: UpdateOSInput) {
   }
 
   if (data.status === "concluida") {
-    const now = new Date()
-    update.closed_at = now
-
     const atual = await OS.findById(id).lean()
-    const vCobrado = data.valor_cobrado ?? atual?.valor_cobrado ?? 0
-    const custo =
-      data.pecas !== undefined
-        ? data.pecas.reduce((s, p) => s + p.custo, 0)
-        : atual?.custo_total_pecas ?? 0
+    if (!atual) return null // non-existent ID — findByIdAndUpdate will also return null
 
-    update.lucro_liquido = vCobrado - custo
-    if (update.valor_cobrado === undefined) update.valor_cobrado = vCobrado
+    if (atual.status !== "concluida") {
+      // OS is not yet concluded — apply financial recalculation
+      const now = new Date()
+      update.closed_at = now
 
-    if ((data.garantia_dias ?? 0) > 0) {
-      const garantia = new Date(now)
-      garantia.setDate(garantia.getDate() + (data.garantia_dias ?? 0))
-      update.garantia_ate = garantia
+      const vCobrado = data.valor_cobrado ?? atual.valor_cobrado ?? 0
+      const custo =
+        data.pecas !== undefined
+          ? data.pecas.reduce((s, p) => s + p.custo, 0)
+          : atual.custo_total_pecas ?? 0
+
+      update.lucro_liquido = vCobrado - custo
+      if (update.valor_cobrado === undefined) update.valor_cobrado = vCobrado
+
+      if ((data.garantia_dias ?? 0) > 0) {
+        const garantia = new Date(now)
+        garantia.setDate(garantia.getDate() + (data.garantia_dias ?? 0))
+        update.garantia_ate = garantia
+      }
     }
+    // already concluded — skip financial recalculation, just update non-financial fields
   }
 
   return OS.findByIdAndUpdate(id, { $set: update }, { returnDocument: "after" })

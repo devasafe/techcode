@@ -85,6 +85,20 @@ describe("OS service", () => {
     expect(atualizado?.garantia_ate).toBeDefined()
   })
 
+  it("atualizarOS retorna null para id inexistente", async () => {
+    const result = await atualizarOS("000000000000000000000000", { status: "na_fila" })
+    expect(result).toBeNull()
+  })
+
+  it("listarOS filtra por cliente_id", async () => {
+    const outroCli = await Cliente.create({ nome: "Maria", telefone: "11888880000" })
+    await criarOS({ cliente_id: clienteId, central_id: centralId, defeito_descricao: "OS do João" })
+    await criarOS({ cliente_id: outroCli._id.toString(), central_id: centralId, defeito_descricao: "OS da Maria" })
+    const lista = await listarOS({ cliente_id: clienteId })
+    expect(lista.length).toBe(1)
+    expect(lista[0].defeito_descricao).toBe("OS do João")
+  })
+
   it("listarOSFila retorna apenas OS com status ativo", async () => {
     const osAtiva = await criarOS({ cliente_id: clienteId, central_id: centralId, defeito_descricao: "Ativa" })
     const osConc = await criarOS({ cliente_id: clienteId, central_id: centralId, defeito_descricao: "Concluída" })
