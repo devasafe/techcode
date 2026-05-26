@@ -1,5 +1,8 @@
 import { connectDB } from "@/lib/db"
 import OS from "@/models/OS"
+import "@/models/Cliente"
+import "@/models/Central"
+import "@/models/Usuario"
 import type { OSStatus, TipoDevolucao } from "@/types"
 
 export type CreateOSInput = {

@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/db"
 import OS from "@/models/OS"
 import Comissao from "@/models/Comissao"
+import "@/models/Cliente"
 
 export type Periodo = "este_mes" | "mes_anterior" | "este_ano" | "tudo"
 

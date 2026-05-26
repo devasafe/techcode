@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/db"
 import Cliente from "@/models/Cliente"
 import OS from "@/models/OS"
+import "@/models/Central"
 
 export type CreateClienteInput = {
   nome: string

@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/db"
 import Central from "@/models/Central"
 import OS from "@/models/OS"
+import "@/models/Cliente"
 
 export type CreateCentralInput = {
   marca: string
