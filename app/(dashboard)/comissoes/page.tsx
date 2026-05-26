@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Select,
   SelectContent,
@@ -26,12 +25,12 @@ type Comissao = {
   created_at: string
 }
 
-const PERIODO_LABELS: Record<Periodo, string> = {
-  este_mes: "Este mês",
-  mes_anterior: "Mês anterior",
-  este_ano: "Este ano",
-  tudo: "Todo o período",
-}
+const PERIODOS: { value: Periodo; label: string }[] = [
+  { value: "este_mes",     label: "Este mês" },
+  { value: "mes_anterior", label: "Mês anterior" },
+  { value: "este_ano",     label: "Este ano" },
+  { value: "tudo",         label: "Tudo" },
+]
 
 function moeda(v: number) {
   return `R$ ${v.toFixed(2).replace(".", ",")}`
@@ -88,139 +87,129 @@ export default function ComissoesPage() {
   }
 
   const pendentes = comissoes.filter((c) => !c.pago)
-  const pagas = comissoes.filter((c) => c.pago)
+  const pagas     = comissoes.filter((c) => c.pago)
   const totalPendente = pendentes.reduce((s, c) => s + c.valor_comissao, 0)
-  const totalPago = pagas.reduce((s, c) => s + c.valor_comissao, 0)
+  const totalPago     = pagas.reduce((s, c) => s + c.valor_comissao, 0)
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-white">Comissões</h1>
+        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+          Comissões
+        </h1>
 
         <div className="flex gap-3 flex-wrap items-center">
           <Select value={tecnicoId} onValueChange={(v) => setTecnicoId(!v || v === "todos" ? "" : v)}>
-            <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white w-48">
+            <SelectTrigger className="bg-[#111111] border-[#1C1C1C] text-[#F0F0F0] text-xs w-44 rounded-sm focus:ring-0 focus:border-[#E8FF47]">
               <SelectValue placeholder="Todos os técnicos" />
             </SelectTrigger>
-            <SelectContent className="bg-zinc-800 border-zinc-700">
-              <SelectItem value="todos">Todos os técnicos</SelectItem>
+            <SelectContent className="bg-[#111111] border-[#1C1C1C]">
+              <SelectItem value="todos" className="text-[#555555] focus:bg-[#1C1C1C] focus:text-white text-xs">
+                Todos os técnicos
+              </SelectItem>
               {tecnicos.map((t) => (
-                <SelectItem key={t._id} value={t._id}>
+                <SelectItem key={t._id} value={t._id} className="text-[#F0F0F0] focus:bg-[#1C1C1C] focus:text-white text-xs">
                   {t.nome}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <div className="flex gap-2 flex-wrap">
-            {(Object.entries(PERIODO_LABELS) as [Periodo, string][]).map(([p, label]) => (
+          <div className="flex gap-1">
+            {PERIODOS.map((p) => (
               <button
-                key={p}
-                onClick={() => setPeriodo(p)}
-                className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-                  periodo === p
-                    ? "bg-white text-zinc-900 font-medium"
-                    : "bg-zinc-800 text-zinc-400 hover:text-white"
+                key={p.value}
+                onClick={() => setPeriodo(p.value)}
+                className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-widest whitespace-nowrap transition-colors rounded-sm ${
+                  periodo === p.value
+                    ? "text-[#E8FF47] border-b border-[#E8FF47]"
+                    : "text-[#555555] hover:text-white"
                 }`}
               >
-                {label}
+                {p.label}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {erro && <p className="text-red-400 text-sm">{erro}</p>}
+      {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader className="pb-1 pt-4 px-4">
-            <CardTitle className="text-xs text-zinc-500 font-normal uppercase tracking-wide">
-              A pagar
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <p className="text-2xl font-bold text-yellow-400">{moeda(totalPendente)}</p>
-            <p className="text-xs text-zinc-500 mt-0.5">{pendentes.length} comissão{pendentes.length !== 1 ? "ões" : ""}</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 h-28 flex flex-col justify-between">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">A pagar</p>
+          <div>
+            <p className="font-mono text-xl font-bold text-[#F59E0B]">{moeda(totalPendente)}</p>
+            <p className="font-mono text-[10px] text-[#555555] mt-0.5">{pendentes.length} pendente{pendentes.length !== 1 ? "s" : ""}</p>
+          </div>
+        </div>
 
-        <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader className="pb-1 pt-4 px-4">
-            <CardTitle className="text-xs text-zinc-500 font-normal uppercase tracking-wide">
-              Já pago
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <p className="text-2xl font-bold text-green-400">{moeda(totalPago)}</p>
-            <p className="text-xs text-zinc-500 mt-0.5">{pagas.length} comissão{pagas.length !== 1 ? "ões" : ""}</p>
-          </CardContent>
-        </Card>
+        <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 h-28 flex flex-col justify-between">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Já pago</p>
+          <div>
+            <p className="font-mono text-xl font-bold text-[#22C55E]">{moeda(totalPago)}</p>
+            <p className="font-mono text-[10px] text-[#555555] mt-0.5">{pagas.length} pago{pagas.length !== 1 ? "s" : ""}</p>
+          </div>
+        </div>
 
-        <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader className="pb-1 pt-4 px-4">
-            <CardTitle className="text-xs text-zinc-500 font-normal uppercase tracking-wide">
-              Total gerado
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <p className="text-2xl font-bold text-white">{moeda(totalPendente + totalPago)}</p>
-            <p className="text-xs text-zinc-500 mt-0.5">{comissoes.length} comissão{comissoes.length !== 1 ? "ões" : ""}</p>
-          </CardContent>
-        </Card>
+        <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 h-28 flex flex-col justify-between">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Total gerado</p>
+          <div>
+            <p className="font-mono text-xl font-bold text-[#F0F0F0]">{moeda(totalPendente + totalPago)}</p>
+            <p className="font-mono text-[10px] text-[#555555] mt-0.5">{comissoes.length} comissão{comissoes.length !== 1 ? "ões" : ""}</p>
+          </div>
+        </div>
       </div>
 
       {carregando ? (
-        <p className="text-zinc-400 text-sm">Carregando...</p>
+        <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
       ) : !comissoes.length ? (
-        <p className="text-zinc-500 text-sm">Nenhuma comissão no período selecionado.</p>
+        <p className="text-xs text-[#555555] text-center py-8">Nenhuma comissão no período selecionado.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="text-zinc-500 border-b border-zinc-800">
-                <th className="text-left py-2 pr-4 font-normal">OS</th>
-                <th className="text-left py-2 pr-4 font-normal">Técnico</th>
-                <th className="text-right py-2 pr-4 font-normal">Valor OS</th>
-                <th className="text-right py-2 pr-4 font-normal">%</th>
-                <th className="text-right py-2 pr-4 font-normal">Comissão</th>
-                <th className="text-left py-2 pr-4 font-normal">Data</th>
-                <th className="text-left py-2 pr-4 font-normal">Status</th>
-                <th className="text-left py-2 font-normal"></th>
+              <tr className="bg-[#111111] border-b border-[#1C1C1C]">
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">OS</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Técnico</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right hidden sm:table-cell">Valor OS</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right hidden sm:table-cell">%</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right">Comissão</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden md:table-cell">Data</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Status</th>
+                <th className="py-2 px-4"></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-[#1C1C1C]">
               {comissoes.map((c) => (
-                <tr key={c._id} className="border-b border-zinc-900 text-zinc-300">
-                  <td className="py-2 pr-4 text-white font-medium">
+                <tr key={c._id} className="hover:bg-[#141414] transition-colors">
+                  <td className="py-3 px-4 font-mono text-sm text-[#E8FF47]">
                     #{c.os_id?.numero_os ?? "—"}
                   </td>
-                  <td className="py-2 pr-4">{c.tecnico_id?.nome ?? "—"}</td>
-                  <td className="py-2 pr-4 text-right">{moeda(c.valor_os)}</td>
-                  <td className="py-2 pr-4 text-right">{c.pct_comissao}%</td>
-                  <td className="py-2 pr-4 text-right font-medium text-white">
+                  <td className="py-3 px-4 text-sm text-[#F0F0F0]">{c.tecnico_id?.nome ?? "—"}</td>
+                  <td className="py-3 px-4 font-mono text-sm text-right text-[#555555] hidden sm:table-cell">{moeda(c.valor_os)}</td>
+                  <td className="py-3 px-4 font-mono text-sm text-right text-[#555555] hidden sm:table-cell">{c.pct_comissao}%</td>
+                  <td className="py-3 px-4 font-mono text-sm text-right font-medium text-[#F0F0F0]">
                     {moeda(c.valor_comissao)}
                   </td>
-                  <td className="py-2 pr-4 text-zinc-500">
+                  <td className="py-3 px-4 font-mono text-sm text-[#555555] hidden md:table-cell">
                     {new Date(c.created_at).toLocaleDateString("pt-BR")}
                   </td>
-                  <td className="py-2 pr-4">
+                  <td className="py-3 px-4">
                     {c.pago ? (
-                      <span className="text-green-400 text-xs">
-                        Pago {c.data_pagamento
-                          ? new Date(c.data_pagamento).toLocaleDateString("pt-BR")
-                          : ""}
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-[#22C55E]">
+                        Pago {c.data_pagamento ? new Date(c.data_pagamento).toLocaleDateString("pt-BR") : ""}
                       </span>
                     ) : (
-                      <span className="text-yellow-400 text-xs">Pendente</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F59E0B]">Pendente</span>
                     )}
                   </td>
-                  <td className="py-2">
+                  <td className="py-3 px-4 text-right">
                     {!c.pago && (
                       <button
                         onClick={() => pagar(c._id)}
                         disabled={pagando === c._id}
-                        className="px-3 py-1 rounded text-xs bg-green-700 hover:bg-green-600 text-white disabled:opacity-50 transition-colors"
+                        className="text-[10px] font-semibold uppercase tracking-widest text-[#22C55E] hover:brightness-125 disabled:opacity-40 transition-all"
                       >
                         {pagando === c._id ? "..." : "Pagar"}
                       </button>

@@ -3,10 +3,6 @@
 import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -36,41 +32,62 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm bg-zinc-900 border-zinc-800">
-      <CardHeader>
-        <CardTitle className="text-center text-white">Tech Code</CardTitle>
-        <p className="text-center text-zinc-400 text-sm">Acesse seu laboratório</p>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-zinc-300">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              className="bg-zinc-800 border-zinc-700 text-white"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="senha" className="text-zinc-300">Senha</Label>
-            <Input
-              id="senha"
-              name="senha"
-              type="password"
-              required
-              autoComplete="current-password"
-              className="bg-zinc-800 border-zinc-700 text-white"
-            />
-          </div>
-          {erro && <p className="text-red-400 text-sm">{erro}</p>}
-          <Button type="submit" className="w-full" disabled={carregando}>
-            {carregando ? "Entrando..." : "Entrar"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center px-4"
+      style={{
+        backgroundImage: `radial-gradient(circle, #1C1C1C 1px, transparent 1px)`,
+        backgroundSize: "24px 24px",
+      }}
+    >
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <p className="font-mono text-xs font-bold uppercase tracking-widest text-[#E8FF47]">
+            Tech Code
+          </p>
+          <p className="text-[#555555] text-xs mt-1 uppercase tracking-widest">Laboratório de ECUs</p>
+        </div>
+
+        <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="block text-[10px] font-semibold uppercase tracking-widest text-[#555555]">
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                autoComplete="email"
+                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333]"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="senha" className="block text-[10px] font-semibold uppercase tracking-widest text-[#555555]">
+                Senha
+              </label>
+              <input
+                id="senha"
+                name="senha"
+                type="password"
+                required
+                autoComplete="current-password"
+                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors"
+              />
+            </div>
+
+            {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
+
+            <button
+              type="submit"
+              disabled={carregando}
+              className="w-full bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest py-2.5 rounded-sm hover:brightness-110 disabled:opacity-60 transition-all mt-2"
+            >
+              {carregando ? "Entrando..." : "Entrar"}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
   )
 }

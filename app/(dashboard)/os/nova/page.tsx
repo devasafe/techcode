@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { OSForm } from "@/components/os/OSForm"
 import { ArrowLeft } from "lucide-react"
 
@@ -24,10 +23,15 @@ function NovaOSContent() {
   return (
     <div className="max-w-xl">
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
+        <button
+          onClick={() => router.back()}
+          className="text-[#555555] hover:text-white transition-colors"
+        >
           <ArrowLeft size={16} />
-        </Button>
-        <h1 className="text-2xl font-bold text-white">Nova Ordem de Serviço</h1>
+        </button>
+        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+          Nova Ordem de Serviço
+        </h1>
       </div>
       <OSForm
         clientePreenchido={clientePreenchido}
@@ -40,7 +44,7 @@ function NovaOSContent() {
 
 export default function NovaOSPage() {
   return (
-    <Suspense fallback={<p className="text-zinc-400 text-sm">Carregando...</p>}>
+    <Suspense fallback={<p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>}>
       <NovaOSContent />
     </Suspense>
   )

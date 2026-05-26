@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CentralForm } from "@/components/centrais/CentralForm"
 import { ArrowLeft, Pencil, Wrench } from "lucide-react"
@@ -54,95 +52,89 @@ export default function CentralDetalhePage() {
 
   useEffect(() => { carregar() }, [id])
 
-  if (carregando) return <p className="text-zinc-400 text-sm">Carregando...</p>
+  if (carregando) return <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
   if (!central) return null
 
   return (
     <div className="space-y-6 max-w-2xl">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={() => router.push("/centrais")}>
+        <button
+          onClick={() => router.push("/centrais")}
+          className="text-[#555555] hover:text-white transition-colors"
+        >
           <ArrowLeft size={16} />
-        </Button>
+        </button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-white">
-            {central.marca} {central.modelo}
+          <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+            {central.marca} <span className="font-mono text-[#E8FF47]">{central.modelo}</span>
           </h1>
-          <p className="text-sm text-zinc-400">Código: {central.codigo}</p>
+          <p className="font-mono text-[10px] text-[#555555] mt-0.5">{central.codigo}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setEditando(true)}>
-          <Pencil size={14} className="mr-1" />
+        <button
+          onClick={() => setEditando(true)}
+          className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors"
+        >
+          <Pencil size={12} />
           Editar
-        </Button>
+        </button>
       </div>
 
       {central.descricao && (
-        <p className="text-zinc-400 text-sm">{central.descricao}</p>
+        <p className="text-sm text-[#555555]">{central.descricao}</p>
       )}
 
       <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Wrench size={16} className="text-zinc-400" />
-          <h2 className="text-lg font-semibold text-white">Base de Conhecimento</h2>
+        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[#1C1C1C]">
+          <Wrench size={12} className="text-[#555555]" />
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Base de Conhecimento</span>
           {reparos.length > 0 && (
-            <span className="text-sm text-zinc-500">
-              ({reparos.length} {reparos.length === 1 ? "reparo" : "reparos"})
-            </span>
+            <span className="font-mono text-xs text-[#555555]">{reparos.length}</span>
           )}
         </div>
 
-        <div className="grid gap-3">
+        <div className="space-y-3">
           {reparos.map((r) => (
-            <Card key={r._id} className="bg-zinc-900 border-zinc-800">
-              <CardHeader className="pb-2 pt-4 px-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-white">
-                    OS #{r.numero_os}
-                    {r.cliente_id && (
-                      <span className="font-normal text-zinc-400 ml-2">
-                        — {r.cliente_id.nome}
-                      </span>
-                    )}
-                  </CardTitle>
-                  {r.closed_at && (
-                    <span className="text-xs text-zinc-500">
-                      {new Date(r.closed_at).toLocaleDateString("pt-BR")}
-                    </span>
+            <div key={r._id} className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs text-[#E8FF47]">#{r.numero_os}</span>
+                  {r.cliente_id && (
+                    <span className="text-xs text-[#555555]">— {r.cliente_id.nome}</span>
                   )}
                 </div>
-              </CardHeader>
-              <CardContent className="px-4 pb-4 space-y-2 text-sm">
+                {r.closed_at && (
+                  <span className="font-mono text-[10px] text-[#555555]">
+                    {new Date(r.closed_at).toLocaleDateString("pt-BR")}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-2">
                 <div>
-                  <span className="text-zinc-500 text-xs uppercase tracking-wide">Defeito</span>
-                  <p className="text-zinc-300 mt-0.5">{r.defeito_descricao}</p>
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-[#555555] mb-0.5">Defeito</p>
+                  <p className="text-sm text-[#F0F0F0]">{r.defeito_descricao}</p>
                 </div>
                 {r.solucao_descricao && (
                   <div>
-                    <span className="text-zinc-500 text-xs uppercase tracking-wide">Solução</span>
-                    <p className="text-zinc-300 mt-0.5">{r.solucao_descricao}</p>
+                    <p className="text-[9px] font-semibold uppercase tracking-widest text-[#22C55E] mb-0.5">Solução</p>
+                    <p className="text-sm text-[#F0F0F0]">{r.solucao_descricao}</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
           {reparos.length === 0 && (
-            <Card className="bg-zinc-900 border-zinc-800 border-dashed">
-              <CardContent className="py-8 text-center">
-                <p className="text-zinc-500 text-sm">
-                  Nenhum reparo concluído registrado para este modelo ainda.
-                </p>
-                <p className="text-zinc-600 text-xs mt-1">
-                  Reparos aparecerão aqui quando OS forem concluídas.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="border border-dashed border-[#1C1C1C] rounded-sm p-8 text-center">
+              <p className="text-xs text-[#555555]">Nenhum reparo concluído registrado para este modelo.</p>
+              <p className="text-[10px] text-[#333333] mt-1">Reparos aparecerão aqui quando OS forem concluídas.</p>
+            </div>
           )}
         </div>
       </div>
 
       <Dialog open={editando} onOpenChange={setEditando}>
-        <DialogContent className="bg-zinc-900 border-zinc-800">
+        <DialogContent className="bg-[#111111] border-[#1C1C1C]">
           <DialogHeader>
-            <DialogTitle className="text-white">Editar central</DialogTitle>
+            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">Editar central</DialogTitle>
           </DialogHeader>
           <CentralForm
             central={central}
