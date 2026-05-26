@@ -7,5 +7,6 @@ export type OSStatus =
   | "concluida"
   | "devolvida"
   | "substituida"
+  | "cancelada"
 
 export type TipoDevolucao = "reembolso" | "substituicao"

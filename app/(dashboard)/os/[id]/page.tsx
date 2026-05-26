@@ -17,6 +17,7 @@ type OS = {
   status: OSStatus
   defeito_descricao: string
   solucao_descricao?: string
+  motivo_cancelamento?: string
   pecas: Peca[]
   valor_cobrado: number
   custo_total_pecas: number
@@ -47,7 +48,10 @@ const STATUS_BADGE: Record<OSStatus, { label: string; cls: string }> = {
   concluida:     { label: "Concluída",     cls: "bg-[#0D2A1A] text-[#22C55E]" },
   devolvida:     { label: "Devolvida",     cls: "bg-[#2A0D0D] text-[#FF4444]" },
   substituida:   { label: "Substituída",   cls: "bg-[#2A1500] text-[#FB923C]" },
+  cancelada:     { label: "Cancelada",     cls: "bg-[#1A1A1A] text-[#555555]" },
 }
+
+const PODE_CANCELAR: OSStatus[] = ["aberta", "na_fila", "em_andamento"]
 
 const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333]"
 const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-1"
@@ -75,6 +79,13 @@ export default function OSDetalhePage() {
   const [descricaoRetorno, setDescricaoRetorno] = useState("")
   const [salvandoRetorno, setSalvandoRetorno] = useState(false)
   const [erroRetorno, setErroRetorno] = useState("")
+
+  const [centralEmBomEstado, setCentralEmBomEstado] = useState(false)
+
+  const [abrirCancelar, setAbrirCancelar] = useState(false)
+  const [motivoCancelamento, setMotivoCancelamento] = useState("")
+  const [salvandoCancelamento, setSalvandoCancelamento] = useState(false)
+  const [erroCancelamento, setErroCancelamento] = useState("")
 
   const [abrirDevolucao, setAbrirDevolucao] = useState(false)
   const [tipoDevolucao, setTipoDevolucao] = useState<"reembolso" | "substituicao">("reembolso")
@@ -184,6 +195,33 @@ export default function OSDetalhePage() {
     }
   }
 
+  async function cancelarOS() {
+    setSalvandoCancelamento(true)
+    setErroCancelamento("")
+    try {
+      const res = await fetch(`/api/os/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "cancelada",
+          ...(motivoCancelamento.trim() && { motivo_cancelamento: motivoCancelamento.trim() }),
+        }),
+      })
+      if (!res.ok) {
+        let data: { error?: string } = {}
+        try { data = await res.json() } catch { /* ignore */ }
+        setErroCancelamento(data.error ?? "Erro ao cancelar OS.")
+        return
+      }
+      setAbrirCancelar(false)
+      carregar()
+    } catch {
+      setErroCancelamento("Erro de conexão. Tente novamente.")
+    } finally {
+      setSalvandoCancelamento(false)
+    }
+  }
+
   function adicionarPeca() {
     if (!nomePeca.trim() || !custoPeca) return
     setPecas((prev) => [...prev, { nome: nomePeca.trim(), custo: parseFloat(custoPeca) || 0 }])
@@ -254,13 +292,23 @@ export default function OSDetalhePage() {
             {os.closed_at && ` · Concluída em ${new Date(os.closed_at).toLocaleDateString("pt-BR")}`}
           </p>
         </div>
-        <button
-          onClick={exportarPDF}
-          className="print:hidden flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white border border-[#1C1C1C] hover:border-[#2A2A2A] px-3 py-1.5 rounded-sm transition-colors"
-        >
-          <FileDown size={12} />
-          PDF
-        </button>
+        <div className="print:hidden flex items-center gap-2">
+          {PODE_CANCELAR.includes(os.status) && (
+            <button
+              onClick={() => setAbrirCancelar(true)}
+              className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-[#FF4444] border border-[#1C1C1C] hover:border-[#2A0D0D] px-3 py-1.5 rounded-sm transition-colors"
+            >
+              Cancelar
+            </button>
+          )}
+          <button
+            onClick={exportarPDF}
+            className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white border border-[#1C1C1C] hover:border-[#2A2A2A] px-3 py-1.5 rounded-sm transition-colors"
+          >
+            <FileDown size={12} />
+            PDF
+          </button>
+        </div>
       </div>
 
       {/* Ação de status */}
@@ -329,6 +377,16 @@ export default function OSDetalhePage() {
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-2">Defeito relatado</p>
         <p className="text-sm text-[#F0F0F0]">{os.defeito_descricao}</p>
       </div>
+
+      {/* Cancelamento */}
+      {os.status === "cancelada" && (
+        <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-2">OS Cancelada</p>
+          <p className="text-sm text-[#555555]">
+            {os.motivo_cancelamento || "Sem motivo registrado."}
+          </p>
+        </div>
+      )}
 
       {/* Solução */}
       {os.solucao_descricao && (
@@ -443,6 +501,48 @@ export default function OSDetalhePage() {
         </button>
       )}
 
+      {/* Dialog — Cancelar OS */}
+      <Dialog open={abrirCancelar} onOpenChange={(open) => { setAbrirCancelar(open); if (!open) { setMotivoCancelamento(""); setErroCancelamento("") } }}>
+        <DialogContent className="bg-[#111111] border-[#1C1C1C] max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">
+              Cancelar OS #{os.numero_os}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-xs text-[#555555]">
+              A OS será marcada como cancelada. Essa ação não pode ser desfeita.
+            </p>
+            <div>
+              <label className={labelCls}>Motivo (opcional)</label>
+              <textarea
+                value={motivoCancelamento}
+                onChange={(e) => setMotivoCancelamento(e.target.value)}
+                rows={3}
+                placeholder="Ex: cliente não aceitou o orçamento..."
+                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333] resize-none"
+              />
+            </div>
+            {erroCancelamento && <p className="text-xs text-[#FF4444]">{erroCancelamento}</p>}
+            <div className="flex gap-2">
+              <button
+                onClick={cancelarOS}
+                disabled={salvandoCancelamento}
+                className="bg-[#2A0D0D] text-[#FF4444] text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
+              >
+                {salvandoCancelamento ? "Cancelando..." : "Confirmar cancelamento"}
+              </button>
+              <button
+                onClick={() => setAbrirCancelar(false)}
+                className="text-xs font-semibold uppercase tracking-widest text-[#555555] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
+              >
+                Voltar
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Dialog — Concluir OS */}
       <Dialog open={abrirConcluir} onOpenChange={setAbrirConcluir}>
         <DialogContent className="bg-[#111111] border-[#1C1C1C] max-w-lg">
@@ -452,6 +552,38 @@ export default function OSDetalhePage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Central em bom estado */}
+            <button
+              type="button"
+              onClick={() => {
+                const próximo = !centralEmBomEstado
+                setCentralEmBomEstado(próximo)
+                if (próximo) setSolucao("Central testada — em bom estado, sem defeito identificado.")
+                else setSolucao("")
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-sm border text-left transition-colors ${
+                centralEmBomEstado
+                  ? "border-[#22C55E] bg-[#0D2A1A]"
+                  : "border-[#1C1C1C] bg-[#0C0C0C] hover:border-[#2A2A2A]"
+              }`}
+            >
+              <div className={`w-4 h-4 rounded-sm border flex items-center justify-center shrink-0 ${
+                centralEmBomEstado ? "border-[#22C55E] bg-[#22C55E]" : "border-[#555555]"
+              }`}>
+                {centralEmBomEstado && (
+                  <svg viewBox="0 0 10 8" fill="none" className="w-2.5 h-2.5">
+                    <path d="M1 4l3 3 5-6" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </div>
+              <div>
+                <p className={`text-xs font-semibold ${centralEmBomEstado ? "text-[#22C55E]" : "text-[#F0F0F0]"}`}>
+                  Central em bom estado
+                </p>
+                <p className="text-[10px] text-[#555555]">Nenhum defeito encontrado — apenas teste</p>
+              </div>
+            </button>
+
             {tecnicos.length > 0 && (
               <div>
                 <label className={labelCls}>Técnico responsável</label>
@@ -482,37 +614,39 @@ export default function OSDetalhePage() {
               />
             </div>
 
-            <div>
-              <label className={labelCls}>Peças utilizadas</label>
-              <div className="space-y-1.5 mb-2">
-                {pecas.map((p, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-1.5 rounded-sm">
-                    <span className="flex-1 text-[#F0F0F0]">{p.nome}</span>
-                    <span className="font-mono text-[#555555]">R$ {p.custo.toFixed(2).replace(".", ",")}</span>
-                    <button type="button" onClick={() => setPecas(pecas.filter((_, idx) => idx !== i))}>
-                      <Trash2 size={12} className="text-[#555555] hover:text-[#FF4444] transition-colors" />
-                    </button>
-                  </div>
-                ))}
+            {!centralEmBomEstado && (
+              <div>
+                <label className={labelCls}>Peças utilizadas</label>
+                <div className="space-y-1.5 mb-2">
+                  {pecas.map((p, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-1.5 rounded-sm">
+                      <span className="flex-1 text-[#F0F0F0]">{p.nome}</span>
+                      <span className="font-mono text-[#555555]">R$ {p.custo.toFixed(2).replace(".", ",")}</span>
+                      <button type="button" onClick={() => setPecas(pecas.filter((_, idx) => idx !== i))}>
+                        <Trash2 size={12} className="text-[#555555] hover:text-[#FF4444] transition-colors" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input value={nomePeca} onChange={(e) => setNomePeca(e.target.value)}
+                    placeholder="Nome da peça"
+                    className={`${inputCls} flex-1`} />
+                  <input value={custoPeca} onChange={(e) => setCustoPeca(e.target.value)}
+                    placeholder="R$" type="number" step="0.01" min="0"
+                    className={`${inputCls} w-24`} />
+                  <button type="button" onClick={adicionarPeca}
+                    className="bg-[#1C1C1C] text-[#F0F0F0] text-xs font-semibold px-3 py-2 rounded-sm hover:bg-[#2A2A2A] transition-colors">
+                    +
+                  </button>
+                </div>
+                {pecas.length > 0 && (
+                  <p className="font-mono text-[10px] text-[#555555] mt-1">
+                    Total: R$ {custoTotal.toFixed(2).replace(".", ",")}
+                  </p>
+                )}
               </div>
-              <div className="flex gap-2">
-                <input value={nomePeca} onChange={(e) => setNomePeca(e.target.value)}
-                  placeholder="Nome da peça"
-                  className={`${inputCls} flex-1`} />
-                <input value={custoPeca} onChange={(e) => setCustoPeca(e.target.value)}
-                  placeholder="R$" type="number" step="0.01" min="0"
-                  className={`${inputCls} w-24`} />
-                <button type="button" onClick={adicionarPeca}
-                  className="bg-[#1C1C1C] text-[#F0F0F0] text-xs font-semibold px-3 py-2 rounded-sm hover:bg-[#2A2A2A] transition-colors">
-                  +
-                </button>
-              </div>
-              {pecas.length > 0 && (
-                <p className="font-mono text-[10px] text-[#555555] mt-1">
-                  Total: R$ {custoTotal.toFixed(2).replace(".", ",")}
-                </p>
-              )}
-            </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <div>

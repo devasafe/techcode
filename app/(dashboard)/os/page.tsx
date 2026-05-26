@@ -24,6 +24,7 @@ const STATUS_TABS: { value: OSStatus | ""; label: string }[] = [
   { value: "em_andamento", label: "Em andamento" },
   { value: "concluida", label: "Concluídas" },
   { value: "devolvida", label: "Devolvidas" },
+  { value: "cancelada", label: "Canceladas" },
 ]
 
 const STATUS_BADGE: Record<OSStatus, { label: string; cls: string }> = {
@@ -33,6 +34,7 @@ const STATUS_BADGE: Record<OSStatus, { label: string; cls: string }> = {
   concluida:     { label: "Concluída",     cls: "bg-[#0D2A1A] text-[#22C55E]" },
   devolvida:     { label: "Devolvida",     cls: "bg-[#2A0D0D] text-[#FF4444]" },
   substituida:   { label: "Substituída",   cls: "bg-[#2A1500] text-[#FB923C]" },
+  cancelada:     { label: "Cancelada",     cls: "bg-[#1A1A1A] text-[#555555]" },
 }
 
 export default function OSPage() {

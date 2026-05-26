@@ -7,6 +7,7 @@ const STATUS_LABEL: Record<OSStatus, string> = {
   concluida: "Concluída",
   devolvida: "Devolvida",
   substituida: "Substituída",
+  cancelada: "Cancelada",
 }
 
 const STATUS_COLOR: Record<OSStatus, string> = {
@@ -16,6 +17,7 @@ const STATUS_COLOR: Record<OSStatus, string> = {
   concluida: "bg-green-900/40 text-green-400",
   devolvida: "bg-red-900/40 text-red-400",
   substituida: "bg-orange-900/40 text-orange-400",
+  cancelada: "bg-zinc-900 text-zinc-500",
 }
 
 export function StatusBadge({ status }: { status: string }) {

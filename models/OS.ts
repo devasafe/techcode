@@ -25,6 +25,7 @@ export interface IOS extends Document {
   status: OSStatus
   defeito_descricao: string
   solucao_descricao?: string
+  motivo_cancelamento?: string
   fotos: string[]
   pecas: { nome: string; custo: number }[]
   valor_cobrado: number
@@ -45,11 +46,12 @@ const OSSchema = new Schema<IOS>({
   tecnico_id: { type: Schema.Types.ObjectId, ref: "Usuario" },
   status: {
     type: String,
-    enum: ["aberta", "na_fila", "em_andamento", "concluida", "devolvida", "substituida"],
+    enum: ["aberta", "na_fila", "em_andamento", "concluida", "devolvida", "substituida", "cancelada"],
     default: "aberta",
   },
   defeito_descricao: { type: String, required: true },
   solucao_descricao: String,
+  motivo_cancelamento: String,
   fotos: [String],
   pecas: [{ nome: String, custo: Number }],
   valor_cobrado: { type: Number, default: 0 },
