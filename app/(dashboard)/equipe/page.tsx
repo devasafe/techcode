@@ -37,6 +37,15 @@ export default function EquipePage() {
     carregar()
   }
 
+  async function reativar(id: string) {
+    await fetch(`/api/usuarios/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ativo: true }),
+    })
+    carregar()
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -90,12 +99,19 @@ export default function EquipePage() {
                   </span>
                 </td>
                 <td className="py-3 px-4 text-right">
-                  {u.ativo && (
+                  {u.ativo ? (
                     <button
                       onClick={() => desativar(u._id)}
                       className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-[#FF4444] transition-colors"
                     >
                       Desativar
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => reativar(u._id)}
+                      className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-[#22C55E] transition-colors"
+                    >
+                      Reativar
                     </button>
                   )}
                 </td>
