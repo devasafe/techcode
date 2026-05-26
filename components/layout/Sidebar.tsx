@@ -79,24 +79,31 @@ export function Sidebar({ perfis }: SidebarProps) {
       </aside>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 border-t border-[#1C1C1C] bg-[#0C0C0C] flex justify-around items-center h-16 px-2">
-        {itensVisiveis.slice(0, 5).map((item) => {
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 border-t border-[#1C1C1C] bg-[#0C0C0C] flex items-center h-16 overflow-x-auto scrollbar-hide">
+        {itensVisiveis.map((item) => {
           const ativo = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center gap-1 px-3 py-1 transition-colors ${
-                ativo ? "text-[#E8FF47]" : "text-[#555555] hover:text-white"
+              className={`flex flex-col items-center justify-center gap-1 min-w-[64px] h-full px-1 shrink-0 transition-colors ${
+                ativo ? "text-[#E8FF47]" : "text-[#555555]"
               }`}
             >
-              <item.icon size={20} />
-              <span className="text-[10px] font-semibold uppercase tracking-widest">
+              <item.icon size={18} />
+              <span className="text-[9px] font-semibold uppercase tracking-widest leading-none">
                 {item.label.split(" ")[0]}
               </span>
             </Link>
           )
         })}
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="flex flex-col items-center justify-center gap-1 min-w-[64px] h-full px-1 shrink-0 text-[#555555] transition-colors"
+        >
+          <LogOut size={18} />
+          <span className="text-[9px] font-semibold uppercase tracking-widest leading-none">Sair</span>
+        </button>
       </nav>
     </>
   )

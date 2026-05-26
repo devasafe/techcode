@@ -135,6 +135,14 @@
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: #0C0C0C; }
   ::-webkit-scrollbar-thumb { background: #1C1C1C; }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @media print {
