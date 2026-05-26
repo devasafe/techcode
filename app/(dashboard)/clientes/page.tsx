@@ -1,13 +1,10 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
+import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ClienteForm } from "@/components/clientes/ClienteForm"
-import { Search, UserPlus, ChevronRight } from "lucide-react"
+import { Search, UserPlus } from "lucide-react"
 
 type Cliente = {
   _id: string
@@ -17,6 +14,7 @@ type Cliente = {
 }
 
 export default function ClientesPage() {
+  const router = useRouter()
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [busca, setBusca] = useState("")
   const [abrirForm, setAbrirForm] = useState(false)
@@ -48,55 +46,73 @@ export default function ClientesPage() {
     timerRef.current = setTimeout(() => carregar(q), 300)
   }
 
-  if (carregando && !busca) return <p className="text-zinc-400 text-sm py-8 text-center">Carregando...</p>
-
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white">Clientes</h1>
-        <Button onClick={() => setAbrirForm(true)}>
-          <UserPlus size={16} className="mr-2" />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+          Clientes
+        </h1>
+        <button
+          onClick={() => setAbrirForm(true)}
+          className="flex items-center gap-2 bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 transition-all"
+        >
+          <UserPlus size={14} />
           Novo cliente
-        </Button>
+        </button>
       </div>
 
-      <div className="relative mb-4">
-        <Search size={16} className="absolute left-3 top-3 text-zinc-500" />
-        <Input
+      <div className="relative">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555555]" />
+        <input
           value={busca}
           onChange={handleBusca}
           placeholder="Buscar por nome ou telefone..."
-          className="pl-9 bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500"
+          className="w-full bg-[#111111] border border-[#1C1C1C] text-sm text-[#F0F0F0] placeholder:text-[#555555] pl-9 pr-4 py-2.5 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors"
         />
       </div>
 
-      <div className="grid gap-3">
-        {erro && <p className="text-red-400 text-sm text-center py-4">{erro}</p>}
-        {clientes.map((c) => (
-          <Link key={c._id} href={`/clientes/${c._id}`}>
-            <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-600 transition-colors cursor-pointer">
-              <CardContent className="flex items-center justify-between py-4">
-                <div>
-                  <p className="font-medium text-white">{c.nome}</p>
-                  <p className="text-sm text-zinc-400">{c.telefone}</p>
-                  {c.email && <p className="text-sm text-zinc-500">{c.email}</p>}
-                </div>
-                <ChevronRight size={16} className="text-zinc-500" />
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-        {clientes.length === 0 && (
-          <p className="text-zinc-500 text-sm text-center py-8">
-            {busca ? "Nenhum cliente encontrado." : "Nenhum cliente cadastrado ainda."}
-          </p>
-        )}
-      </div>
+      {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
+
+      {carregando && !busca ? (
+        <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#111111] border-b border-[#1C1C1C]">
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Nome</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Telefone</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden md:table-cell">Email</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#1C1C1C]">
+              {clientes.map((c) => (
+                <tr
+                  key={c._id}
+                  className="hover:bg-[#141414] transition-colors cursor-pointer"
+                  onClick={() => router.push(`/clientes/${c._id}`)}
+                >
+                  <td className="py-3 px-4 text-sm font-medium text-[#F0F0F0]">{c.nome}</td>
+                  <td className="py-3 px-4 font-mono text-sm text-[#555555]">{c.telefone}</td>
+                  <td className="py-3 px-4 text-sm text-[#555555] hidden md:table-cell">{c.email ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {clientes.length === 0 && !carregando && (
+            <p className="text-xs text-[#555555] text-center py-8">
+              {busca ? "Nenhum cliente encontrado." : "Nenhum cliente cadastrado ainda."}
+            </p>
+          )}
+        </div>
+      )}
 
       <Dialog open={abrirForm} onOpenChange={setAbrirForm}>
-        <DialogContent className="bg-zinc-900 border-zinc-800">
+        <DialogContent className="bg-[#111111] border-[#1C1C1C]">
           <DialogHeader>
-            <DialogTitle className="text-white">Novo cliente</DialogTitle>
+            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">
+              Novo cliente
+            </DialogTitle>
           </DialogHeader>
           <ClienteForm
             onSalvo={() => { setAbrirForm(false); carregar(busca) }}

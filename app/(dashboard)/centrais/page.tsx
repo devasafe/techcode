@@ -1,13 +1,10 @@
 "use client"
 
 import { useRef, useEffect, useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
+import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CentralForm } from "@/components/centrais/CentralForm"
-import { Search, Plus, ChevronRight, Cpu } from "lucide-react"
+import { Search, Plus } from "lucide-react"
 
 type Central = {
   _id: string
@@ -18,6 +15,7 @@ type Central = {
 }
 
 export default function CentraisPage() {
+  const router = useRouter()
   const [centrais, setCentrais] = useState<Central[]>([])
   const [busca, setBusca] = useState("")
   const [abrirForm, setAbrirForm] = useState(false)
@@ -49,62 +47,75 @@ export default function CentraisPage() {
     timerRef.current = setTimeout(() => carregar(q), 300)
   }
 
-  if (carregando && !busca) return <p className="text-zinc-400 text-sm py-8 text-center">Carregando...</p>
-
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white">Centrais</h1>
-        <Button onClick={() => setAbrirForm(true)}>
-          <Plus size={16} className="mr-2" />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+          Centrais
+        </h1>
+        <button
+          onClick={() => setAbrirForm(true)}
+          className="flex items-center gap-2 bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 transition-all"
+        >
+          <Plus size={14} />
           Nova central
-        </Button>
+        </button>
       </div>
 
-      <div className="relative mb-4">
-        <Search size={16} className="absolute left-3 top-3 text-zinc-500" />
-        <Input
+      <div className="relative">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555555]" />
+        <input
           value={busca}
           onChange={handleBusca}
           placeholder="Buscar por marca, modelo ou código..."
-          className="pl-9 bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500"
+          className="w-full bg-[#111111] border border-[#1C1C1C] text-sm text-[#F0F0F0] placeholder:text-[#555555] pl-9 pr-4 py-2.5 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors"
         />
       </div>
 
-      <div className="grid gap-3">
-        {erro && <p className="text-red-400 text-sm text-center py-4">{erro}</p>}
-        {centrais.map((c) => (
-          <Link key={c._id} href={`/centrais/${c._id}`}>
-            <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-600 transition-colors cursor-pointer">
-              <CardContent className="flex items-center justify-between py-4">
-                <div className="flex items-center gap-3">
-                  <Cpu size={18} className="text-zinc-500 shrink-0" />
-                  <div>
-                    <p className="font-medium text-white">
-                      {c.marca} {c.modelo}
-                    </p>
-                    <p className="text-sm text-zinc-400">Código: {c.codigo}</p>
-                    {c.descricao && (
-                      <p className="text-sm text-zinc-500">{c.descricao}</p>
-                    )}
-                  </div>
-                </div>
-                <ChevronRight size={16} className="text-zinc-500" />
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-        {centrais.length === 0 && (
-          <p className="text-zinc-500 text-sm text-center py-8">
-            {busca ? "Nenhuma central encontrada." : "Nenhuma central cadastrada ainda."}
-          </p>
-        )}
-      </div>
+      {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
+
+      {carregando && !busca ? (
+        <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#111111] border-b border-[#1C1C1C]">
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Marca</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Modelo</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Código</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden md:table-cell">Descrição</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#1C1C1C]">
+              {centrais.map((c) => (
+                <tr
+                  key={c._id}
+                  className="hover:bg-[#141414] transition-colors cursor-pointer"
+                  onClick={() => router.push(`/centrais/${c._id}`)}
+                >
+                  <td className="py-3 px-4 text-sm font-medium text-[#F0F0F0]">{c.marca}</td>
+                  <td className="py-3 px-4 font-mono text-sm text-[#E8FF47]">{c.modelo}</td>
+                  <td className="py-3 px-4 font-mono text-sm text-[#555555]">{c.codigo}</td>
+                  <td className="py-3 px-4 text-sm text-[#555555] hidden md:table-cell">{c.descricao ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {centrais.length === 0 && !carregando && (
+            <p className="text-xs text-[#555555] text-center py-8">
+              {busca ? "Nenhuma central encontrada." : "Nenhuma central cadastrada ainda."}
+            </p>
+          )}
+        </div>
+      )}
 
       <Dialog open={abrirForm} onOpenChange={setAbrirForm}>
-        <DialogContent className="bg-zinc-900 border-zinc-800">
+        <DialogContent className="bg-[#111111] border-[#1C1C1C]">
           <DialogHeader>
-            <DialogTitle className="text-white">Nova central</DialogTitle>
+            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">
+              Nova central
+            </DialogTitle>
           </DialogHeader>
           <CentralForm
             onSalvo={() => { setAbrirForm(false); carregar(busca) }}

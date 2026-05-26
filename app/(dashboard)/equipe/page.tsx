@@ -1,9 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { UsuarioForm } from "@/components/equipe/UsuarioForm"
 import { UserPlus } from "lucide-react"
@@ -17,6 +14,12 @@ type Usuario = {
   ativo: boolean
 }
 
+const PERFIL_STYLE: Record<string, string> = {
+  admin:     "bg-[#2A1500] text-[#FB923C]",
+  tecnico:   "bg-[#0D2A1A] text-[#22C55E]",
+  atendente: "bg-[#1E2A3A] text-[#60A5FA]",
+}
+
 export default function EquipePage() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [abrirForm, setAbrirForm] = useState(false)
@@ -24,8 +27,7 @@ export default function EquipePage() {
   async function carregar() {
     const res = await fetch("/api/usuarios")
     if (!res.ok) return
-    const data = await res.json()
-    setUsuarios(data)
+    setUsuarios(await res.json())
   }
 
   useEffect(() => { carregar() }, [])
@@ -36,56 +38,82 @@ export default function EquipePage() {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white">Equipe</h1>
-        <Button onClick={() => setAbrirForm(true)}>
-          <UserPlus size={16} className="mr-2" />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+          Equipe
+        </h1>
+        <button
+          onClick={() => setAbrirForm(true)}
+          className="flex items-center gap-2 bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 transition-all"
+        >
+          <UserPlus size={14} />
           Novo usuário
-        </Button>
+        </button>
       </div>
 
-      <div className="grid gap-3">
-        {usuarios.map((u) => (
-          <Card key={u._id} className="bg-zinc-900 border-zinc-800">
-            <CardContent className="flex items-center justify-between py-4">
-              <div>
-                <p className="font-medium text-white">{u.nome}</p>
-                <p className="text-sm text-zinc-400">{u.email}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex gap-1">
-                  {u.perfis.map((p) => (
-                    <Badge key={p} variant="secondary" className="text-xs capitalize">
-                      {p}
-                    </Badge>
-                  ))}
-                </div>
-                {u.perfis.includes("tecnico") && (
-                  <span className="text-xs text-zinc-400">{u.comissao_pct}%</span>
-                )}
-                {u.ativo ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-400 hover:text-red-300"
-                    onClick={() => desativar(u._id)}
-                  >
-                    Desativar
-                  </Button>
-                ) : (
-                  <Badge variant="outline" className="text-zinc-500">Inativo</Badge>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-[#111111] border-b border-[#1C1C1C]">
+              <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Nome</th>
+              <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden md:table-cell">Email</th>
+              <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Perfis</th>
+              <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden sm:table-cell">Comissão</th>
+              <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Status</th>
+              <th className="py-2 px-4"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#1C1C1C]">
+            {usuarios.map((u) => (
+              <tr key={u._id} className={`transition-colors ${u.ativo ? "hover:bg-[#141414]" : "opacity-40"}`}>
+                <td className="py-3 px-4 text-sm font-medium text-[#F0F0F0]">{u.nome}</td>
+                <td className="py-3 px-4 text-sm text-[#555555] hidden md:table-cell">{u.email}</td>
+                <td className="py-3 px-4">
+                  <div className="flex gap-1 flex-wrap">
+                    {u.perfis.map((p) => (
+                      <span
+                        key={p}
+                        className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm ${PERFIL_STYLE[p] ?? "bg-[#1C1C1C] text-[#888888]"}`}
+                      >
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+                <td className="py-3 px-4 font-mono text-sm text-[#555555] hidden sm:table-cell">
+                  {u.perfis.includes("tecnico") ? `${u.comissao_pct}%` : "—"}
+                </td>
+                <td className="py-3 px-4">
+                  <span className={`text-[10px] font-semibold uppercase tracking-widest ${u.ativo ? "text-[#22C55E]" : "text-[#555555]"}`}>
+                    {u.ativo ? "Ativo" : "Inativo"}
+                  </span>
+                </td>
+                <td className="py-3 px-4 text-right">
+                  {u.ativo && (
+                    <button
+                      onClick={() => desativar(u._id)}
+                      className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-[#FF4444] transition-colors"
+                    >
+                      Desativar
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {usuarios.length === 0 && (
+          <p className="text-xs text-[#555555] text-center py-8">Nenhum usuário cadastrado.</p>
+        )}
       </div>
 
       <Dialog open={abrirForm} onOpenChange={setAbrirForm}>
-        <DialogContent className="bg-zinc-900 border-zinc-800">
+        <DialogContent className="bg-[#111111] border-[#1C1C1C]">
           <DialogHeader>
-            <DialogTitle className="text-white">Novo usuário</DialogTitle>
+            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">
+              Novo usuário
+            </DialogTitle>
           </DialogHeader>
           <UsuarioForm
             onSalvo={() => { setAbrirForm(false); carregar() }}

@@ -3,10 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { StatusBadge } from "@/components/os/StatusBadge"
-import { Plus, ChevronRight } from "lucide-react"
+import { Plus } from "lucide-react"
 import type { OSStatus } from "@/types"
 
 type OSResumo = {
@@ -26,7 +23,17 @@ const STATUS_TABS: { value: OSStatus | ""; label: string }[] = [
   { value: "na_fila", label: "Na fila" },
   { value: "em_andamento", label: "Em andamento" },
   { value: "concluida", label: "Concluídas" },
+  { value: "devolvida", label: "Devolvidas" },
 ]
+
+const STATUS_BADGE: Record<OSStatus, { label: string; cls: string }> = {
+  aberta:        { label: "Aberta",        cls: "bg-[#1C1C1C] text-[#888888]" },
+  na_fila:       { label: "Na fila",       cls: "bg-[#1E2A3A] text-[#60A5FA]" },
+  em_andamento:  { label: "Em andamento",  cls: "bg-[#2A2000] text-[#F59E0B]" },
+  concluida:     { label: "Concluída",     cls: "bg-[#0D2A1A] text-[#22C55E]" },
+  devolvida:     { label: "Devolvida",     cls: "bg-[#2A0D0D] text-[#FF4444]" },
+  substituida:   { label: "Substituída",   cls: "bg-[#2A1500] text-[#FB923C]" },
+}
 
 export default function OSPage() {
   const router = useRouter()
@@ -52,29 +59,30 @@ export default function OSPage() {
     return () => controller.abort()
   }, [status])
 
-  if (carregando && os.length === 0) {
-    return <p className="text-zinc-400 text-sm py-8 text-center">Carregando...</p>
-  }
-
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white">Ordens de Serviço</h1>
-        <Button onClick={() => router.push("/os/nova")}>
-          <Plus size={16} className="mr-2" />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+          Ordens de Serviço
+        </h1>
+        <button
+          onClick={() => router.push("/os/nova")}
+          className="flex items-center gap-2 bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 transition-all"
+        >
+          <Plus size={14} />
           Nova OS
-        </Button>
+        </button>
       </div>
 
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+      <div className="flex gap-1 overflow-x-auto pb-1">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
             onClick={() => setStatus(tab.value)}
-            className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
+            className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-widest whitespace-nowrap transition-colors rounded-sm ${
               status === tab.value
-                ? "bg-white text-zinc-900 font-medium"
-                : "bg-zinc-800 text-zinc-400 hover:text-white"
+                ? "text-[#E8FF47] border-b border-[#E8FF47]"
+                : "text-[#555555] hover:text-white"
             }`}
           >
             {tab.label}
@@ -82,51 +90,67 @@ export default function OSPage() {
         ))}
       </div>
 
-      {erro && <p className="text-red-400 text-sm text-center py-4">{erro}</p>}
+      {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
 
-      <div className="grid gap-3">
-        {os.map((o) => (
-          <Link key={o._id} href={`/os/${o._id}`}>
-            <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-600 transition-colors cursor-pointer">
-              <CardContent className="py-3 px-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-white font-medium text-sm">OS #{o.numero_os}</span>
-                      <StatusBadge status={o.status} />
-                    </div>
-                    {o.cliente_id && (
-                      <p className="text-sm text-zinc-300">{o.cliente_id.nome}</p>
-                    )}
-                    {o.central_id && (
-                      <p className="text-xs text-zinc-500">
-                        {o.central_id.marca} {o.central_id.modelo}
-                      </p>
-                    )}
-                    <p className="text-xs text-zinc-400 truncate mt-1">{o.defeito_descricao}</p>
-                  </div>
-                  <div className="text-right shrink-0 flex flex-col items-end gap-1">
-                    {o.valor_cobrado > 0 && (
-                      <p className="text-sm text-white">
-                        R$ {o.valor_cobrado.toFixed(2).replace(".", ",")}
-                      </p>
-                    )}
-                    <p className="text-xs text-zinc-500">
+      {carregando && os.length === 0 ? (
+        <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#111111] border-b border-[#1C1C1C]">
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">#</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Cliente</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden md:table-cell">Central</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Status</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right hidden sm:table-cell">Valor</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right hidden lg:table-cell">Data</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#1C1C1C]">
+              {os.map((o) => {
+                const badge = STATUS_BADGE[o.status] ?? STATUS_BADGE.aberta
+                return (
+                  <tr
+                    key={o._id}
+                    className="hover:bg-[#141414] transition-colors cursor-pointer"
+                    onClick={() => router.push(`/os/${o._id}`)}
+                  >
+                    <td className="py-3 px-4 font-mono text-sm text-[#E8FF47]">
+                      #{o.numero_os}
+                    </td>
+                    <td className="py-3 px-4">
+                      <p className="text-sm text-[#F0F0F0]">{o.cliente_id?.nome ?? "—"}</p>
+                      <p className="text-xs text-[#555555] truncate max-w-[180px]">{o.defeito_descricao}</p>
+                    </td>
+                    <td className="py-3 px-4 text-sm text-[#555555] hidden md:table-cell">
+                      {o.central_id ? `${o.central_id.marca} ${o.central_id.modelo}` : "—"}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-1 rounded-sm ${badge.cls}`}>
+                        {badge.label}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-sm text-right text-white hidden sm:table-cell">
+                      {o.valor_cobrado > 0
+                        ? `R$ ${o.valor_cobrado.toFixed(2).replace(".", ",")}`
+                        : "—"}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-sm text-right text-[#555555] hidden lg:table-cell">
                       {new Date(o.created_at).toLocaleDateString("pt-BR")}
-                    </p>
-                    <ChevronRight size={14} className="text-zinc-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-        {!carregando && os.length === 0 && (
-          <p className="text-zinc-500 text-sm text-center py-8">
-            {status ? "Nenhuma OS com este status." : "Nenhuma OS cadastrada ainda."}
-          </p>
-        )}
-      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+          {!carregando && os.length === 0 && (
+            <p className="text-xs text-[#555555] text-center py-8">
+              {status ? "Nenhuma OS com este status." : "Nenhuma OS cadastrada ainda."}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
