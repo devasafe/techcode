@@ -5,8 +5,9 @@ import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Trash2 } from "lucide-react"
+import { ArrowLeft, Trash2, FileDown } from "lucide-react"
 import type { OSStatus } from "@/types"
+import { OSPrint } from "@/components/os/OSPrint"
 
 type Peca = { nome: string; custo: number }
 
@@ -26,6 +27,7 @@ type OS = {
   closed_at?: string
   cliente_id: { _id: string; nome: string; telefone: string } | null
   central_id: { _id: string; marca: string; modelo: string; codigo: string } | null
+  tecnico_id: { _id: string; nome: string } | null
   retornos_garantia: { _id: string; data: string; descricao: string }[]
   devolucao?: {
     tipo: string
@@ -226,13 +228,17 @@ export default function OSDetalhePage() {
   const badge = STATUS_BADGE[os.status] ?? STATUS_BADGE.aberta
   const custoTotal = pecas.reduce((s, p) => s + p.custo, 0)
 
+  function exportarPDF() {
+    window.print()
+  }
+
   return (
     <div className="space-y-4 max-w-2xl">
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
           onClick={() => router.push("/os")}
-          className="text-[#555555] hover:text-white transition-colors"
+          className="text-[#555555] hover:text-white transition-colors print:hidden"
         >
           <ArrowLeft size={16} />
         </button>
@@ -248,6 +254,13 @@ export default function OSDetalhePage() {
             {os.closed_at && ` · Concluída em ${new Date(os.closed_at).toLocaleDateString("pt-BR")}`}
           </p>
         </div>
+        <button
+          onClick={exportarPDF}
+          className="print:hidden flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white border border-[#1C1C1C] hover:border-[#2A2A2A] px-3 py-1.5 rounded-sm transition-colors"
+        >
+          <FileDown size={12} />
+          PDF
+        </button>
       </div>
 
       {/* Ação de status */}
@@ -329,6 +342,12 @@ export default function OSDetalhePage() {
       {os.status === "concluida" && (
         <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-3">Resultado</p>
+          {os.tecnico_id && (
+            <div className="flex justify-between text-xs mb-3">
+              <span className="text-[#555555]">Técnico responsável</span>
+              <span className="text-[#F0F0F0] font-medium">{os.tecnico_id.nome}</span>
+            </div>
+          )}
           {os.pecas.length > 0 && (
             <div className="mb-3 space-y-1">
               <p className="text-[9px] uppercase tracking-widest text-[#555555] mb-1">Peças</p>
@@ -576,6 +595,9 @@ export default function OSDetalhePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* View de impressão — só aparece ao imprimir */}
+      <OSPrint os={os} />
 
       {/* Dialog — Devolução */}
       <Dialog open={abrirDevolucao} onOpenChange={setAbrirDevolucao}>

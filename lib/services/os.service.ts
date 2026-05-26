@@ -35,6 +35,7 @@ export async function buscarOSPorId(id: string) {
   return OS.findById(id)
     .populate("cliente_id", "nome telefone")
     .populate("central_id", "marca modelo codigo")
+    .populate("tecnico_id", "nome")
     .lean()
 }
 
