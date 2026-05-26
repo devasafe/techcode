@@ -123,8 +123,16 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-color: #0C0C0C;
+    color: #F0F0F0;
+    font-family: var(--font-geist), sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
   html {
     @apply font-sans;
   }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: #0C0C0C; }
+  ::-webkit-scrollbar-thumb { background: #1C1C1C; }
 }
