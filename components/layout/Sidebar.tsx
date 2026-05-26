@@ -79,14 +79,14 @@ export function Sidebar({ perfis }: SidebarProps) {
       </aside>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 border-t border-[#1C1C1C] bg-[#0C0C0C] flex items-center h-16 overflow-x-auto scrollbar-hide">
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 border-t border-[#1C1C1C] bg-[#0C0C0C] flex items-center h-16 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
         {itensVisiveis.map((item) => {
           const ativo = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center gap-1 min-w-[64px] h-full px-1 shrink-0 transition-colors ${
+              className={`flex flex-col items-center justify-center gap-1 w-[20%] min-w-[20%] h-full shrink-0 snap-start transition-colors ${
                 ativo ? "text-[#E8FF47]" : "text-[#555555]"
               }`}
             >
@@ -99,7 +99,7 @@ export function Sidebar({ perfis }: SidebarProps) {
         })}
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex flex-col items-center justify-center gap-1 min-w-[64px] h-full px-1 shrink-0 text-[#555555] transition-colors"
+          className="flex flex-col items-center justify-center gap-1 w-[20%] min-w-[20%] h-full shrink-0 snap-start text-[#555555] transition-colors"
         >
           <LogOut size={18} />
           <span className="text-[9px] font-semibold uppercase tracking-widest leading-none">Sair</span>
