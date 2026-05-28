@@ -20,14 +20,14 @@ export type UpdateClienteInput = Partial<CreateClienteInput> & {
 
 export type ScoreCliente = "verde" | "amarelo" | "vermelho"
 
-type StatsOS = { total: number; devolvidas: number; canceladas: number; retornos: number; testes: number }
+type StatsOS = { total: number; devolvidas: number; canceladas: number; retornos: number; testes: number; concluidas: number }
 
 function calcularScore(stats: StatsOS, flagProblematico: boolean): ScoreCliente {
   if (flagProblematico) return "vermelho"
   if (stats.total === 0) return "verde"
-  // devoluções pesam menos (1.5) pois podem acontecer por motivos legítimos
-  // testes frequentes indicam diagnóstico errado (1.5 cada)
-  const pontos = stats.devolvidas * 1.5 + stats.testes * 1.5 + stats.retornos * 1 + stats.canceladas * 0.3
+  const ruim = stats.devolvidas * 1.5 + stats.testes * 1.5 + stats.retornos * 1 + stats.canceladas * 0.3
+  const bom = stats.concluidas * 0.5
+  const pontos = Math.max(0, ruim - bom)
   if (pontos === 0) return "verde"
   if (pontos < 4) return "amarelo"
   return "vermelho"
@@ -44,6 +44,7 @@ async function buscarStatsOS(clienteIds: Types.ObjectId[]) {
         canceladas: { $sum: { $cond: [{ $eq: ["$status", "cancelada"] }, 1, 0] } },
         retornos: { $sum: { $size: { $ifNull: ["$retornos_garantia", []] } } },
         testes: { $sum: { $cond: [{ $eq: ["$tipo_os", "teste"] }, 1, 0] } },
+        concluidas: { $sum: { $cond: [{ $eq: ["$status", "concluida"] }, 1, 0] } },
       },
     },
   ])
@@ -67,7 +68,7 @@ export async function listarClientesComScore(q?: string) {
   const statsMap = new Map(statsRaw.map((s) => [s._id.toString(), s]))
 
   return clientes.map((c) => {
-    const stats = statsMap.get(c._id.toString()) ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0 }
+    const stats = statsMap.get(c._id.toString()) ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0, concluidas: 0 }
     return { ...c, score: calcularScore(stats, c.flag_problematico ?? false), _stats: stats }
   })
 }
@@ -78,7 +79,7 @@ export async function buscarClientePorId(id: string) {
   if (!cliente) return null
 
   const statsRaw = await buscarStatsOS([cliente._id as Types.ObjectId])
-  const stats = statsRaw[0] ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0 }
+  const stats = statsRaw[0] ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0, concluidas: 0 }
   return { ...cliente, score: calcularScore(stats, cliente.flag_problematico ?? false), _stats: stats }
 }
 

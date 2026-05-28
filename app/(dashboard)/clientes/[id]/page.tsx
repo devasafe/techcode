@@ -8,7 +8,7 @@ import { ClienteForm } from "@/components/clientes/ClienteForm"
 import { ArrowLeft, Pencil, Plus, AlertTriangle, ShieldAlert, Save } from "lucide-react"
 import type { ScoreCliente } from "@/lib/services/cliente.service"
 
-type Stats = { total: number; devolvidas: number; canceladas: number; retornos: number; testes: number }
+type Stats = { total: number; devolvidas: number; canceladas: number; retornos: number; testes: number; concluidas: number }
 
 type Cliente = {
   _id: string
@@ -37,6 +37,7 @@ type OSResumo = {
 }
 
 function calcularPontosOS(o: OSResumo): number {
+  if (o.status === "concluida") return -0.5
   let pts = 0
   if (o.status === "devolvida") pts += 1.5
   if (o.tipo_os === "teste") pts += 1.5
@@ -126,7 +127,7 @@ export default function ClientePerfilPage() {
 
   const score = cliente.score ?? "verde"
   const scoreConf = SCORE_CONFIG[score]
-  const stats = cliente._stats ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0 }
+  const stats = cliente._stats ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0, concluidas: 0 }
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -174,10 +175,15 @@ export default function ClientePerfilPage() {
           </div>
 
           {stats.total > 0 && (
-            <div className="flex gap-4 text-[10px]">
+            <div className="flex flex-wrap gap-4 text-[10px]">
               <span className="text-[#555555]">
                 Total <span className="font-mono text-[#F0F0F0]">{stats.total}</span>
               </span>
+              {stats.concluidas > 0 && (
+                <span className="text-[#555555]">
+                  Concluídas <span className="font-mono text-[#22C55E]">{stats.concluidas}</span>
+                </span>
+              )}
               {stats.testes > 0 && (
                 <span className="text-[#555555]">
                   Testes <span className="font-mono text-[#F59E0B]">{stats.testes}</span>
@@ -312,8 +318,10 @@ export default function ClientePerfilPage() {
                       <p className="font-mono text-[10px] text-[#555555]">
                         {new Date(o.created_at).toLocaleDateString("pt-BR")}
                       </p>
-                      {pontos > 0 && (
-                        <p className="font-mono text-[10px] text-[#FF4444]">+{pontos % 1 === 0 ? pontos : pontos.toFixed(1)} pts</p>
+                      {pontos !== 0 && (
+                        <p className={`font-mono text-[10px] ${pontos < 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
+                          {pontos > 0 ? "+" : ""}{pontos % 1 === 0 ? pontos : pontos.toFixed(1)} pts
+                        </p>
                       )}
                     </div>
                   </div>
