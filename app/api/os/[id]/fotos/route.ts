@@ -30,7 +30,7 @@ export async function POST(req: Request, { params }: Params) {
     if (!os) return NextResponse.json({ error: "OS não encontrada" }, { status: 404 })
     return NextResponse.json({ fotos: (os as { fotos?: string[] }).fotos ?? [] })
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
+    const msg = err instanceof Error ? err.message : JSON.stringify(err)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
