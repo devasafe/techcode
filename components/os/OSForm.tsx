@@ -1,12 +1,12 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Upload, X, Loader2 } from "lucide-react"
 
 type ClienteOpcao = { _id: string; nome: string; telefone: string }
 type CentralOpcao = { _id: string; marca: string; modelo: string; codigo: string }
+
+type FotoLocal = { file: File; preview: string }
 
 type OSFormProps = {
   clientePreenchido?: ClienteOpcao
@@ -14,9 +14,13 @@ type OSFormProps = {
   onCancelar: () => void
 }
 
+const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333]"
+const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-1"
+
 export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) {
   const [erro, setErro] = useState("")
   const [carregando, setCarregando] = useState(false)
+  const [progressoFotos, setProgressoFotos] = useState("")
 
   const [clienteId, setClienteId] = useState(clientePreenchido?._id ?? "")
   const [clienteDisplay, setClienteDisplay] = useState(
@@ -33,6 +37,10 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
   const [resultadosCentral, setResultadosCentral] = useState<CentralOpcao[]>([])
   const timerCentral = useRef<ReturnType<typeof setTimeout> | null>(null)
   const abortCentral = useRef<AbortController | null>(null)
+
+  const [defeito, setDefeito] = useState("")
+  const [fotos, setFotos] = useState<FotoLocal[]>([])
+  const inputFotoRef = useRef<HTMLInputElement>(null)
 
   function handleBuscaCliente(e: React.ChangeEvent<HTMLInputElement>) {
     const q = e.target.value
@@ -86,23 +94,37 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
     setResultadosCentral([])
   }
 
+  function handleAdicionarFotos(e: React.ChangeEvent<HTMLInputElement>) {
+    const arquivos = Array.from(e.target.files ?? [])
+    const novas: FotoLocal[] = arquivos.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }))
+    setFotos((prev) => [...prev, ...novas])
+    if (inputFotoRef.current) inputFotoRef.current.value = ""
+  }
+
+  function removerFoto(idx: number) {
+    setFotos((prev) => {
+      URL.revokeObjectURL(prev[idx].preview)
+      return prev.filter((_, i) => i !== idx)
+    })
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!clienteId) { setErro("Selecione um cliente."); return }
     if (!centralId) { setErro("Selecione uma central."); return }
+    if (!defeito.trim()) { setErro("Descreva o defeito."); return }
     setErro("")
     setCarregando(true)
-    const form = new FormData(e.currentTarget)
-    const body = {
-      cliente_id: clienteId,
-      central_id: centralId,
-      defeito_descricao: form.get("defeito_descricao") as string,
-    }
+
     try {
+      // 1. Criar OS
       const res = await fetch("/api/os", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ cliente_id: clienteId, central_id: centralId, defeito_descricao: defeito }),
       })
       if (!res.ok) {
         let data: { error?: string } = {}
@@ -111,42 +133,54 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
         return
       }
       const os = await res.json()
+
+      // 2. Fazer upload das fotos (se houver)
+      if (fotos.length > 0) {
+        for (let i = 0; i < fotos.length; i++) {
+          setProgressoFotos(`Enviando foto ${i + 1}/${fotos.length}...`)
+          const form = new FormData()
+          form.append("foto", fotos[i].file)
+          await fetch(`/api/os/${os._id}/fotos`, { method: "POST", body: form })
+        }
+      }
+
       onSalvo(os._id)
     } catch {
       setErro("Erro de conexão. Tente novamente.")
     } finally {
       setCarregando(false)
+      setProgressoFotos("")
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {/* Cliente */}
-      <div className="space-y-2">
-        <Label>Cliente *</Label>
+      <div>
+        <label className={labelCls}>Cliente *</label>
         {clienteId ? (
           <div className="flex items-center gap-2">
-            <p className="text-white text-sm flex-1 bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2">
+            <span className="flex-1 text-sm text-[#F0F0F0] bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-2 rounded-sm truncate">
               {clienteDisplay}
-            </p>
-            <Button type="button" variant="outline" size="sm"
-              onClick={() => { setClienteId(""); setClienteDisplay("") }}>
-              Trocar
-            </Button>
+            </span>
+            <button type="button" onClick={() => { setClienteId(""); setClienteDisplay("") }}
+              className="text-[#555555] hover:text-white transition-colors shrink-0">
+              <X size={14} />
+            </button>
           </div>
         ) : (
           <div className="relative">
-            <Input
+            <input
               value={buscaCliente}
               onChange={handleBuscaCliente}
               placeholder="Buscar por nome ou telefone..."
-              className="bg-zinc-800 border-zinc-700 text-white"
+              className={inputCls}
             />
             {resultadosCliente.length > 0 && (
-              <div className="absolute z-10 top-full mt-1 w-full bg-zinc-800 border border-zinc-700 rounded-md shadow-lg max-h-48 overflow-auto">
+              <div className="absolute z-10 top-full mt-1 w-full bg-[#111111] border border-[#1C1C1C] rounded-sm shadow-lg max-h-48 overflow-auto">
                 {resultadosCliente.map((c) => (
                   <button key={c._id} type="button" onClick={() => selecionarCliente(c)}
-                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-zinc-700">
+                    className="w-full text-left px-3 py-2 text-sm text-[#F0F0F0] hover:bg-[#1C1C1C]">
                     {c.nome} — {c.telefone}
                   </button>
                 ))}
@@ -157,31 +191,31 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
       </div>
 
       {/* Central */}
-      <div className="space-y-2">
-        <Label>Central *</Label>
+      <div>
+        <label className={labelCls}>Central *</label>
         {centralId ? (
           <div className="flex items-center gap-2">
-            <p className="text-white text-sm flex-1 bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2">
+            <span className="flex-1 text-sm text-[#F0F0F0] bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-2 rounded-sm truncate">
               {centralDisplay}
-            </p>
-            <Button type="button" variant="outline" size="sm"
-              onClick={() => { setCentralId(""); setCentralDisplay("") }}>
-              Trocar
-            </Button>
+            </span>
+            <button type="button" onClick={() => { setCentralId(""); setCentralDisplay("") }}
+              className="text-[#555555] hover:text-white transition-colors shrink-0">
+              <X size={14} />
+            </button>
           </div>
         ) : (
           <div className="relative">
-            <Input
+            <input
               value={buscaCentral}
               onChange={handleBuscaCentral}
               placeholder="Buscar por marca, modelo ou código..."
-              className="bg-zinc-800 border-zinc-700 text-white"
+              className={inputCls}
             />
             {resultadosCentral.length > 0 && (
-              <div className="absolute z-10 top-full mt-1 w-full bg-zinc-800 border border-zinc-700 rounded-md shadow-lg max-h-48 overflow-auto">
+              <div className="absolute z-10 top-full mt-1 w-full bg-[#111111] border border-[#1C1C1C] rounded-sm shadow-lg max-h-48 overflow-auto">
                 {resultadosCentral.map((c) => (
                   <button key={c._id} type="button" onClick={() => selecionarCentral(c)}
-                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-zinc-700">
+                    className="w-full text-left px-3 py-2 text-sm text-[#F0F0F0] hover:bg-[#1C1C1C]">
                     {c.marca} {c.modelo} — {c.codigo}
                   </button>
                 ))}
@@ -192,26 +226,92 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
       </div>
 
       {/* Defeito */}
-      <div className="space-y-2">
-        <Label>Descrição do defeito *</Label>
+      <div>
+        <label className={labelCls}>Descrição do defeito *</label>
         <textarea
-          name="defeito_descricao"
+          value={defeito}
+          onChange={(e) => setDefeito(e.target.value)}
           required
           rows={3}
           placeholder="Descreva o defeito relatado pelo cliente..."
-          className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-zinc-600"
+          className={`${inputCls} resize-none`}
         />
       </div>
 
-      {erro && <p className="text-red-400 text-sm">{erro}</p>}
+      {/* Fotos */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className={labelCls + " mb-0"}>Fotos do defeito</label>
+          <button
+            type="button"
+            onClick={() => inputFotoRef.current?.click()}
+            className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors"
+          >
+            <Upload size={11} />
+            Adicionar
+          </button>
+          <input
+            ref={inputFotoRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleAdicionarFotos}
+          />
+        </div>
 
-      <div className="flex gap-2 pt-2">
-        <Button type="submit" disabled={carregando}>
-          {carregando ? "Criando..." : "Criar OS"}
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancelar}>
+        {fotos.length === 0 ? (
+          <button
+            type="button"
+            onClick={() => inputFotoRef.current?.click()}
+            className="w-full border border-dashed border-[#1C1C1C] rounded-sm py-5 text-xs text-[#333333] hover:border-[#2A2A2A] hover:text-[#555555] transition-colors"
+          >
+            Toque para adicionar fotos
+          </button>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {fotos.map((f, i) => (
+              <div key={i} className="relative aspect-square bg-[#111111] rounded-sm overflow-hidden border border-[#1C1C1C] group">
+                <img src={f.preview} alt="" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removerFoto(i)}
+                  className="absolute top-1 right-1 bg-black/70 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => inputFotoRef.current?.click()}
+              className="aspect-square border border-dashed border-[#1C1C1C] rounded-sm flex items-center justify-center text-[#333333] hover:border-[#2A2A2A] hover:text-[#555555] transition-colors"
+            >
+              <Upload size={16} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {erro && <p className="text-xs text-red-400">{erro}</p>}
+
+      <div className="flex gap-2 pt-1">
+        <button
+          type="submit"
+          disabled={carregando}
+          className="flex-1 py-2.5 text-xs font-semibold uppercase tracking-widest bg-[#E8FF47] text-black rounded-sm hover:bg-[#d4eb3a] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+        >
+          {carregando && <Loader2 size={12} className="animate-spin" />}
+          {progressoFotos || (carregando ? "Criando..." : "Criar OS")}
+        </button>
+        <button
+          type="button"
+          onClick={onCancelar}
+          disabled={carregando}
+          className="px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-[#555555] hover:text-white border border-[#1C1C1C] rounded-sm transition-colors disabled:opacity-50"
+        >
           Cancelar
-        </Button>
+        </button>
       </div>
     </form>
   )
