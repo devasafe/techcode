@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Trash2, FileDown } from "lucide-react"
+import { ArrowLeft, Trash2, FileDown, Pencil } from "lucide-react"
 import type { OSStatus } from "@/types"
 import { OSPrint } from "@/components/os/OSPrint"
 
@@ -29,6 +29,7 @@ type OS = {
   cliente_id: { _id: string; nome: string; telefone: string } | null
   central_id: { _id: string; marca: string; modelo: string; codigo: string } | null
   tecnico_id: { _id: string; nome: string } | null
+  fotos: string[]
   retornos_garantia: { _id: string; data: string; descricao: string }[]
   devolucao?: {
     tipo: string
@@ -293,6 +294,13 @@ export default function OSDetalhePage() {
           </p>
         </div>
         <div className="print:hidden flex items-center gap-2">
+          <button
+            onClick={() => router.push(`/os/${id}/editar`)}
+            className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white border border-[#1C1C1C] hover:border-[#2A2A2A] px-3 py-1.5 rounded-sm transition-colors"
+          >
+            <Pencil size={12} />
+            Editar
+          </button>
           {PODE_CANCELAR.includes(os.status) && (
             <button
               onClick={() => setAbrirCancelar(true)}
@@ -377,6 +385,23 @@ export default function OSDetalhePage() {
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-2">Defeito relatado</p>
         <p className="text-sm text-[#F0F0F0]">{os.defeito_descricao}</p>
       </div>
+
+      {/* Fotos */}
+      {os.fotos && os.fotos.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-2">
+            Fotos do defeito
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {os.fotos.map((url: string) => (
+              <a key={url} href={url} target="_blank" rel="noopener noreferrer"
+                className="aspect-square bg-[#111111] rounded-sm overflow-hidden border border-[#1C1C1C] block hover:border-[#E8FF47] transition-colors">
+                <img src={url} alt="Foto do defeito" className="w-full h-full object-cover" />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Cancelamento */}
       {os.status === "cancelada" && (

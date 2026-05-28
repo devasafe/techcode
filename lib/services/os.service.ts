@@ -14,6 +14,9 @@ export type CreateOSInput = {
 
 export type UpdateOSInput = {
   status?: OSStatus
+  cliente_id?: string
+  central_id?: string
+  defeito_descricao?: string
   solucao_descricao?: string
   pecas?: { nome: string; custo: number }[]
   valor_cobrado?: number
@@ -53,6 +56,9 @@ export async function atualizarOS(id: string, data: UpdateOSInput) {
   const update: Record<string, unknown> = {}
 
   if (data.status !== undefined) update.status = data.status
+  if (data.cliente_id !== undefined) update.cliente_id = data.cliente_id
+  if (data.central_id !== undefined) update.central_id = data.central_id
+  if (data.defeito_descricao !== undefined) update.defeito_descricao = data.defeito_descricao
   if (data.solucao_descricao !== undefined) update.solucao_descricao = data.solucao_descricao
   if (data.tecnico_id !== undefined) update.tecnico_id = data.tecnico_id
   if (data.valor_cobrado !== undefined) update.valor_cobrado = data.valor_cobrado

@@ -1,10 +1,20 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CentralForm } from "@/components/centrais/CentralForm"
-import { ArrowLeft, Pencil, Wrench } from "lucide-react"
+import { ArrowLeft, Pencil, Wrench, Upload, Trash2, FileText, Image, File, Loader2, ExternalLink } from "lucide-react"
+
+type Arquivo = {
+  _id: string
+  nome: string
+  url: string
+  public_id: string
+  tipo: "imagem" | "pdf" | "outro"
+  tamanho: number
+  created_at: string
+}
 
 type Central = {
   _id: string
@@ -12,6 +22,7 @@ type Central = {
   modelo: string
   codigo: string
   descricao?: string
+  arquivos: Arquivo[]
 }
 
 type Reparo = {
@@ -23,6 +34,18 @@ type Reparo = {
   cliente_id: { nome: string } | null
 }
 
+function IconeArquivo({ tipo }: { tipo: Arquivo["tipo"] }) {
+  if (tipo === "imagem") return <Image size={14} className="text-[#60A5FA]" />
+  if (tipo === "pdf") return <FileText size={14} className="text-[#FF4444]" />
+  return <File size={14} className="text-[#555555]" />
+}
+
+function formatarTamanho(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
 export default function CentralDetalhePage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -30,6 +53,9 @@ export default function CentralDetalhePage() {
   const [reparos, setReparos] = useState<Reparo[]>([])
   const [editando, setEditando] = useState(false)
   const [carregando, setCarregando] = useState(true)
+  const [uploadando, setUploadando] = useState(false)
+  const [removendo, setRemovendo] = useState<string | null>(null)
+  const inputArquivoRef = useRef<HTMLInputElement>(null)
 
   async function carregar() {
     setCarregando(true)
@@ -52,16 +78,49 @@ export default function CentralDetalhePage() {
 
   useEffect(() => { carregar() }, [id])
 
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = e.target.files?.[0]
+    if (!arquivo || !central) return
+    setUploadando(true)
+    try {
+      const form = new FormData()
+      form.append("arquivo", arquivo)
+      const res = await fetch(`/api/centrais/${id}/arquivos`, { method: "POST", body: form })
+      if (res.ok) {
+        const data = await res.json()
+        setCentral((prev) => prev ? { ...prev, arquivos: data.arquivos } : prev)
+      }
+    } finally {
+      setUploadando(false)
+      if (inputArquivoRef.current) inputArquivoRef.current.value = ""
+    }
+  }
+
+  async function handleRemover(arq: Arquivo) {
+    setRemovendo(arq._id)
+    try {
+      const res = await fetch(`/api/centrais/${id}/arquivos`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ arquivo_id: arq._id, public_id: arq.public_id, tipo: arq.tipo }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setCentral((prev) => prev ? { ...prev, arquivos: data.arquivos } : prev)
+      }
+    } finally {
+      setRemovendo(null)
+    }
+  }
+
   if (carregando) return <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
   if (!central) return null
 
   return (
     <div className="space-y-6 max-w-2xl">
+      {/* Cabeçalho */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => router.push("/centrais")}
-          className="text-[#555555] hover:text-white transition-colors"
-        >
+        <button onClick={() => router.push("/centrais")} className="text-[#555555] hover:text-white transition-colors">
           <ArrowLeft size={16} />
         </button>
         <div className="flex-1">
@@ -83,6 +142,75 @@ export default function CentralDetalhePage() {
         <p className="text-sm text-[#555555]">{central.descricao}</p>
       )}
 
+      {/* Arquivos */}
+      <div>
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#1C1C1C]">
+          <div className="flex items-center gap-2">
+            <File size={12} className="text-[#555555]" />
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Arquivos</span>
+            {central.arquivos.length > 0 && (
+              <span className="font-mono text-xs text-[#555555]">{central.arquivos.length}</span>
+            )}
+          </div>
+          <button
+            onClick={() => inputArquivoRef.current?.click()}
+            disabled={uploadando}
+            className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors disabled:opacity-50"
+          >
+            {uploadando ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+            {uploadando ? "Enviando..." : "Adicionar"}
+          </button>
+          <input
+            ref={inputArquivoRef}
+            type="file"
+            accept="image/*,.pdf,.zip,.rar,.txt,.doc,.docx,.xls,.xlsx"
+            className="hidden"
+            onChange={handleUpload}
+          />
+        </div>
+
+        {central.arquivos.length === 0 ? (
+          <div className="border border-dashed border-[#1C1C1C] rounded-sm p-6 text-center">
+            <p className="text-xs text-[#555555]">Nenhum arquivo adicionado.</p>
+            <p className="text-[10px] text-[#333333] mt-1">Manuais, esquemas elétricos, PDFs, imagens...</p>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {central.arquivos.map((arq) => (
+              <div key={arq._id} className="flex items-center gap-3 bg-[#111111] border border-[#1C1C1C] rounded-sm px-3 py-2.5 group">
+                <IconeArquivo tipo={arq.tipo} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-[#F0F0F0] truncate">{arq.nome}</p>
+                  <p className="text-[10px] text-[#555555]">
+                    {formatarTamanho(arq.tamanho)} · {new Date(arq.created_at).toLocaleDateString("pt-BR")}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <a
+                    href={arq.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#555555] hover:text-white transition-colors"
+                  >
+                    <ExternalLink size={12} />
+                  </a>
+                  <button
+                    onClick={() => handleRemover(arq)}
+                    disabled={removendo === arq._id}
+                    className="text-[#555555] hover:text-[#FF4444] transition-colors disabled:opacity-50"
+                  >
+                    {removendo === arq._id
+                      ? <Loader2 size={12} className="animate-spin" />
+                      : <Trash2 size={12} />}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Base de Conhecimento */}
       <div>
         <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[#1C1C1C]">
           <Wrench size={12} className="text-[#555555]" />
