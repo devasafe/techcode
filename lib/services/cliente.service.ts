@@ -67,7 +67,7 @@ export async function listarClientesComScore(q?: string) {
   const statsMap = new Map(statsRaw.map((s) => [s._id.toString(), s]))
 
   return clientes.map((c) => {
-    const stats = statsMap.get(c._id.toString()) ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0 }
+    const stats = statsMap.get(c._id.toString()) ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0 }
     return { ...c, score: calcularScore(stats, c.flag_problematico ?? false), _stats: stats }
   })
 }
@@ -78,7 +78,7 @@ export async function buscarClientePorId(id: string) {
   if (!cliente) return null
 
   const statsRaw = await buscarStatsOS([cliente._id as Types.ObjectId])
-  const stats = statsRaw[0] ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0 }
+  const stats = statsRaw[0] ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0 }
   return { ...cliente, score: calcularScore(stats, cliente.flag_problematico ?? false), _stats: stats }
 }
 
