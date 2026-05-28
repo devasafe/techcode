@@ -63,7 +63,9 @@ export async function buscarEstatisticas() {
   const now = new Date()
   const inicioMes = new Date(now.getFullYear(), now.getMonth(), 1)
 
-  const [porStatusRaw, totaisGeral, totaisMes, recentes, comissoesGeralRaw, comissoesMesRaw] =
+  const em7dias = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+  const [porStatusRaw, totaisGeral, totaisMes, recentes, comissoesGeralRaw, comissoesMesRaw, garantiasRaw] =
     await Promise.all([
       OS.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
       OS.aggregate([
@@ -108,6 +110,11 @@ export async function buscarEstatisticas() {
         { $match: { created_at: { $gte: inicioMes } } },
         { $group: { _id: null, total: { $sum: "$valor_comissao" } } },
       ]),
+      OS.find({ status: "concluida", garantia_ate: { $gte: now, $lte: em7dias } })
+        .sort({ garantia_ate: 1 })
+        .populate("cliente_id", "nome telefone")
+        .populate("central_id", "marca modelo")
+        .lean(),
     ])
 
   const por_status = Object.fromEntries(
@@ -124,6 +131,7 @@ export async function buscarEstatisticas() {
     totais: { ...geral, lucro: geral.lucro - comissoesGeral, comissoes: comissoesGeral },
     mes: { ...mes, lucro: mes.lucro - comissoesMes },
     recentes,
+    garantias_proximas: garantiasRaw,
   }
 }
 

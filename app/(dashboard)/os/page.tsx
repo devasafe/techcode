@@ -1,9 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Plus } from "lucide-react"
+import { Plus, Search, X } from "lucide-react"
 import type { OSStatus } from "@/types"
 
 type OSResumo = {
@@ -41,6 +40,7 @@ export default function OSPage() {
   const router = useRouter()
   const [os, setOS] = useState<OSResumo[]>([])
   const [status, setStatus] = useState<OSStatus | "">("")
+  const [busca, setBusca] = useState("")
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState("")
 
@@ -61,8 +61,18 @@ export default function OSPage() {
     return () => controller.abort()
   }, [status])
 
+  const q = busca.toLowerCase().trim()
+  const osFiltradas = q
+    ? os.filter((o) =>
+        String(o.numero_os).includes(q) ||
+        (o.cliente_id?.nome ?? "").toLowerCase().includes(q) ||
+        (o.central_id ? `${o.central_id.marca} ${o.central_id.modelo} ${o.central_id.codigo}`.toLowerCase() : "").includes(q) ||
+        o.defeito_descricao.toLowerCase().includes(q)
+      )
+    : os
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
           Ordens de Serviço
@@ -76,6 +86,23 @@ export default function OSPage() {
         </button>
       </div>
 
+      {/* Busca */}
+      <div className="relative">
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555555]" />
+        <input
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Buscar por nº, cliente, central ou defeito..."
+          className="w-full bg-[#111111] border border-[#1C1C1C] text-sm text-[#F0F0F0] pl-8 pr-8 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333]"
+        />
+        {busca && (
+          <button onClick={() => setBusca("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555555] hover:text-white">
+            <X size={13} />
+          </button>
+        )}
+      </div>
+
+      {/* Filtro por status */}
       <div className="flex gap-1 overflow-x-auto pb-1">
         {STATUS_TABS.map((tab) => (
           <button
@@ -110,7 +137,7 @@ export default function OSPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1C1C1C]">
-              {os.map((o) => {
+              {osFiltradas.map((o) => {
                 const badge = STATUS_BADGE[o.status] ?? STATUS_BADGE.aberta
                 return (
                   <tr
@@ -146,9 +173,9 @@ export default function OSPage() {
               })}
             </tbody>
           </table>
-          {!carregando && os.length === 0 && (
+          {!carregando && osFiltradas.length === 0 && (
             <p className="text-xs text-[#555555] text-center py-8">
-              {status ? "Nenhuma OS com este status." : "Nenhuma OS cadastrada ainda."}
+              {busca ? "Nenhuma OS encontrada para essa busca." : status ? "Nenhuma OS com este status." : "Nenhuma OS cadastrada ainda."}
             </p>
           )}
         </div>
