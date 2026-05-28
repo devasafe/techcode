@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CentralForm } from "@/components/centrais/CentralForm"
-import { ArrowLeft, Pencil, Wrench, Upload, Trash2, FileText, Image, File, Loader2, ExternalLink } from "lucide-react"
+import { ArrowLeft, Pencil, Wrench, Upload, Trash2, FileText, Image, File, Loader2, ExternalLink, X } from "lucide-react"
 
 type Arquivo = {
   _id: string
@@ -56,6 +56,7 @@ export default function CentralDetalhePage() {
   const [uploadando, setUploadando] = useState(false)
   const [removendo, setRemovendo] = useState<string | null>(null)
   const inputArquivoRef = useRef<HTMLInputElement>(null)
+  const inputFotoRef = useRef<HTMLInputElement>(null)
 
   async function carregar() {
     setCarregando(true)
@@ -93,6 +94,7 @@ export default function CentralDetalhePage() {
     } finally {
       setUploadando(false)
       if (inputArquivoRef.current) inputArquivoRef.current.value = ""
+      if (inputFotoRef.current) inputFotoRef.current.value = ""
     }
   }
 
@@ -142,73 +144,114 @@ export default function CentralDetalhePage() {
         <p className="text-sm text-[#555555]">{central.descricao}</p>
       )}
 
-      {/* Arquivos */}
-      <div>
-        <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#1C1C1C]">
-          <div className="flex items-center gap-2">
-            <File size={12} className="text-[#555555]" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Arquivos</span>
-            {central.arquivos.length > 0 && (
-              <span className="font-mono text-xs text-[#555555]">{central.arquivos.length}</span>
+      <input ref={inputFotoRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+      <input ref={inputArquivoRef} type="file" accept=".pdf,.zip,.rar,.txt,.doc,.docx,.xls,.xlsx" className="hidden" onChange={handleUpload} />
+
+      {/* Fotos */}
+      {(() => {
+        const fotos = central.arquivos.filter((a) => a.tipo === "imagem")
+        return (
+          <div>
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#1C1C1C]">
+              <div className="flex items-center gap-2">
+                <Image size={12} className="text-[#555555]" />
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Fotos</span>
+                {fotos.length > 0 && (
+                  <span className="font-mono text-xs text-[#555555]">{fotos.length}</span>
+                )}
+              </div>
+              <button
+                onClick={() => inputFotoRef.current?.click()}
+                disabled={uploadando}
+                className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors disabled:opacity-50"
+              >
+                {uploadando ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                {uploadando ? "Enviando..." : "Adicionar"}
+              </button>
+            </div>
+            {fotos.length === 0 ? (
+              <div className="border border-dashed border-[#1C1C1C] rounded-sm p-6 text-center">
+                <p className="text-xs text-[#555555]">Nenhuma foto adicionada.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {fotos.map((arq) => (
+                  <div key={arq._id} className="relative group aspect-square bg-[#111111] rounded-sm overflow-hidden border border-[#1C1C1C]">
+                    <a href={arq.url} target="_blank" rel="noopener noreferrer">
+                      <img src={arq.url} alt={arq.nome} className="w-full h-full object-cover" />
+                    </a>
+                    <button
+                      onClick={() => handleRemover(arq)}
+                      disabled={removendo === arq._id}
+                      className="absolute top-1 right-1 bg-black/70 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                    >
+                      {removendo === arq._id ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />}
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
-          <button
-            onClick={() => inputArquivoRef.current?.click()}
-            disabled={uploadando}
-            className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors disabled:opacity-50"
-          >
-            {uploadando ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-            {uploadando ? "Enviando..." : "Adicionar"}
-          </button>
-          <input
-            ref={inputArquivoRef}
-            type="file"
-            accept="image/*,.pdf,.zip,.rar,.txt,.doc,.docx,.xls,.xlsx"
-            className="hidden"
-            onChange={handleUpload}
-          />
-        </div>
+        )
+      })()}
 
-        {central.arquivos.length === 0 ? (
-          <div className="border border-dashed border-[#1C1C1C] rounded-sm p-6 text-center">
-            <p className="text-xs text-[#555555]">Nenhum arquivo adicionado.</p>
-            <p className="text-[10px] text-[#333333] mt-1">Manuais, esquemas elétricos, PDFs, imagens...</p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {central.arquivos.map((arq) => (
-              <div key={arq._id} className="flex items-center gap-3 bg-[#111111] border border-[#1C1C1C] rounded-sm px-3 py-2.5 group">
-                <IconeArquivo tipo={arq.tipo} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[#F0F0F0] truncate">{arq.nome}</p>
-                  <p className="text-[10px] text-[#555555]">
-                    {formatarTamanho(arq.tamanho)} · {new Date(arq.created_at).toLocaleDateString("pt-BR")}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <a
-                    href={arq.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#555555] hover:text-white transition-colors"
-                  >
-                    <ExternalLink size={12} />
-                  </a>
-                  <button
-                    onClick={() => handleRemover(arq)}
-                    disabled={removendo === arq._id}
-                    className="text-[#555555] hover:text-[#FF4444] transition-colors disabled:opacity-50"
-                  >
-                    {removendo === arq._id
-                      ? <Loader2 size={12} className="animate-spin" />
-                      : <Trash2 size={12} />}
-                  </button>
-                </div>
+      {/* Arquivos */}
+      {(() => {
+        const docs = central.arquivos.filter((a) => a.tipo !== "imagem")
+        return (
+          <div>
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#1C1C1C]">
+              <div className="flex items-center gap-2">
+                <File size={12} className="text-[#555555]" />
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Arquivos</span>
+                {docs.length > 0 && (
+                  <span className="font-mono text-xs text-[#555555]">{docs.length}</span>
+                )}
               </div>
-            ))}
+              <button
+                onClick={() => inputArquivoRef.current?.click()}
+                disabled={uploadando}
+                className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors disabled:opacity-50"
+              >
+                {uploadando ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                {uploadando ? "Enviando..." : "Adicionar"}
+              </button>
+            </div>
+            {docs.length === 0 ? (
+              <div className="border border-dashed border-[#1C1C1C] rounded-sm p-6 text-center">
+                <p className="text-xs text-[#555555]">Nenhum arquivo adicionado.</p>
+                <p className="text-[10px] text-[#333333] mt-1">Manuais, esquemas elétricos, PDFs...</p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {docs.map((arq) => (
+                  <div key={arq._id} className="flex items-center gap-3 bg-[#111111] border border-[#1C1C1C] rounded-sm px-3 py-2.5 group">
+                    <IconeArquivo tipo={arq.tipo} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-[#F0F0F0] truncate">{arq.nome}</p>
+                      <p className="text-[10px] text-[#555555]">
+                        {formatarTamanho(arq.tamanho)} · {new Date(arq.created_at).toLocaleDateString("pt-BR")}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <a href={arq.url} target="_blank" rel="noopener noreferrer" className="text-[#555555] hover:text-white transition-colors">
+                        <ExternalLink size={12} />
+                      </a>
+                      <button
+                        onClick={() => handleRemover(arq)}
+                        disabled={removendo === arq._id}
+                        className="text-[#555555] hover:text-[#FF4444] transition-colors disabled:opacity-50"
+                      >
+                        {removendo === arq._id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        )
+      })()}
 
       {/* Base de Conhecimento */}
       <div>
