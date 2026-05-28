@@ -28,6 +28,7 @@ function EditarOSContent() {
   const [centralDisplay, setCentralDisplay] = useState("")
   const [defeito, setDefeito] = useState("")
   const [tipoCliente, setTipoCliente] = useState<"mecanico" | "usuario" | "">("")
+  const [tipoOS, setTipoOS] = useState<"reparo" | "teste" | "">("")
   const [tecnicoId, setTecnicoId] = useState("")
 
   // Buscas
@@ -61,6 +62,7 @@ function EditarOSContent() {
       setCentralDisplay(os.central_id ? `${os.central_id.marca} ${os.central_id.modelo} — ${os.central_id.codigo}` : "")
       setDefeito(os.defeito_descricao ?? "")
       setTipoCliente(os.tipo_cliente ?? "")
+      setTipoOS(os.tipo_os ?? "")
       setTecnicoId(os.tecnico_id?._id ?? "")
       setFotos(os.fotos ?? [])
       setTecnicos(tecnicosData)
@@ -153,6 +155,7 @@ function EditarOSContent() {
         defeito_descricao: defeito,
       }
       if (tipoCliente) body.tipo_cliente = tipoCliente
+      if (tipoOS) body.tipo_os = tipoOS
       if (tecnicoId) body.tecnico_id = tecnicoId
       const res = await fetch(`/api/os/${id}`, {
         method: "PUT",
@@ -284,24 +287,47 @@ function EditarOSContent() {
           />
         </div>
 
-        {/* Tipo de cliente */}
-        <div>
-          <label className={labelCls}>Tipo de cliente</label>
-          <div className="flex gap-2">
-            {(["usuario", "mecanico"] as const).map((tipo) => (
-              <button
-                key={tipo}
-                type="button"
-                onClick={() => setTipoCliente(tipoCliente === tipo ? "" : tipo)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-semibold uppercase tracking-widest border transition-colors ${
-                  tipoCliente === tipo
-                    ? "bg-[#E8FF47] text-black border-[#E8FF47]"
-                    : "bg-transparent text-[#555555] border-[#1C1C1C] hover:border-[#555555]"
-                }`}
-              >
-                {tipo === "usuario" ? "Usuário" : "Mecânico"}
-              </button>
-            ))}
+        {/* Tipo de cliente + tipo de OS */}
+        <div className="flex gap-6">
+          <div>
+            <label className={labelCls}>Tipo de cliente</label>
+            <div className="flex gap-2">
+              {(["usuario", "mecanico"] as const).map((tipo) => (
+                <button
+                  key={tipo}
+                  type="button"
+                  onClick={() => setTipoCliente(tipoCliente === tipo ? "" : tipo)}
+                  className={`px-3 py-1.5 rounded-sm text-xs font-semibold uppercase tracking-widest border transition-colors ${
+                    tipoCliente === tipo
+                      ? "bg-[#E8FF47] text-black border-[#E8FF47]"
+                      : "bg-transparent text-[#555555] border-[#1C1C1C] hover:border-[#555555]"
+                  }`}
+                >
+                  {tipo === "usuario" ? "Usuário" : "Mecânico"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Tipo de OS</label>
+            <div className="flex gap-2">
+              {(["reparo", "teste"] as const).map((tipo) => (
+                <button
+                  key={tipo}
+                  type="button"
+                  onClick={() => setTipoOS(tipoOS === tipo ? "" : tipo)}
+                  className={`px-3 py-1.5 rounded-sm text-xs font-semibold uppercase tracking-widest border transition-colors ${
+                    tipoOS === tipo
+                      ? tipo === "teste"
+                        ? "bg-[#F59E0B] text-black border-[#F59E0B]"
+                        : "bg-[#E8FF47] text-black border-[#E8FF47]"
+                      : "bg-transparent text-[#555555] border-[#1C1C1C] hover:border-[#555555]"
+                  }`}
+                >
+                  {tipo === "reparo" ? "Reparo" : "Teste"}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

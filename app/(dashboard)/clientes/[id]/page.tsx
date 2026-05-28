@@ -8,7 +8,7 @@ import { ClienteForm } from "@/components/clientes/ClienteForm"
 import { ArrowLeft, Pencil, Plus, AlertTriangle, ShieldAlert, Save } from "lucide-react"
 import type { ScoreCliente } from "@/lib/services/cliente.service"
 
-type Stats = { total: number; devolvidas: number; canceladas: number; retornos: number }
+type Stats = { total: number; devolvidas: number; canceladas: number; retornos: number; testes: number }
 
 type Cliente = {
   _id: string
@@ -114,7 +114,7 @@ export default function ClientePerfilPage() {
 
   const score = cliente.score ?? "verde"
   const scoreConf = SCORE_CONFIG[score]
-  const stats = cliente._stats ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0 }
+  const stats = cliente._stats ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0 }
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -166,6 +166,11 @@ export default function ClientePerfilPage() {
               <span className="text-[#555555]">
                 Total <span className="font-mono text-[#F0F0F0]">{stats.total}</span>
               </span>
+              {stats.testes > 0 && (
+                <span className="text-[#555555]">
+                  Testes <span className="font-mono text-[#F59E0B]">{stats.testes}</span>
+                </span>
+              )}
               {stats.devolvidas > 0 && (
                 <span className="text-[#555555]">
                   Devoluções <span className="font-mono text-[#FF4444]">{stats.devolvidas}</span>
