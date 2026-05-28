@@ -69,10 +69,15 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
     setClienteDisplay(`${c.nome} — ${c.telefone}`)
     setBuscaCliente("")
     setResultadosCliente([])
-    // busca score do cliente selecionado
+    // busca score e dados completos do cliente selecionado
     fetch(`/api/clientes/${c._id}`)
       .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (data) setClienteScore(data) })
+      .then((data) => {
+        if (data) {
+          setClienteScore(data)
+          if (data.tipo_cliente) setTipoCliente(data.tipo_cliente)
+        }
+      })
       .catch(() => {})
   }
 

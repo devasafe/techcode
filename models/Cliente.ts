@@ -8,6 +8,7 @@ export interface ICliente extends Document {
   endereco?: string
   observacao?: string
   flag_problematico: boolean
+  tipo_cliente?: "mecanico" | "usuario"
   created_at: Date
 }
 
@@ -19,6 +20,7 @@ const ClienteSchema = new Schema<ICliente>({
   endereco: String,
   observacao: String,
   flag_problematico: { type: Boolean, default: false },
+  tipo_cliente: { type: String, enum: ["mecanico", "usuario"] },
   created_at: { type: Date, default: Date.now },
 })
 

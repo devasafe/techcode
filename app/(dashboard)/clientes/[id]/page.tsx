@@ -19,6 +19,7 @@ type Cliente = {
   endereco?: string
   observacao?: string
   flag_problematico: boolean
+  tipo_cliente?: "mecanico" | "usuario"
   score: ScoreCliente
   _stats: Stats
 }
@@ -217,6 +218,16 @@ export default function ClientePerfilPage() {
       <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 space-y-3">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Dados de contato</p>
         <div className="space-y-2">
+          {cliente.tipo_cliente && (
+            <div className="flex gap-4">
+              <span className="text-[10px] uppercase tracking-widest text-[#555555] w-20 shrink-0">Tipo</span>
+              <span className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm ${
+                cliente.tipo_cliente === "mecanico" ? "bg-[#1E2A3A] text-[#60A5FA]" : "bg-[#1C1C1C] text-[#888888]"
+              }`}>
+                {cliente.tipo_cliente === "mecanico" ? "Mecânico" : "Usuário"}
+              </span>
+            </div>
+          )}
           <div className="flex gap-4">
             <span className="text-[10px] uppercase tracking-widest text-[#555555] w-20 shrink-0">Telefone</span>
             <span className="font-mono text-sm text-[#F0F0F0]">{cliente.telefone}</span>

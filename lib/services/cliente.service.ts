@@ -10,6 +10,7 @@ export type CreateClienteInput = {
   email?: string
   cpf_cnpj?: string
   endereco?: string
+  tipo_cliente?: "mecanico" | "usuario"
 }
 
 export type UpdateClienteInput = Partial<CreateClienteInput> & {
