@@ -265,7 +265,11 @@ export default function CentralDetalhePage() {
 
         <div className="space-y-3">
           {reparos.map((r) => (
-            <div key={r._id} className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4">
+            <div
+              key={r._id}
+              onClick={() => router.push(`/os/${r._id}`)}
+              className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 cursor-pointer hover:border-[#2A2A2A] hover:bg-[#141414] transition-colors"
+            >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs text-[#E8FF47]">#{r.numero_os}</span>
