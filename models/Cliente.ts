@@ -6,6 +6,8 @@ export interface ICliente extends Document {
   email?: string
   cpf_cnpj?: string
   endereco?: string
+  observacao?: string
+  flag_problematico: boolean
   created_at: Date
 }
 
@@ -15,6 +17,8 @@ const ClienteSchema = new Schema<ICliente>({
   email: { type: String, trim: true, lowercase: true },
   cpf_cnpj: String,
   endereco: String,
+  observacao: String,
+  flag_problematico: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now },
 })
 

@@ -5,12 +5,20 @@ import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ClienteForm } from "@/components/clientes/ClienteForm"
 import { Search, UserPlus } from "lucide-react"
+import type { ScoreCliente } from "@/lib/services/cliente.service"
 
 type Cliente = {
   _id: string
   nome: string
   telefone: string
   email?: string
+  score: ScoreCliente
+}
+
+const SCORE_DOT: Record<ScoreCliente, string> = {
+  verde:    "bg-[#22C55E]",
+  amarelo:  "bg-[#F59E0B]",
+  vermelho: "bg-[#FF4444]",
 }
 
 export default function ClientesPage() {
@@ -26,8 +34,9 @@ export default function ClientesPage() {
     setCarregando(true)
     setErro("")
     try {
-      const params = q ? `?q=${encodeURIComponent(q)}` : ""
-      const res = await fetch(`/api/clientes${params}`)
+      const params = new URLSearchParams({ score: "1" })
+      if (q) params.set("q", q)
+      const res = await fetch(`/api/clientes?${params}`)
       if (!res.ok) { setErro("Erro ao carregar clientes."); return }
       setClientes(await res.json())
     } catch {
@@ -49,9 +58,7 @@ export default function ClientesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
-          Clientes
-        </h1>
+        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">Clientes</h1>
         <button
           onClick={() => setAbrirForm(true)}
           className="flex items-center gap-2 bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 transition-all"
@@ -92,7 +99,12 @@ export default function ClientesPage() {
                   className="hover:bg-[#141414] transition-colors cursor-pointer"
                   onClick={() => router.push(`/clientes/${c._id}`)}
                 >
-                  <td className="py-3 px-4 text-sm font-medium text-[#F0F0F0]">{c.nome}</td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <span className={`shrink-0 w-2 h-2 rounded-full ${SCORE_DOT[c.score ?? "verde"]}`} />
+                      <span className="text-sm font-medium text-[#F0F0F0]">{c.nome}</span>
+                    </div>
+                  </td>
                   <td className="py-3 px-4 font-mono text-sm text-[#555555]">{c.telefone}</td>
                   <td className="py-3 px-4 text-sm text-[#555555] hidden md:table-cell">{c.email ?? "—"}</td>
                 </tr>
@@ -110,9 +122,7 @@ export default function ClientesPage() {
       <Dialog open={abrirForm} onOpenChange={setAbrirForm}>
         <DialogContent className="bg-[#111111] border-[#1C1C1C]">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">
-              Novo cliente
-            </DialogTitle>
+            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">Novo cliente</DialogTitle>
           </DialogHeader>
           <ClienteForm
             onSalvo={() => { setAbrirForm(false); carregar(busca) }}

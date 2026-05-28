@@ -1,9 +1,9 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Upload, X, Loader2 } from "lucide-react"
+import { Upload, X, Loader2, AlertTriangle } from "lucide-react"
 
-type ClienteOpcao = { _id: string; nome: string; telefone: string }
+type ClienteOpcao = { _id: string; nome: string; telefone: string; score?: "verde" | "amarelo" | "vermelho"; observacao?: string; flag_problematico?: boolean }
 type CentralOpcao = { _id: string; marca: string; modelo: string; codigo: string }
 
 type FotoLocal = { file: File; preview: string }
@@ -26,6 +26,7 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
   const [clienteDisplay, setClienteDisplay] = useState(
     clientePreenchido ? `${clientePreenchido.nome} — ${clientePreenchido.telefone}` : ""
   )
+  const [clienteScore, setClienteScore] = useState<ClienteOpcao | null>(clientePreenchido ?? null)
   const [buscaCliente, setBuscaCliente] = useState("")
   const [resultadosCliente, setResultadosCliente] = useState<ClienteOpcao[]>([])
   const timerCliente = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -67,6 +68,11 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
     setClienteDisplay(`${c.nome} — ${c.telefone}`)
     setBuscaCliente("")
     setResultadosCliente([])
+    // busca score do cliente selecionado
+    fetch(`/api/clientes/${c._id}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setClienteScore(data) })
+      .catch(() => {})
   }
 
   function handleBuscaCentral(e: React.ChangeEvent<HTMLInputElement>) {
@@ -190,6 +196,25 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
           </div>
         )}
       </div>
+
+      {/* Alerta de score do cliente */}
+      {clienteId && clienteScore && clienteScore.score && clienteScore.score !== "verde" && (
+        <div className={`flex items-start gap-2 px-3 py-2 rounded-sm border text-xs ${
+          clienteScore.score === "vermelho"
+            ? "bg-[#2A0D0D] border-[#FF4444]/30 text-[#FF4444]"
+            : "bg-[#2A2000] border-[#F59E0B]/30 text-[#F59E0B]"
+        }`}>
+          <AlertTriangle size={13} className="shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold uppercase tracking-widest text-[10px]">
+              {clienteScore.flag_problematico ? "Cliente problemático" : "Atenção: histórico negativo"}
+            </p>
+            {clienteScore.observacao && (
+              <p className="mt-0.5 text-[#F0F0F0] text-xs">{clienteScore.observacao}</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Central */}
       <div>

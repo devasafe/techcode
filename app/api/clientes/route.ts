@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { listarClientes, criarCliente } from "@/lib/services/cliente.service"
+import { listarClientes, listarClientesComScore, criarCliente } from "@/lib/services/cliente.service"
 
 export async function GET(req: Request) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
   const { searchParams } = new URL(req.url)
   const q = searchParams.get("q") ?? undefined
+  const comScore = searchParams.get("score") === "1"
   try {
-    const clientes = await listarClientes(q)
+    const clientes = comScore ? await listarClientesComScore(q) : await listarClientes(q)
     return NextResponse.json(clientes)
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Erro interno"
