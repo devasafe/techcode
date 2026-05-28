@@ -101,7 +101,7 @@ export default function OSDetalhePage() {
   async function carregar() {
     setCarregando(true)
     try {
-      const res = await fetch(`/api/os/${id}`)
+      const res = await fetch(`/api/os/${id}`, { cache: "no-store" })
       if (!res.ok) { router.push("/os"); return }
       const data = await res.json()
       setOS(data)

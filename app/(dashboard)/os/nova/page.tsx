@@ -35,7 +35,7 @@ function NovaOSContent() {
       </div>
       <OSForm
         clientePreenchido={clientePreenchido}
-        onSalvo={(id) => router.push(`/os/${id}`)}
+        onSalvo={(id) => router.push(`/os/${id}/editar?novo=1`)}
         onCancelar={() => router.back()}
       />
     </div>

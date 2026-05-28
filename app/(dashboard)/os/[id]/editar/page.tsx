@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, X, Upload, Loader2 } from "lucide-react"
+import { Suspense, useEffect, useRef, useState } from "react"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { ArrowLeft, X, Upload, Loader2, CheckCircle } from "lucide-react"
 
 type ClienteOpcao = { _id: string; nome: string; telefone: string }
 type CentralOpcao = { _id: string; marca: string; modelo: string; codigo: string }
@@ -11,9 +11,11 @@ type TecnicoOpcao = { _id: string; nome: string }
 const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333]"
 const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-1"
 
-export default function EditarOSPage() {
+function EditarOSContent() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isNova = searchParams.get("novo") === "1"
 
   const [carregando, setCarregando] = useState(true)
   const [salvando, setSalvando] = useState(false)
@@ -159,6 +161,7 @@ export default function EditarOSPage() {
         setErro(data.error ?? "Erro ao salvar.")
         return
       }
+      router.refresh()
       router.push(`/os/${id}`)
     } finally {
       setSalvando(false)
@@ -172,13 +175,28 @@ export default function EditarOSPage() {
   return (
     <div className="max-w-xl space-y-6">
       <div className="flex items-center gap-3">
-        <button onClick={() => router.push(`/os/${id}`)} className="text-[#555555] hover:text-white transition-colors">
+        <button onClick={() => { router.refresh(); router.push(`/os/${id}`) }} className="text-[#555555] hover:text-white transition-colors">
           <ArrowLeft size={16} />
         </button>
         <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
-          Editar OS
+          {isNova ? "Nova OS criada" : "Editar OS"}
         </h1>
       </div>
+
+      {isNova && (
+        <div className="flex items-center justify-between bg-[#0D2A1A] border border-[#22C55E]/30 rounded-sm px-4 py-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle size={14} className="text-[#22C55E]" />
+            <span className="text-xs text-[#22C55E]">OS criada com sucesso. Adicione fotos do defeito se desejar.</span>
+          </div>
+          <button
+            onClick={() => { router.refresh(); router.push(`/os/${id}`) }}
+            className="text-[10px] font-semibold uppercase tracking-widest text-[#22C55E] hover:text-white transition-colors ml-4 shrink-0"
+          >
+            Ir para a OS →
+          </button>
+        </div>
+      )}
 
       <form onSubmit={handleSalvar} className="space-y-5">
         {/* Cliente */}
@@ -340,5 +358,13 @@ export default function EditarOSPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function EditarOSPage() {
+  return (
+    <Suspense fallback={<p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>}>
+      <EditarOSContent />
+    </Suspense>
   )
 }
