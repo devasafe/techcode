@@ -39,6 +39,7 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
   const abortCentral = useRef<AbortController | null>(null)
 
   const [defeito, setDefeito] = useState("")
+  const [tipoCliente, setTipoCliente] = useState<"mecanico" | "usuario" | "">("")
   const [fotos, setFotos] = useState<FotoLocal[]>([])
   const inputFotoRef = useRef<HTMLInputElement>(null)
 
@@ -124,7 +125,7 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
       const res = await fetch("/api/os", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cliente_id: clienteId, central_id: centralId, defeito_descricao: defeito }),
+        body: JSON.stringify({ cliente_id: clienteId, central_id: centralId, defeito_descricao: defeito, ...(tipoCliente && { tipo_cliente: tipoCliente }) }),
       })
       if (!res.ok) {
         let data: { error?: string } = {}
@@ -236,6 +237,27 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
           placeholder="Descreva o defeito relatado pelo cliente..."
           className={`${inputCls} resize-none`}
         />
+      </div>
+
+      {/* Tipo de cliente */}
+      <div>
+        <label className={labelCls}>Tipo de cliente</label>
+        <div className="flex gap-2">
+          {(["usuario", "mecanico"] as const).map((tipo) => (
+            <button
+              key={tipo}
+              type="button"
+              onClick={() => setTipoCliente(tipoCliente === tipo ? "" : tipo)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-semibold uppercase tracking-widest border transition-colors ${
+                tipoCliente === tipo
+                  ? "bg-[#E8FF47] text-black border-[#E8FF47]"
+                  : "bg-transparent text-[#555555] border-[#1C1C1C] hover:border-[#555555]"
+              }`}
+            >
+              {tipo === "usuario" ? "Usuário" : "Mecânico"}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Fotos */}

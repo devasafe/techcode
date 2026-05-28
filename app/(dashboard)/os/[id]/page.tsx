@@ -29,6 +29,7 @@ type OS = {
   cliente_id: { _id: string; nome: string; telefone: string } | null
   central_id: { _id: string; marca: string; modelo: string; codigo: string } | null
   tecnico_id: { _id: string; nome: string } | null
+  tipo_cliente?: "mecanico" | "usuario"
   fotos: string[]
   retornos_garantia: { _id: string; data: string; descricao: string }[]
   devolucao?: {
@@ -382,7 +383,18 @@ export default function OSDetalhePage() {
 
       {/* Defeito */}
       <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-2">Defeito relatado</p>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Defeito relatado</p>
+          {os.tipo_cliente && (
+            <span className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm ${
+              os.tipo_cliente === "mecanico"
+                ? "bg-[#1E2A3A] text-[#60A5FA]"
+                : "bg-[#1C1C1C] text-[#888888]"
+            }`}>
+              {os.tipo_cliente === "mecanico" ? "Mecânico" : "Usuário"}
+            </span>
+          )}
+        </div>
         <p className="text-sm text-[#F0F0F0]">{os.defeito_descricao}</p>
       </div>
 

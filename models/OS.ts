@@ -24,6 +24,7 @@ export interface IOS extends Document {
   tecnico_id?: Types.ObjectId
   status: OSStatus
   defeito_descricao: string
+  tipo_cliente?: "mecanico" | "usuario"
   solucao_descricao?: string
   motivo_cancelamento?: string
   fotos: string[]
@@ -50,6 +51,7 @@ const OSSchema = new Schema<IOS>({
     default: "aberta",
   },
   defeito_descricao: { type: String, required: true },
+  tipo_cliente: { type: String, enum: ["mecanico", "usuario"] },
   solucao_descricao: String,
   motivo_cancelamento: String,
   fotos: [String],

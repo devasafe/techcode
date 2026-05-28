@@ -9,6 +9,7 @@ export type CreateOSInput = {
   cliente_id: string
   central_id: string
   defeito_descricao: string
+  tipo_cliente?: "mecanico" | "usuario"
   tecnico_id?: string
 }
 
@@ -17,6 +18,7 @@ export type UpdateOSInput = {
   cliente_id?: string
   central_id?: string
   defeito_descricao?: string
+  tipo_cliente?: "mecanico" | "usuario"
   solucao_descricao?: string
   pecas?: { nome: string; custo: number }[]
   valor_cobrado?: number
@@ -59,6 +61,7 @@ export async function atualizarOS(id: string, data: UpdateOSInput) {
   if (data.cliente_id !== undefined) update.cliente_id = data.cliente_id
   if (data.central_id !== undefined) update.central_id = data.central_id
   if (data.defeito_descricao !== undefined) update.defeito_descricao = data.defeito_descricao
+  if (data.tipo_cliente !== undefined) update.tipo_cliente = data.tipo_cliente
   if (data.solucao_descricao !== undefined) update.solucao_descricao = data.solucao_descricao
   if (data.tecnico_id !== undefined) update.tecnico_id = data.tecnico_id
   if (data.valor_cobrado !== undefined) update.valor_cobrado = data.valor_cobrado
