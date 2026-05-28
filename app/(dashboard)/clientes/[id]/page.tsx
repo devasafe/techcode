@@ -28,10 +28,21 @@ type OSResumo = {
   _id: string
   numero_os: number
   status: string
+  tipo_os?: "reparo" | "teste"
   defeito_descricao: string
   valor_cobrado: number
   created_at: string
   central_id: { marca: string; modelo: string } | null
+  retornos_garantia: { _id: string }[]
+}
+
+function calcularPontosOS(o: OSResumo): number {
+  let pts = 0
+  if (o.status === "devolvida") pts += 1.5
+  if (o.tipo_os === "teste") pts += 1.5
+  if (o.status === "cancelada") pts += 0.3
+  pts += (o.retornos_garantia?.length ?? 0) * 1
+  return pts
 }
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
@@ -272,6 +283,7 @@ export default function ClientePerfilPage() {
         <div className="space-y-2">
           {os.map((o) => {
             const badge = STATUS_BADGE[o.status] ?? STATUS_BADGE.aberta
+            const pontos = calcularPontosOS(o)
             return (
               <Link key={o._id} href={`/os/${o._id}`}>
                 <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-3 hover:border-[#2A2A2A] hover:bg-[#141414] transition-colors cursor-pointer">
@@ -282,19 +294,27 @@ export default function ClientePerfilPage() {
                         <span className={`text-[9px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded-sm ${badge.cls}`}>
                           {badge.label}
                         </span>
+                        {o.tipo_os === "teste" && (
+                          <span className="text-[9px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded-sm bg-[#2A1500] text-[#FB923C]">
+                            Teste
+                          </span>
+                        )}
                       </div>
                       {o.central_id && (
                         <p className="text-[10px] text-[#555555]">{o.central_id.marca} {o.central_id.modelo}</p>
                       )}
                       <p className="text-[10px] text-[#555555] truncate mt-0.5">{o.defeito_descricao}</p>
                     </div>
-                    <div className="text-right shrink-0">
+                    <div className="text-right shrink-0 space-y-1">
                       <p className="font-mono text-sm text-white">
                         {o.valor_cobrado > 0 ? `R$ ${o.valor_cobrado.toFixed(2).replace(".", ",")}` : "—"}
                       </p>
                       <p className="font-mono text-[10px] text-[#555555]">
                         {new Date(o.created_at).toLocaleDateString("pt-BR")}
                       </p>
+                      {pontos > 0 && (
+                        <p className="font-mono text-[10px] text-[#FF4444]">+{pontos % 1 === 0 ? pontos : pontos.toFixed(1)} pts</p>
+                      )}
                     </div>
                   </div>
                 </div>
