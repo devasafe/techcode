@@ -24,7 +24,9 @@ export async function listarCentrais(q?: string) {
 
 export async function buscarCentralPorId(id: string) {
   await connectDB()
-  return Central.findById(id).lean()
+  const central = await Central.findById(id).lean()
+  if (!central) return null
+  return { ...central, arquivos: central.arquivos ?? [] }
 }
 
 export async function criarCentral(data: CreateCentralInput) {
