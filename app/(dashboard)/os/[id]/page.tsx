@@ -257,6 +257,7 @@ export default function OSDetalhePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: "concluida",
+          tipo_os: centralEmBomEstado ? "teste" : "reparo",
           solucao_descricao: solucao,
           pecas,
           valor_cobrado: parseFloat(valorCobrado) || 0,
