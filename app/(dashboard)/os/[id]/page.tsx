@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -63,6 +64,7 @@ const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text
 export default function OSDetalhePage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const { data: session } = useSession()
   const [os, setOS] = useState<OS | null>(null)
   const [carregando, setCarregando] = useState(true)
   const [abrirConcluir, setAbrirConcluir] = useState(false)
@@ -120,10 +122,15 @@ export default function OSDetalhePage() {
     fetch("/api/usuarios")
       .then((r) => (r.ok ? r.json() : []))
       .then((lista: { _id: string; nome: string; perfis: string[]; comissao_pct: number }[]) => {
-        setTecnicos(lista.filter((u) => u.perfis.includes("tecnico")))
+        const tecnicos = lista.filter((u) => u.perfis.includes("tecnico"))
+        setTecnicos(tecnicos)
+        if (session?.user?.perfis?.includes("tecnico") && session.user.id) {
+          const estaNaLista = tecnicos.some((t) => t._id === session.user.id)
+          if (estaNaLista) setTecnicoId(session.user.id)
+        }
       })
       .catch(() => {})
-  }, [])
+  }, [session])
 
   async function atualizarStatus(novoStatus: OSStatus) {
     if (atualizando) return

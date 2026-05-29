@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { AlertTriangle } from "lucide-react"
 
 const moeda = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`
@@ -48,6 +49,7 @@ function diasRestantes(data: string) {
 
 export default function DashboardPage() {
   const router = useRouter()
+  const { data: session } = useSession()
   const [stats, setStats] = useState<Estatisticas | null>(null)
   const [carregando, setCarregando] = useState(true)
 
@@ -60,6 +62,11 @@ export default function DashboardPage() {
       .finally(() => { if (!controller.signal.aborted) setCarregando(false) })
     return () => controller.abort()
   }, [])
+
+  const isAdmin = session?.user?.perfis?.some((p) => ["admin", "atendente"].includes(p)) ?? false
+  const porTecnico = isAdmin
+    ? (stats?.por_tecnico ?? [])
+    : (stats?.por_tecnico ?? []).filter((t) => t._id === session?.user?.id)
 
   const aberta      = stats?.por_status["aberta"] ?? 0
   const naFila      = stats?.por_status["na_fila"] ?? 0
@@ -201,13 +208,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Por técnico */}
-      {(stats?.por_tecnico.length ?? 0) > 0 && (
+      {porTecnico.length > 0 && (
         <div>
           <h2 className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-4">
-            Desempenho por técnico — este mês
+            {isAdmin ? "Desempenho por técnico — este mês" : "Meu desempenho — este mês"}
           </h2>
           <div className="space-y-2">
-            {stats!.por_tecnico.map((t) => (
+            {porTecnico.map((t) => (
               <div key={t._id} className="bg-[#111111] border border-[#1C1C1C] rounded-sm px-4 py-3">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-medium text-[#F0F0F0]">{t.nome}</span>
