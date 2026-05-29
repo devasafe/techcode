@@ -11,6 +11,7 @@ type OSResumo = {
   status: OSStatus
   defeito_descricao: string
   valor_cobrado: number
+  pago: boolean
   created_at: string
   cliente_id: { nome: string; telefone: string } | null
   central_id: { marca: string; modelo: string; codigo: string } | null
@@ -156,9 +157,18 @@ export default function OSPage() {
                       {o.central_id ? `${o.central_id.marca} ${o.central_id.modelo}` : "—"}
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-1 rounded-sm ${badge.cls}`}>
-                        {badge.label}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-1 rounded-sm ${badge.cls}`}>
+                          {badge.label}
+                        </span>
+                        {o.status === "concluida" && (
+                          <span className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-1 rounded-sm ${
+                            o.pago ? "bg-[#0D2A1A] text-[#22C55E]" : "bg-[#2A1500] text-[#F59E0B]"
+                          }`}>
+                            {o.pago ? "Pago" : "Pendente"}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 px-4 font-mono text-sm text-right text-white hidden sm:table-cell">
                       {o.valor_cobrado > 0
