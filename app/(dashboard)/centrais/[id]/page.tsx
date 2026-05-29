@@ -16,11 +16,23 @@ type Arquivo = {
   created_at: string
 }
 
+type TipoModulo = "central" | "abs" | "painel" | "body_computer" | "airbag" | "outro"
+
+const TIPO_LABEL: Record<TipoModulo, string> = {
+  central:       "Central",
+  abs:           "ABS",
+  painel:        "Painel",
+  body_computer: "Body Computer",
+  airbag:        "Airbag",
+  outro:         "Outro",
+}
+
 type Central = {
   _id: string
   marca: string
   modelo: string
   codigo: string
+  tipo_modulo?: TipoModulo
   descricao?: string
   arquivos: Arquivo[]
 }
@@ -126,9 +138,16 @@ export default function CentralDetalhePage() {
           <ArrowLeft size={16} />
         </button>
         <div className="flex-1">
-          <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
-            {central.marca} <span className="font-mono text-[#E8FF47]">{central.modelo}</span>
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+              {central.marca} <span className="font-mono text-[#E8FF47]">{central.modelo}</span>
+            </h1>
+            {central.tipo_modulo && (
+              <span className="text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm bg-[#1C1C1C] text-[#888888]">
+                {TIPO_LABEL[central.tipo_modulo]}
+              </span>
+            )}
+          </div>
           <p className="font-mono text-[10px] text-[#555555] mt-0.5">{central.codigo}</p>
         </div>
         <button

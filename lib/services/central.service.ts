@@ -7,6 +7,7 @@ export type CreateCentralInput = {
   marca: string
   modelo: string
   codigo: string
+  tipo_modulo?: string
   descricao?: string
 }
 

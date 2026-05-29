@@ -6,11 +6,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { CentralForm } from "@/components/centrais/CentralForm"
 import { Search, Plus } from "lucide-react"
 
+type TipoModulo = "central" | "abs" | "painel" | "body_computer" | "airbag" | "outro"
+
+const TIPO_LABEL: Record<TipoModulo, string> = {
+  central:       "Central",
+  abs:           "ABS",
+  painel:        "Painel",
+  body_computer: "Body Computer",
+  airbag:        "Airbag",
+  outro:         "Outro",
+}
+
 type Central = {
   _id: string
   marca: string
   modelo: string
   codigo: string
+  tipo_modulo?: TipoModulo
   descricao?: string
 }
 
@@ -84,6 +96,7 @@ export default function CentraisPage() {
                 <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Marca</th>
                 <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Modelo</th>
                 <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Código</th>
+                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden sm:table-cell">Tipo</th>
                 <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden md:table-cell">Descrição</th>
               </tr>
             </thead>
@@ -97,6 +110,15 @@ export default function CentraisPage() {
                   <td className="py-3 px-4 text-sm font-medium text-[#F0F0F0]">{c.marca}</td>
                   <td className="py-3 px-4 font-mono text-sm text-[#E8FF47]">{c.modelo}</td>
                   <td className="py-3 px-4 font-mono text-sm text-[#555555]">{c.codigo}</td>
+                  <td className="py-3 px-4 hidden sm:table-cell">
+                    {c.tipo_modulo ? (
+                      <span className="text-[9px] font-semibold uppercase tracking-widest px-2 py-1 rounded-sm bg-[#1C1C1C] text-[#888888]">
+                        {TIPO_LABEL[c.tipo_modulo]}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-[#333333]">—</span>
+                    )}
+                  </td>
                   <td className="py-3 px-4 text-sm text-[#555555] hidden md:table-cell">{c.descricao ?? "—"}</td>
                 </tr>
               ))}

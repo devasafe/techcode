@@ -10,10 +10,13 @@ export interface IArquivoCentral {
   created_at: Date
 }
 
+export type TipoModulo = "central" | "abs" | "painel" | "body_computer" | "airbag" | "outro"
+
 export interface ICentral extends Document {
   marca: string
   modelo: string
   codigo: string
+  tipo_modulo?: TipoModulo
   descricao?: string
   arquivos: IArquivoCentral[]
 }
@@ -31,6 +34,7 @@ const CentralSchema = new Schema<ICentral>({
   marca: { type: String, required: true, trim: true },
   modelo: { type: String, required: true, trim: true },
   codigo: { type: String, required: true, trim: true, uppercase: true },
+  tipo_modulo: { type: String, enum: ["central", "abs", "painel", "body_computer", "airbag", "outro"] },
   descricao: String,
   arquivos: { type: [ArquivoSchema], default: [] },
 })
