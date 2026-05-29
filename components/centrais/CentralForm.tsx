@@ -94,7 +94,7 @@ export function CentralForm({ central, onSalvo, onCancelar }: CentralFormProps) 
         <input
           name="marca"
           required
-          placeholder="ex: Bosch"
+          placeholder="ex: PEUGEOT"
           defaultValue={central?.marca}
           className={inputCls}
         />
@@ -105,7 +105,7 @@ export function CentralForm({ central, onSalvo, onCancelar }: CentralFormProps) 
         <input
           name="modelo"
           required
-          placeholder="ex: ME17.9.53"
+          placeholder="ex: ME 7.4.9"
           defaultValue={central?.modelo}
           className={inputCls}
         />
@@ -116,7 +116,7 @@ export function CentralForm({ central, onSalvo, onCancelar }: CentralFormProps) 
         <input
           name="codigo"
           required
-          placeholder="ex: 4CFR"
+          placeholder="ex: BOSCH"
           defaultValue={central?.codigo}
           className={inputCls}
         />
