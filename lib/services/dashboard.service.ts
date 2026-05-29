@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/db"
 import OS from "@/models/OS"
 import Comissao from "@/models/Comissao"
 import "@/models/Cliente"
+import "@/models/Usuario"
 
 export type Periodo = "este_mes" | "mes_anterior" | "este_ano" | "tudo"
 
@@ -65,7 +66,7 @@ export async function buscarEstatisticas() {
 
   const em7dias = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
-  const [porStatusRaw, totaisGeral, totaisMes, recentes, comissoesGeralRaw, comissoesMesRaw, garantiasRaw] =
+  const [porStatusRaw, totaisGeral, totaisMes, recentes, comissoesGeralRaw, comissoesMesRaw, garantiasRaw, osPorTecnicoRaw, comissaoPorTecnicoRaw, abertoPorTecnicoRaw] =
     await Promise.all([
       OS.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
       OS.aggregate([
@@ -115,6 +116,57 @@ export async function buscarEstatisticas() {
         .populate("cliente_id", "nome telefone")
         .populate("central_id", "marca modelo")
         .lean(),
+      OS.aggregate([
+        {
+          $match: {
+            tecnico_id: { $exists: true, $ne: null },
+            $or: [
+              { status: "concluida", closed_at: { $gte: inicioMes } },
+              { status: "substituida", "devolucao.data": { $gte: inicioMes } },
+            ],
+          },
+        },
+        ADD_FINANCEIRO,
+        {
+          $group: {
+            _id: "$tecnico_id",
+            os_mes: { $sum: 1 },
+            receita_mes: { $sum: "$_receita" },
+            lucro_mes: { $sum: "$_lucro" },
+          },
+        },
+        {
+          $lookup: {
+            from: "usuarios",
+            localField: "_id",
+            foreignField: "_id",
+            as: "tecnico",
+          },
+        },
+        { $unwind: "$tecnico" },
+        {
+          $project: {
+            nome: "$tecnico.nome",
+            os_mes: 1,
+            receita_mes: 1,
+            lucro_mes: 1,
+          },
+        },
+        { $sort: { receita_mes: -1 } },
+      ]),
+      Comissao.aggregate([
+        { $match: { created_at: { $gte: inicioMes } } },
+        { $group: { _id: "$tecnico_id", comissao_mes: { $sum: "$valor_comissao" } } },
+      ]),
+      OS.aggregate([
+        {
+          $match: {
+            tecnico_id: { $exists: true, $ne: null },
+            status: { $in: ["aberta", "na_fila", "em_andamento"] },
+          },
+        },
+        { $group: { _id: "$tecnico_id", em_aberto: { $sum: 1 } } },
+      ]),
     ])
 
   const por_status = Object.fromEntries(
@@ -126,12 +178,32 @@ export async function buscarEstatisticas() {
   const geral = totaisGeral[0] ?? { receita: 0, custo: 0, lucro: 0, total: 0 }
   const mes = totaisMes[0] ?? { receita: 0, lucro: 0, total: 0 }
 
+  const comissaoTecnicoMap = new Map<string, number>()
+  for (const c of comissaoPorTecnicoRaw) {
+    comissaoTecnicoMap.set(c._id.toString(), c.comissao_mes)
+  }
+  const abertoPorTecnicoMap = new Map<string, number>()
+  for (const a of abertoPorTecnicoRaw) {
+    abertoPorTecnicoMap.set(a._id.toString(), a.em_aberto)
+  }
+
+  const por_tecnico = osPorTecnicoRaw.map((t: { _id: { toString(): string }; nome: string; os_mes: number; receita_mes: number; lucro_mes: number }) => ({
+    _id: t._id.toString(),
+    nome: t.nome,
+    os_mes: t.os_mes,
+    receita_mes: t.receita_mes,
+    lucro_mes: t.lucro_mes,
+    comissao_mes: comissaoTecnicoMap.get(t._id.toString()) ?? 0,
+    em_aberto: abertoPorTecnicoMap.get(t._id.toString()) ?? 0,
+  }))
+
   return {
     por_status,
     totais: { ...geral, lucro: geral.lucro - comissoesGeral, comissoes: comissoesGeral },
     mes: { ...mes, lucro: mes.lucro - comissoesMes },
     recentes,
     garantias_proximas: garantiasRaw,
+    por_tecnico,
   }
 }
 

@@ -15,6 +15,16 @@ type GarantiaOS = {
   central_id: { marca: string; modelo: string } | null
 }
 
+type TecnicoStats = {
+  _id: string
+  nome: string
+  os_mes: number
+  receita_mes: number
+  lucro_mes: number
+  comissao_mes: number
+  em_aberto: number
+}
+
 type Estatisticas = {
   por_status: Record<string, number>
   totais: { receita: number; custo: number; lucro: number; total: number }
@@ -28,6 +38,7 @@ type Estatisticas = {
     central_id?: { marca: string; modelo: string } | null
   }>
   garantias_proximas: GarantiaOS[]
+  por_tecnico: TecnicoStats[]
 }
 
 function diasRestantes(data: string) {
@@ -188,6 +199,49 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Por técnico */}
+      {(stats?.por_tecnico.length ?? 0) > 0 && (
+        <div>
+          <h2 className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-4">
+            Desempenho por técnico — este mês
+          </h2>
+          <div className="space-y-2">
+            {stats!.por_tecnico.map((t) => (
+              <div key={t._id} className="bg-[#111111] border border-[#1C1C1C] rounded-sm px-4 py-3">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-[#F0F0F0]">{t.nome}</span>
+                  {t.em_aberto > 0 && (
+                    <span className="text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm bg-[#2A2000] text-[#F59E0B]">
+                      {t.em_aberto} em aberto
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-widest text-[#555555] mb-0.5">OS concluídas</p>
+                    <p className="font-mono text-lg font-bold text-[#E8FF47]">{t.os_mes}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-widest text-[#555555] mb-0.5">Receita</p>
+                    <p className="font-mono text-sm text-white">{moeda(t.receita_mes)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-widest text-[#555555] mb-0.5">Lucro</p>
+                    <p className={`font-mono text-sm ${t.lucro_mes >= 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
+                      {moeda(t.lucro_mes)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-widest text-[#555555] mb-0.5">Comissão</p>
+                    <p className="font-mono text-sm text-[#60A5FA]">{moeda(t.comissao_mes)}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
