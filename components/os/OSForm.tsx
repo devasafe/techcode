@@ -41,7 +41,6 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
 
   const [defeito, setDefeito] = useState("")
   const [tipoCliente, setTipoCliente] = useState<"mecanico" | "usuario" | "">("")
-  const [tipoOS, setTipoOS] = useState<"reparo" | "teste" | "">("")
   const [fotos, setFotos] = useState<FotoLocal[]>([])
   const inputFotoRef = useRef<HTMLInputElement>(null)
 
@@ -137,7 +136,7 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
       const res = await fetch("/api/os", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cliente_id: clienteId, central_id: centralId, defeito_descricao: defeito, ...(tipoCliente && { tipo_cliente: tipoCliente }), ...(tipoOS && { tipo_os: tipoOS }) }),
+        body: JSON.stringify({ cliente_id: clienteId, central_id: centralId, defeito_descricao: defeito, ...(tipoCliente && { tipo_cliente: tipoCliente }) }),
       })
       if (!res.ok) {
         let data: { error?: string } = {}
@@ -270,47 +269,24 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
         />
       </div>
 
-      {/* Tipo de cliente + tipo de OS */}
-      <div className="flex gap-6">
-        <div>
-          <label className={labelCls}>Tipo de cliente</label>
-          <div className="flex gap-2">
-            {(["usuario", "mecanico"] as const).map((tipo) => (
-              <button
-                key={tipo}
-                type="button"
-                onClick={() => setTipoCliente(tipoCliente === tipo ? "" : tipo)}
-                className={`px-3 py-1.5 rounded-sm text-xs font-semibold uppercase tracking-widest border transition-colors ${
-                  tipoCliente === tipo
-                    ? "bg-[#E8FF47] text-black border-[#E8FF47]"
-                    : "bg-transparent text-[#555555] border-[#1C1C1C] hover:border-[#555555]"
-                }`}
-              >
-                {tipo === "usuario" ? "Usuário" : "Mecânico"}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <label className={labelCls}>Tipo de OS</label>
-          <div className="flex gap-2">
-            {(["reparo", "teste"] as const).map((tipo) => (
-              <button
-                key={tipo}
-                type="button"
-                onClick={() => setTipoOS(tipoOS === tipo ? "" : tipo)}
-                className={`px-3 py-1.5 rounded-sm text-xs font-semibold uppercase tracking-widest border transition-colors ${
-                  tipoOS === tipo
-                    ? tipo === "teste"
-                      ? "bg-[#F59E0B] text-black border-[#F59E0B]"
-                      : "bg-[#E8FF47] text-black border-[#E8FF47]"
-                    : "bg-transparent text-[#555555] border-[#1C1C1C] hover:border-[#555555]"
-                }`}
-              >
-                {tipo === "reparo" ? "Reparo" : "Teste"}
-              </button>
-            ))}
-          </div>
+      {/* Tipo de cliente */}
+      <div>
+        <label className={labelCls}>Tipo de cliente</label>
+        <div className="flex gap-2">
+          {(["usuario", "mecanico"] as const).map((tipo) => (
+            <button
+              key={tipo}
+              type="button"
+              onClick={() => setTipoCliente(tipoCliente === tipo ? "" : tipo)}
+              className={`px-3 py-1.5 rounded-sm text-xs font-semibold uppercase tracking-widest border transition-colors ${
+                tipoCliente === tipo
+                  ? "bg-[#E8FF47] text-black border-[#E8FF47]"
+                  : "bg-transparent text-[#555555] border-[#1C1C1C] hover:border-[#555555]"
+              }`}
+            >
+              {tipo === "usuario" ? "Usuário" : "Mecânico"}
+            </button>
+          ))}
         </div>
       </div>
 

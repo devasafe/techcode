@@ -27,6 +27,7 @@ export type UpdateOSInput = {
   garantia_dias?: number
   tecnico_id?: string
   motivo_cancelamento?: string
+  pago?: boolean
 }
 
 export async function listarOS(filtros?: { status?: OSStatus; cliente_id?: string }) {
@@ -70,6 +71,7 @@ export async function atualizarOS(id: string, data: UpdateOSInput) {
   if (data.valor_cobrado !== undefined) update.valor_cobrado = data.valor_cobrado
   if (data.garantia_dias !== undefined) update.garantia_dias = data.garantia_dias
   if (data.motivo_cancelamento !== undefined) update.motivo_cancelamento = data.motivo_cancelamento
+  if (data.pago !== undefined) update.pago = data.pago
 
   if (data.pecas !== undefined) {
     update.pecas = data.pecas

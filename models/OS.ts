@@ -37,6 +37,7 @@ export interface IOS extends Document {
   garantia_ate?: Date
   retornos_garantia: IRetornoGarantia[]
   devolucao?: IDevolucao
+  pago: boolean
   created_at: Date
   closed_at?: Date
 }
@@ -79,6 +80,7 @@ const OSSchema = new Schema<IOS>({
     novo_valor_cobrado: Number,
     data: Date,
   },
+  pago: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now },
   closed_at: Date,
 })

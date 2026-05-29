@@ -30,6 +30,8 @@ function EditarOSContent() {
   const [tipoCliente, setTipoCliente] = useState<"mecanico" | "usuario" | "">("")
   const [tipoOS, setTipoOS] = useState<"reparo" | "teste" | "">("")
   const [tecnicoId, setTecnicoId] = useState("")
+  const [solucao, setSolucao] = useState("")
+  const [statusOS, setStatusOS] = useState("")
 
   // Buscas
   const [buscaCliente, setBuscaCliente] = useState("")
@@ -64,6 +66,8 @@ function EditarOSContent() {
       setTipoCliente(os.tipo_cliente ?? "")
       setTipoOS(os.tipo_os ?? "")
       setTecnicoId(os.tecnico_id?._id ?? "")
+      setSolucao(os.solucao_descricao ?? "")
+      setStatusOS(os.status ?? "")
       setFotos(os.fotos ?? [])
       setTecnicos(tecnicosData)
       setCarregando(false)
@@ -157,6 +161,7 @@ function EditarOSContent() {
       if (tipoCliente) body.tipo_cliente = tipoCliente
       if (tipoOS) body.tipo_os = tipoOS
       if (tecnicoId) body.tecnico_id = tecnicoId
+      if (solucao.trim()) body.solucao_descricao = solucao.trim()
       const res = await fetch(`/api/os/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -286,6 +291,20 @@ function EditarOSContent() {
             placeholder="Descreva o defeito relatado pelo cliente..."
           />
         </div>
+
+        {/* Solução aplicada — só para OS concluída */}
+        {statusOS === "concluida" && (
+          <div>
+            <label className={labelCls}>Solução aplicada</label>
+            <textarea
+              value={solucao}
+              onChange={(e) => setSolucao(e.target.value)}
+              rows={4}
+              className={`${inputCls} resize-none`}
+              placeholder="Descreva o que foi feito..."
+            />
+          </div>
+        )}
 
         {/* Tipo de cliente + tipo de OS */}
         <div className="flex gap-6">

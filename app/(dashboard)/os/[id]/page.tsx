@@ -32,6 +32,7 @@ type OS = {
   tipo_cliente?: "mecanico" | "usuario"
   tipo_os?: "reparo" | "teste"
   fotos: string[]
+  pago: boolean
   retornos_garantia: { _id: string; data: string; descricao: string }[]
   devolucao?: {
     tipo: string
@@ -132,6 +133,21 @@ export default function OSDetalhePage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: novoStatus }),
+      })
+      if (res.ok) carregar()
+    } finally {
+      setAtualizando(false)
+    }
+  }
+
+  async function marcarComoPago() {
+    if (atualizando) return
+    setAtualizando(true)
+    try {
+      const res = await fetch(`/api/os/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pago: true }),
       })
       if (res.ok) carregar()
     } finally {
@@ -284,11 +300,18 @@ export default function OSDetalhePage() {
           <ArrowLeft size={16} />
         </button>
         <div className="flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h1 className="font-mono text-sm font-bold text-[#E8FF47]">OS #{os.numero_os}</h1>
             <span className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm ${badge.cls}`}>
               {badge.label}
             </span>
+            {os.status === "concluida" && (
+              <span className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm ${
+                os.pago ? "bg-[#0D2A1A] text-[#22C55E]" : "bg-[#2A1500] text-[#F59E0B]"
+              }`}>
+                {os.pago ? "Pago" : "Pagamento pendente"}
+              </span>
+            )}
           </div>
           <p className="font-mono text-[10px] text-[#555555] mt-0.5">
             Aberta em {new Date(os.created_at).toLocaleDateString("pt-BR")}
@@ -534,14 +557,27 @@ export default function OSDetalhePage() {
         </div>
       )}
 
-      {/* Botão registrar devolução */}
-      {os.status === "concluida" && !os.devolucao && (
-        <button
-          onClick={() => setAbrirDevolucao(true)}
-          className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-[#FF4444] border border-[#1C1C1C] hover:border-[#2A0D0D] px-4 py-2 rounded-sm transition-colors"
-        >
-          Registrar devolução
-        </button>
+      {/* Ações pós-conclusão */}
+      {os.status === "concluida" && (
+        <div className="flex flex-wrap gap-2">
+          {!os.pago && (
+            <button
+              disabled={atualizando}
+              onClick={marcarComoPago}
+              className="text-[10px] font-semibold uppercase tracking-widest text-[#F59E0B] hover:text-[#22C55E] border border-[#2A1500] hover:border-[#0D2A1A] px-4 py-2 rounded-sm transition-colors disabled:opacity-50"
+            >
+              Marcar como pago
+            </button>
+          )}
+          {!os.devolucao && (
+            <button
+              onClick={() => setAbrirDevolucao(true)}
+              className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-[#FF4444] border border-[#1C1C1C] hover:border-[#2A0D0D] px-4 py-2 rounded-sm transition-colors"
+            >
+              Registrar devolução
+            </button>
+          )}
+        </div>
       )}
 
       {/* Dialog — Cancelar OS */}
