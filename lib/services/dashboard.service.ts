@@ -105,6 +105,7 @@ export async function buscarEstatisticas() {
         .sort({ closed_at: -1 })
         .limit(5)
         .populate("cliente_id", "nome")
+        .populate("central_id", "marca modelo")
         .lean(),
       Comissao.aggregate([{ $group: { _id: null, total: { $sum: "$valor_comissao" } } }]),
       Comissao.aggregate([
