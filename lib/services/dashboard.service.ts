@@ -188,15 +188,18 @@ export async function buscarEstatisticas() {
     abertoPorTecnicoMap.set(a._id.toString(), a.em_aberto)
   }
 
-  const por_tecnico = osPorTecnicoRaw.map((t: { _id: { toString(): string }; nome: string; os_mes: number; receita_mes: number; lucro_mes: number }) => ({
-    _id: t._id.toString(),
-    nome: t.nome,
-    os_mes: t.os_mes,
-    receita_mes: t.receita_mes,
-    lucro_mes: t.lucro_mes,
-    comissao_mes: comissaoTecnicoMap.get(t._id.toString()) ?? 0,
-    em_aberto: abertoPorTecnicoMap.get(t._id.toString()) ?? 0,
-  }))
+  const por_tecnico = osPorTecnicoRaw.map((t: { _id: { toString(): string }; nome: string; os_mes: number; receita_mes: number; lucro_mes: number }) => {
+    const comissao_mes = comissaoTecnicoMap.get(t._id.toString()) ?? 0
+    return {
+      _id: t._id.toString(),
+      nome: t.nome,
+      os_mes: t.os_mes,
+      receita_mes: t.receita_mes,
+      lucro_mes: t.lucro_mes - comissao_mes,
+      comissao_mes,
+      em_aberto: abertoPorTecnicoMap.get(t._id.toString()) ?? 0,
+    }
+  })
 
   return {
     por_status,
