@@ -40,3 +40,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Artefatos de desenvolvimento / planejamento (nao versionar)
+.superpowers/
+.claude/
+.agents/
+.skills/
+docs/superpowers/
+docs/specs/
+planos/
+CLAUDE.md
+AGENTS.md
+skills-lock.json
