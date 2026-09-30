@@ -4,6 +4,7 @@ import {
   buscarClientePorId,
   atualizarCliente,
   listarOSDoCliente,
+  obterOuCriarClientePorTelefone,
 } from "@/lib/services/cliente.service"
 
 describe("cliente.service", () => {
@@ -64,5 +65,49 @@ describe("cliente.service", () => {
     const criado = await criarCliente(dadosBase)
     const os = await listarOSDoCliente(criado._id.toString())
     expect(os).toEqual([])
+  })
+})
+
+describe("obterOuCriarClientePorTelefone", () => {
+  it("cria cliente so com telefone, usando o numero como nome", async () => {
+    const cliente = await obterOuCriarClientePorTelefone("11999990000")
+    expect(cliente.nome).toBe("(11) 99999-0000")
+    expect(cliente.nome_confirmado).toBe(false)
+    expect(cliente.telefone_e164).toBe("+5511999990000")
+  })
+
+  it("e idempotente para o mesmo numero em formatos diferentes", async () => {
+    const a = await obterOuCriarClientePorTelefone("11999990000")
+    const b = await obterOuCriarClientePorTelefone("(11) 99999-0000")
+    const c = await obterOuCriarClientePorTelefone("+55 11 99999-0000")
+    expect(String(b._id)).toBe(String(a._id))
+    expect(String(c._id)).toBe(String(a._id))
+    expect(await listarClientes()).toHaveLength(1)
+  })
+
+  it("preenche o nome depois, se ainda nao foi confirmado", async () => {
+    await obterOuCriarClientePorTelefone("11999990000")
+    const depois = await obterOuCriarClientePorTelefone("11999990000", { nome: "Ze Eletrica" })
+    expect(depois.nome).toBe("Ze Eletrica")
+    expect(depois.nome_confirmado).toBe(true)
+  })
+
+  it("NUNCA sobrescreve nome confirmado por humano", async () => {
+    await obterOuCriarClientePorTelefone("11999990000", { nome: "Ze Eletrica" })
+    const depois = await obterOuCriarClientePorTelefone("11999990000", { nome: "zezinho 123" })
+    expect(depois.nome).toBe("Ze Eletrica")
+  })
+
+  it("rejeita telefone invalido", async () => {
+    await expect(obterOuCriarClientePorTelefone("abc")).rejects.toThrow("Telefone inválido")
+  })
+
+  it("nao cria dois clientes em chamadas concorrentes", async () => {
+    await Promise.all([
+      obterOuCriarClientePorTelefone("11999990000"),
+      obterOuCriarClientePorTelefone("11999990000"),
+      obterOuCriarClientePorTelefone("11999990000"),
+    ]).catch(() => {})
+    expect(await listarClientes()).toHaveLength(1)
   })
 })

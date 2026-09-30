@@ -1,5 +1,7 @@
 import mongoose, { Schema, Document, Types } from "mongoose"
 import type { OSStatus, TipoDevolucao } from "@/types"
+import { MidiaSchema, type IMidia } from "./Midia"
+import { proximoNumero } from "./Contador"
 
 export interface IRetornoGarantia {
   data: Date
@@ -23,12 +25,16 @@ export interface IOS extends Document {
   central_id: Types.ObjectId
   tecnico_id?: Types.ObjectId
   status: OSStatus
-  defeito_descricao: string
+  defeito_descricao?: string
+  /** Escrito pela transcricao. Separado para nunca sobrescrever o texto do humano. */
+  defeito_transcrito?: string
   tipo_cliente?: "mecanico" | "usuario"
   tipo_os?: "reparo" | "teste"
   solucao_descricao?: string
   motivo_cancelamento?: string
+  /** Legado: so URLs. Midia nova vai em `midias`, que guarda public_id. */
   fotos: string[]
+  midias: IMidia[]
   pecas: { nome: string; custo: number }[]
   valor_cobrado: number
   custo_total_pecas: number
@@ -40,6 +46,8 @@ export interface IOS extends Document {
   pago: boolean
   created_at: Date
   closed_at?: Date
+  /** Enviada pelo cliente para que duplo toque ou retry nao criem duas OS. */
+  chave_idempotencia?: string
 }
 
 const OSSchema = new Schema<IOS>({
@@ -52,12 +60,14 @@ const OSSchema = new Schema<IOS>({
     enum: ["aberta", "na_fila", "em_andamento", "concluida", "devolvida", "substituida", "cancelada"],
     default: "aberta",
   },
-  defeito_descricao: { type: String, required: true },
+  defeito_descricao: String,
+  defeito_transcrito: String,
   tipo_cliente: { type: String, enum: ["mecanico", "usuario"] },
   tipo_os: { type: String, enum: ["reparo", "teste"] },
   solucao_descricao: String,
   motivo_cancelamento: String,
   fotos: [String],
+  midias: { type: [MidiaSchema], default: [] },
   pecas: [{ nome: String, custo: Number }],
   valor_cobrado: { type: Number, default: 0 },
   custo_total_pecas: { type: Number, default: 0 },
@@ -83,14 +93,12 @@ const OSSchema = new Schema<IOS>({
   pago: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now },
   closed_at: Date,
+  chave_idempotencia: { type: String, unique: true, sparse: true },
 })
 
 OSSchema.pre("save", async function () {
-  if (this.isNew) {
-    const last = await mongoose
-      .model("OS")
-      .findOne({}, { numero_os: 1 }, { sort: { numero_os: -1 } })
-    this.numero_os = last ? last.numero_os + 1 : 1
+  if (this.isNew && this.numero_os == null) {
+    this.numero_os = await proximoNumero("os")
   }
 })
 

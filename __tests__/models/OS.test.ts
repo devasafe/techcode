@@ -31,4 +31,37 @@ describe("OS model", () => {
     })
     expect(os.status).toBe("aberta")
   })
+
+  // Os dois operadores registram entrada de aparelhos diferentes na mesma bancada.
+  it("gera numeros distintos quando varias OS sao criadas ao mesmo tempo", async () => {
+    const criadas = await Promise.all(
+      Array.from({ length: 20 }, (_, i) =>
+        OS.create({
+          cliente_id: "507f1f77bcf86cd799439011",
+          central_id: "507f1f77bcf86cd799439012",
+          defeito_descricao: `simultanea ${i}`,
+        })
+      )
+    )
+    const numeros = criadas.map((os) => os.numero_os)
+    expect(new Set(numeros).size).toBe(20)
+  })
+
+  it("aceita OS sem defeito_descricao (entrada sem audio nem texto)", async () => {
+    const os = await OS.create({
+      cliente_id: "507f1f77bcf86cd799439011",
+      central_id: "507f1f77bcf86cd799439012",
+    })
+    expect(os.numero_os).toBeGreaterThan(0)
+  })
+
+  it("rejeita chave_idempotencia duplicada", async () => {
+    const base = {
+      cliente_id: "507f1f77bcf86cd799439011",
+      central_id: "507f1f77bcf86cd799439012",
+      chave_idempotencia: "mesma-chave-123",
+    }
+    await OS.create(base)
+    await expect(OS.create(base)).rejects.toThrow()
+  })
 })

@@ -3,6 +3,7 @@ import Cliente from "@/models/Cliente"
 import OS from "@/models/OS"
 import "@/models/Central"
 import type { Types } from "mongoose"
+import { normalizarE164, formatarBR } from "@/lib/telefone"
 
 export type CreateClienteInput = {
   nome: string
@@ -99,4 +100,92 @@ export async function listarOSDoCliente(clienteId: string) {
     .populate("central_id", "marca modelo codigo")
     .sort({ created_at: -1 })
     .lean()
+}
+
+/**
+ * Cria (ou reaproveita) cliente a partir do telefone, que é a única informação
+ * que a bancada tem quando chega mensagem de número desconhecido.
+ *
+ * O nome não é exigido: fica o telefone formatado até alguém confirmar. E nome
+ * confirmado por humano nunca é sobrescrito pela máquina — é o que protege o
+ * cadastro do `profile.name` do WhatsApp, que o usuário escolhe e pode mudar.
+ *
+ * Depende de `telefone_e164` estar preenchido nos clientes antigos; quem faz
+ * isso é `scripts/migrar-fase0.ts`.
+ */
+export async function obterOuCriarClientePorTelefone(
+  telefoneBruto: string,
+  opts: {
+    nome?: string
+    origem?: "manual" | "entrada_rapida" | "whatsapp"
+    nome_whatsapp?: string
+  } = {}
+) {
+  await connectDB()
+
+  const e164 = normalizarE164(telefoneBruto)
+  if (!e164) throw new Error("Telefone inválido")
+
+  const nomeInformado = opts.nome?.trim() || ""
+
+  const upsert = {
+    $setOnInsert: {
+      telefone_e164: e164,
+      telefone: formatarBR(e164),
+      nome: nomeInformado || formatarBR(e164),
+      nome_confirmado: Boolean(nomeInformado),
+      origem: opts.origem ?? "manual",
+      ...(opts.nome_whatsapp ? { nome_whatsapp: opts.nome_whatsapp } : {}),
+      created_at: new Date(),
+    },
+  }
+
+  let cliente
+  try {
+    cliente = await Cliente.findOneAndUpdate({ telefone_e164: e164 }, upsert, {
+      upsert: true,
+      returnDocument: "after",
+      setDefaultsOnInsert: true,
+    })
+  } catch (err) {
+    // Dois operadores registrando o mesmo número novo no mesmo instante: o
+    // índice único deixa passar um só, e o outro relê o que acabou de ser criado.
+    if ((err as { code?: number }).code !== 11000) throw err
+    cliente = await Cliente.findOne({ telefone_e164: e164 })
+  }
+  if (!cliente) throw new Error("Falha ao obter cliente por telefone")
+
+  // Nome chegou depois, num cliente que ainda não tinha nome de gente.
+  if (nomeInformado && !cliente.nome_confirmado) {
+    cliente.nome = nomeInformado
+    cliente.nome_confirmado = true
+    await cliente.save()
+  }
+
+  return cliente
+}
+
+/** Marca o nome como conferido por humano, blindando-o contra a máquina. */
+export async function confirmarNomeCliente(id: string, nome: string) {
+  await connectDB()
+  return Cliente.findByIdAndUpdate(
+    id,
+    { nome: nome.trim(), nome_confirmado: true },
+    { returnDocument: "after" }
+  ).lean()
+}
+
+/** Os que a bancada mais usa, para o seletor já vir preenchido sem digitar nada. */
+export async function listarClientesRecentes(limite = 5) {
+  await connectDB()
+  const recentes = await OS.aggregate<{ _id: Types.ObjectId; ultima: Date }>([
+    { $group: { _id: "$cliente_id", ultima: { $max: "$created_at" } } },
+    { $sort: { ultima: -1 } },
+    { $limit: limite },
+  ])
+  if (!recentes.length) return []
+  const ids = recentes.map((r) => r._id)
+  const clientes = await Cliente.find({ _id: { $in: ids } }).lean()
+  const porId = new Map(clientes.map((c) => [String(c._id), c]))
+  return ids.map((id) => porId.get(String(id))).filter(Boolean)
 }
