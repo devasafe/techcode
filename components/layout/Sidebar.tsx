@@ -43,7 +43,7 @@ export function Sidebar({ perfis }: SidebarProps) {
       <aside className="hidden md:flex flex-col w-[240px] min-h-screen bg-[#111111] border-r border-[#1C1C1C]">
         <div className="px-6 py-5 border-b border-[#1C1C1C]">
           <span className="font-mono text-base font-bold text-[#E8FF47] tracking-tighter">
-            Tech Code
+            Tec Code
           </span>
         </div>
 

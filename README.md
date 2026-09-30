@@ -1,4 +1,4 @@
-<h1 align="center">TechCode — Sistema de Ordens de Serviço</h1>
+<h1 align="center">Tec Code — Sistema de Ordens de Serviço</h1>
 
 <p align="center">
   Gestão de ordens de serviço para assistência técnica de centrais eletrônicas — <b>em uso real</b> por um cliente.
@@ -16,7 +16,7 @@
 
 <p align="center">🇧🇷 Português &nbsp;|&nbsp; <a href="#-english">🇺🇸 English</a></p>
 
-<!-- 📸 Dica: adicione um print aqui → ![TechCode](docs/screenshot.png) -->
+<!-- 📸 Dica: adicione um print aqui → ![Tec Code](docs/screenshot.png) -->
 
 ---
 

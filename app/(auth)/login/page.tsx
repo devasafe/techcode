@@ -41,7 +41,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <p className="font-mono text-sm font-bold uppercase tracking-wide text-[#E8FF47]">
-            Tech Code
+            Tec Code
           </p>
           <p className="text-[#B4B4B4] text-sm mt-1 uppercase tracking-wide">Laboratório de ECUs</p>
         </div>

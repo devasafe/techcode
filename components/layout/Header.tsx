@@ -15,7 +15,7 @@ export async function Header() {
     <header className="min-h-14 border-b border-[#1C1C1C] bg-[#111111] flex items-center justify-between px-6">
       <div className="flex items-center gap-2">
         <span className="font-mono text-sm uppercase tracking-wide text-[#E8FF47]">
-          Tech Code
+          Tec Code
         </span>
       </div>
       {user && (

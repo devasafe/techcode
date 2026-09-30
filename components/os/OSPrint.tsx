@@ -169,7 +169,7 @@ export function OSPrint({ os }: OSPrintProps) {
       {/* Rodapé */}
       <div style={{ marginTop: 40, paddingTop: 16, borderTop: "1px solid #ddd", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         <div style={{ fontSize: 11, color: "#555" }}>
-          Tech Code — Laboratório de Reparo de Centrais Automotivas
+          Tec Code — Laboratório de Reparo de Centrais Automotivas
         </div>
         <div style={{ textAlign: "center" }}>
           <div style={{ borderTop: "1px solid #000", width: 180, marginBottom: 4 }} />
