@@ -29,8 +29,8 @@ type CentralFormProps = {
   onCancelar: () => void
 }
 
-const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333]"
-const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-1"
+const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A]"
+const labelCls = "block text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-1"
 
 export function CentralForm({ central, onSalvo, onCancelar }: CentralFormProps) {
   const [erro, setErro] = useState("")
@@ -77,10 +77,10 @@ export function CentralForm({ central, onSalvo, onCancelar }: CentralFormProps) 
               key={t.value}
               type="button"
               onClick={() => setTipoModulo(tipoModulo === t.value ? "" : t.value)}
-              className={`px-3 py-1.5 rounded-sm text-xs font-semibold uppercase tracking-widest border transition-colors ${
+              className={`px-3 py-1.5 rounded-sm text-sm font-bold uppercase tracking-wide border transition-colors ${
                 tipoModulo === t.value
                   ? "bg-[#E8FF47] text-black border-[#E8FF47]"
-                  : "bg-transparent text-[#555555] border-[#1C1C1C] hover:border-[#555555]"
+                  : "bg-transparent text-[#B4B4B4] border-[#1C1C1C] hover:border-[#B4B4B4]"
               }`}
             >
               {t.label}
@@ -132,13 +132,13 @@ export function CentralForm({ central, onSalvo, onCancelar }: CentralFormProps) 
         />
       </div>
 
-      {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
+      {erro && <p className="text-sm text-[#FF4444]">{erro}</p>}
 
       <div className="flex gap-2 pt-1">
         <button
           type="submit"
           disabled={carregando}
-          className="flex-1 py-2.5 text-xs font-semibold uppercase tracking-widest bg-[#E8FF47] text-black rounded-sm hover:bg-[#d4eb3a] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+          className="flex-1 py-2.5 text-sm font-bold uppercase tracking-wide bg-[#E8FF47] text-black rounded-sm hover:bg-[#d4eb3a] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
         >
           {carregando && <Loader2 size={12} className="animate-spin" />}
           {carregando ? "Salvando..." : editando ? "Salvar alterações" : "Cadastrar"}
@@ -147,7 +147,7 @@ export function CentralForm({ central, onSalvo, onCancelar }: CentralFormProps) 
           type="button"
           onClick={onCancelar}
           disabled={carregando}
-          className="px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-[#555555] hover:text-white border border-[#1C1C1C] rounded-sm transition-colors disabled:opacity-50"
+          className="px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white border border-[#1C1C1C] rounded-sm transition-colors disabled:opacity-50"
         >
           Cancelar
         </button>

@@ -25,11 +25,11 @@ function NovaOSContent() {
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => router.back()}
-          className="text-[#555555] hover:text-white transition-colors"
+          className="text-[#B4B4B4] hover:text-white transition-colors"
         >
           <ArrowLeft size={16} />
         </button>
-        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+        <h1 className="text-xl font-bold uppercase tracking-wide text-[#F0F0F0]">
           Nova Ordem de Serviço
         </h1>
       </div>
@@ -44,7 +44,7 @@ function NovaOSContent() {
 
 export default function NovaOSPage() {
   return (
-    <Suspense fallback={<p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>}>
+    <Suspense fallback={<p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>}>
       <NovaOSContent />
     </Suspense>
   )

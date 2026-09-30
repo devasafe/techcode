@@ -34,7 +34,7 @@ const STATUS_BADGE: Record<OSStatus, { label: string; cls: string }> = {
   concluida:     { label: "Concluída",     cls: "bg-[#0D2A1A] text-[#22C55E]" },
   devolvida:     { label: "Devolvida",     cls: "bg-[#2A0D0D] text-[#FF4444]" },
   substituida:   { label: "Substituída",   cls: "bg-[#2A1500] text-[#FB923C]" },
-  cancelada:     { label: "Cancelada",     cls: "bg-[#1A1A1A] text-[#555555]" },
+  cancelada:     { label: "Cancelada",     cls: "bg-[#1A1A1A] text-[#B4B4B4]" },
 }
 
 export default function OSPage() {
@@ -75,12 +75,12 @@ export default function OSPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+        <h1 className="text-xl font-bold uppercase tracking-wide text-[#F0F0F0]">
           Ordens de Serviço
         </h1>
         <button
           onClick={() => router.push("/os/nova")}
-          className="flex items-center gap-2 bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 transition-all"
+          className="flex items-center gap-2 bg-[#E8FF47] text-black text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 transition-all"
         >
           <Plus size={14} />
           Nova OS
@@ -89,15 +89,15 @@ export default function OSPage() {
 
       {/* Busca */}
       <div className="relative">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555555]" />
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#B4B4B4]" />
         <input
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
           placeholder="Buscar por nº, cliente, central ou defeito..."
-          className="w-full bg-[#111111] border border-[#1C1C1C] text-sm text-[#F0F0F0] pl-8 pr-8 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333]"
+          className="w-full bg-[#111111] border border-[#1C1C1C] text-base text-[#F0F0F0] pl-8 pr-8 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A]"
         />
         {busca && (
-          <button onClick={() => setBusca("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555555] hover:text-white">
+          <button onClick={() => setBusca("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B4B4B4] hover:text-white">
             <X size={13} />
           </button>
         )}
@@ -109,10 +109,10 @@ export default function OSPage() {
           <button
             key={tab.value}
             onClick={() => setStatus(tab.value)}
-            className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-widest whitespace-nowrap transition-colors rounded-sm ${
+            className={`px-3 py-1.5 text-sm font-bold uppercase tracking-wide whitespace-nowrap transition-colors rounded-sm ${
               status === tab.value
                 ? "text-[#E8FF47] border-b border-[#E8FF47]"
-                : "text-[#555555] hover:text-white"
+                : "text-[#B4B4B4] hover:text-white"
             }`}
           >
             {tab.label}
@@ -120,21 +120,21 @@ export default function OSPage() {
         ))}
       </div>
 
-      {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
+      {erro && <p className="text-sm text-[#FF4444]">{erro}</p>}
 
       {carregando && os.length === 0 ? (
-        <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+        <p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#111111] border-b border-[#1C1C1C]">
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">#</th>
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Cliente</th>
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden md:table-cell">Central</th>
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Status</th>
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right hidden sm:table-cell">Valor</th>
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right hidden lg:table-cell">Data</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">#</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Cliente</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hidden md:table-cell">Central</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Status</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] text-right hidden sm:table-cell">Valor</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] text-right hidden lg:table-cell">Data</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1C1C1C]">
@@ -146,23 +146,23 @@ export default function OSPage() {
                     className="hover:bg-[#141414] transition-colors cursor-pointer"
                     onClick={() => router.push(`/os/${o._id}`)}
                   >
-                    <td className="py-3 px-4 font-mono text-sm text-[#E8FF47]">
+                    <td className="py-3 px-4 font-mono text-base text-[#E8FF47]">
                       #{o.numero_os}
                     </td>
                     <td className="py-3 px-4">
-                      <p className="text-sm text-[#F0F0F0]">{o.cliente_id?.nome ?? "—"}</p>
-                      <p className="text-xs text-[#555555] truncate max-w-[180px]">{o.defeito_descricao}</p>
+                      <p className="text-base text-[#F0F0F0]">{o.cliente_id?.nome ?? "—"}</p>
+                      <p className="text-sm text-[#B4B4B4] truncate max-w-[320px]">{o.defeito_descricao}</p>
                     </td>
-                    <td className="py-3 px-4 text-sm text-[#555555] hidden md:table-cell">
+                    <td className="py-3 px-4 text-base text-[#B4B4B4] hidden md:table-cell">
                       {o.central_id ? `${o.central_id.marca} ${o.central_id.modelo}` : "—"}
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex flex-wrap items-center gap-1">
-                        <span className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-1 rounded-sm ${badge.cls}`}>
+                        <span className={`text-[12px] font-bold uppercase tracking-wide px-2 py-1 rounded-sm ${badge.cls}`}>
                           {badge.label}
                         </span>
                         {o.status === "concluida" && (
-                          <span className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-1 rounded-sm ${
+                          <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-1 rounded-sm ${
                             o.pago ? "bg-[#0D2A1A] text-[#22C55E]" : "bg-[#2A1500] text-[#F59E0B]"
                           }`}>
                             {o.pago ? "Pago" : "Pendente"}
@@ -170,12 +170,12 @@ export default function OSPage() {
                         )}
                       </div>
                     </td>
-                    <td className="py-3 px-4 font-mono text-sm text-right text-white hidden sm:table-cell">
+                    <td className="py-3 px-4 font-mono text-base text-right text-white hidden sm:table-cell">
                       {o.valor_cobrado > 0
                         ? `R$ ${o.valor_cobrado.toFixed(2).replace(".", ",")}`
                         : "—"}
                     </td>
-                    <td className="py-3 px-4 font-mono text-sm text-right text-[#555555] hidden lg:table-cell">
+                    <td className="py-3 px-4 font-mono text-base text-right text-[#B4B4B4] hidden lg:table-cell">
                       {new Date(o.created_at).toLocaleDateString("pt-BR")}
                     </td>
                   </tr>
@@ -184,7 +184,7 @@ export default function OSPage() {
             </tbody>
           </table>
           {!carregando && osFiltradas.length === 0 && (
-            <p className="text-xs text-[#555555] text-center py-8">
+            <p className="text-sm text-[#B4B4B4] text-center py-8">
               {busca ? "Nenhuma OS encontrada para essa busca." : status ? "Nenhuma OS com este status." : "Nenhuma OS cadastrada ainda."}
             </p>
           )}

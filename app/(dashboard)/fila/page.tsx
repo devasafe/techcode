@@ -46,14 +46,14 @@ export default function FilaPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+      <h1 className="text-xl font-bold uppercase tracking-wide text-[#F0F0F0]">
         Fila de Serviços
       </h1>
 
-      {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
+      {erro && <p className="text-sm text-[#FF4444]">{erro}</p>}
 
       {carregando ? (
-        <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+        <p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {COLUNAS.map((col) => {
@@ -62,12 +62,12 @@ export default function FilaPage() {
               <div key={col.status}>
                 <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[#1C1C1C]">
                   <span
-                    className="text-[10px] font-semibold uppercase tracking-widest"
+                    className="text-[12px] font-bold uppercase tracking-wide"
                     style={{ color: col.accent }}
                   >
                     {col.label}
                   </span>
-                  <span className="font-mono text-xs text-[#555555]">{lista.length}</span>
+                  <span className="font-mono text-sm text-[#B4B4B4]">{lista.length}</span>
                 </div>
                 <div className="space-y-2">
                   {lista.map((o) => (
@@ -77,24 +77,24 @@ export default function FilaPage() {
                       onClick={() => router.push(`/os/${o._id}`)}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono text-xs text-[#E8FF47]">#{o.numero_os}</span>
-                        <span className="font-mono text-[10px] text-[#555555]">
+                        <span className="font-mono text-sm text-[#E8FF47]">#{o.numero_os}</span>
+                        <span className="font-mono text-[12px] text-[#B4B4B4]">
                           {new Date(o.created_at).toLocaleDateString("pt-BR")}
                         </span>
                       </div>
                       {o.cliente_id && (
-                        <p className="text-xs font-medium text-[#F0F0F0] mb-0.5">{o.cliente_id.nome}</p>
+                        <p className="text-sm font-medium text-[#F0F0F0] mb-0.5">{o.cliente_id.nome}</p>
                       )}
                       {o.central_id && (
-                        <p className="text-[10px] text-[#555555]">
+                        <p className="text-[12px] text-[#B4B4B4]">
                           {o.central_id.marca} {o.central_id.modelo}
                         </p>
                       )}
-                      <p className="text-[10px] text-[#555555] truncate mt-1">{o.defeito_descricao}</p>
+                      <p className="text-[12px] text-[#B4B4B4] truncate mt-1">{o.defeito_descricao}</p>
                     </div>
                   ))}
                   {lista.length === 0 && (
-                    <p className="text-[10px] text-[#555555] text-center py-6">Nenhuma</p>
+                    <p className="text-[12px] text-[#B4B4B4] text-center py-6">Nenhuma</p>
                   )}
                 </div>
               </div>

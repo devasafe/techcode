@@ -62,7 +62,7 @@ export default function FinanceiroPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+        <h1 className="text-xl font-bold uppercase tracking-wide text-[#F0F0F0]">
           Financeiro
         </h1>
         <div className="flex gap-1">
@@ -70,10 +70,10 @@ export default function FinanceiroPage() {
             <button
               key={p.value}
               onClick={() => setPeriodo(p.value)}
-              className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-widest whitespace-nowrap transition-colors rounded-sm ${
+              className={`px-3 py-1.5 text-sm font-bold uppercase tracking-wide whitespace-nowrap transition-colors rounded-sm ${
                 periodo === p.value
                   ? "text-[#E8FF47] border-b border-[#E8FF47]"
-                  : "text-[#555555] hover:text-white"
+                  : "text-[#B4B4B4] hover:text-white"
               }`}
             >
               {p.label}
@@ -82,33 +82,33 @@ export default function FinanceiroPage() {
         </div>
       </div>
 
-      {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
+      {erro && <p className="text-sm text-[#FF4444]">{erro}</p>}
 
       {carregando ? (
-        <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+        <p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 h-28 flex flex-col justify-between">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Receita</p>
+            <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 min-h-28 flex flex-col justify-between">
+              <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Receita</p>
               <div>
                 <p className="font-mono text-xl font-bold text-[#F0F0F0]">{moeda(t?.receita ?? 0)}</p>
-                <p className="font-mono text-[10px] text-[#555555] mt-0.5">{t?.count ?? 0} OS</p>
+                <p className="font-mono text-[12px] text-[#B4B4B4] mt-0.5">{t?.count ?? 0} OS</p>
               </div>
             </div>
 
-            <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 h-28 flex flex-col justify-between">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Custo de peças</p>
+            <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 min-h-28 flex flex-col justify-between">
+              <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Custo de peças</p>
               <p className="font-mono text-xl font-bold text-[#F0F0F0]">{moeda(t?.custo ?? 0)}</p>
             </div>
 
-            <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 h-28 flex flex-col justify-between">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Comissões</p>
+            <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 min-h-28 flex flex-col justify-between">
+              <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Comissões</p>
               <p className="font-mono text-xl font-bold text-[#FB923C]">{moeda(t?.comissoes ?? 0)}</p>
             </div>
 
-            <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 h-28 flex flex-col justify-between">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Lucro líquido</p>
+            <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 min-h-28 flex flex-col justify-between">
+              <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Lucro líquido</p>
               <p className={`font-mono text-xl font-bold ${(t?.lucro ?? 0) >= 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
                 {moeda(t?.lucro ?? 0)}
               </p>
@@ -119,14 +119,14 @@ export default function FinanceiroPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#111111] border-b border-[#1C1C1C]">
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">#</th>
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden sm:table-cell">Cliente</th>
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden lg:table-cell">Central</th>
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right">Receita</th>
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right hidden md:table-cell">Custo</th>
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right hidden md:table-cell">Comissão</th>
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right">Lucro</th>
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right hidden sm:table-cell">Data</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">#</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hidden sm:table-cell">Cliente</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hidden lg:table-cell">Central</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] text-right">Receita</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] text-right hidden md:table-cell">Custo</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] text-right hidden md:table-cell">Comissão</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] text-right">Lucro</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] text-right hidden sm:table-cell">Data</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1C1C1C]">
@@ -138,25 +138,25 @@ export default function FinanceiroPage() {
                   const data    = substituida ? o.devolucao?.data : o.closed_at
                   return (
                     <tr key={o._id} className="hover:bg-[#141414] transition-colors">
-                      <td className="py-3 px-4 font-mono text-sm text-[#E8FF47]">
+                      <td className="py-3 px-4 font-mono text-base text-[#E8FF47]">
                         #{o.numero_os}
                         {substituida && (
-                          <span className="ml-2 text-[9px] font-semibold uppercase tracking-widest text-[#FB923C]">subst.</span>
+                          <span className="ml-2 text-[11px] font-bold uppercase tracking-wide text-[#FB923C]">subst.</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-sm text-[#F0F0F0] hidden sm:table-cell">{o.cliente_id?.nome ?? "—"}</td>
-                      <td className="py-3 px-4 text-sm text-[#555555] hidden lg:table-cell">
+                      <td className="py-3 px-4 text-base text-[#F0F0F0] hidden sm:table-cell">{o.cliente_id?.nome ?? "—"}</td>
+                      <td className="py-3 px-4 text-base text-[#B4B4B4] hidden lg:table-cell">
                         {o.central_id ? `${o.central_id.marca} ${o.central_id.modelo}` : "—"}
                       </td>
-                      <td className="py-3 px-4 font-mono text-sm text-right text-[#F0F0F0]">{moeda(receita)}</td>
-                      <td className="py-3 px-4 font-mono text-sm text-right text-[#555555] hidden md:table-cell">{moeda(custo)}</td>
-                      <td className="py-3 px-4 font-mono text-sm text-right text-[#FB923C] hidden md:table-cell">
+                      <td className="py-3 px-4 font-mono text-base text-right text-[#F0F0F0]">{moeda(receita)}</td>
+                      <td className="py-3 px-4 font-mono text-base text-right text-[#B4B4B4] hidden md:table-cell">{moeda(custo)}</td>
+                      <td className="py-3 px-4 font-mono text-base text-right text-[#FB923C] hidden md:table-cell">
                         {o.valor_comissao > 0 ? moeda(o.valor_comissao) : "—"}
                       </td>
-                      <td className={`py-3 px-4 font-mono text-sm text-right font-medium ${lucro >= 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
+                      <td className={`py-3 px-4 font-mono text-base text-right font-medium ${lucro >= 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
                         {moeda(lucro)}
                       </td>
-                      <td className="py-3 px-4 font-mono text-sm text-right text-[#555555] hidden sm:table-cell">
+                      <td className="py-3 px-4 font-mono text-base text-right text-[#B4B4B4] hidden sm:table-cell">
                         {data ? new Date(data).toLocaleDateString("pt-BR") : "—"}
                       </td>
                     </tr>
@@ -165,7 +165,7 @@ export default function FinanceiroPage() {
               </tbody>
             </table>
             {!relatorio?.os.length && !carregando && (
-              <p className="text-xs text-[#555555] text-center py-8">Nenhuma OS concluída no período selecionado.</p>
+              <p className="text-sm text-[#B4B4B4] text-center py-8">Nenhuma OS concluída no período selecionado.</p>
             )}
           </div>
         </>

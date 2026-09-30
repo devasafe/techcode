@@ -45,7 +45,7 @@ export function OSPrint({ os }: OSPrintProps) {
           <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: 2, fontFamily: "monospace" }}>
             TECH CODE
           </div>
-          <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: "#555", marginTop: 2 }}>
             Laboratório de Reparo de Centrais Automotivas
           </div>
         </div>
@@ -53,11 +53,11 @@ export function OSPrint({ os }: OSPrintProps) {
           <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "monospace" }}>
             OS #{os.numero_os}
           </div>
-          <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: "#555", marginTop: 2 }}>
             Abertura: {dataAbertura}
           </div>
           {dataConclusao && (
-            <div style={{ fontSize: 10, color: "#555" }}>
+            <div style={{ fontSize: 12, color: "#555" }}>
               Conclusão: {dataConclusao}
             </div>
           )}
@@ -67,21 +67,21 @@ export function OSPrint({ os }: OSPrintProps) {
       {/* Dados do cliente e central */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
         <div>
-          <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#555", marginBottom: 6 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#555", marginBottom: 6 }}>
             Cliente
           </div>
           {os.cliente_id ? (
             <>
               <div style={{ fontSize: 13, fontWeight: 600 }}>{os.cliente_id.nome}</div>
-              <div style={{ fontSize: 11, color: "#555", fontFamily: "monospace" }}>{os.cliente_id.telefone}</div>
+              <div style={{ fontSize: 12, color: "#555", fontFamily: "monospace" }}>{os.cliente_id.telefone}</div>
             </>
           ) : (
-            <div style={{ fontSize: 12, color: "#999" }}>—</div>
+            <div style={{ fontSize: 12, color: "#555" }}>—</div>
           )}
         </div>
 
         <div>
-          <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#555", marginBottom: 6 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#555", marginBottom: 6 }}>
             Central
           </div>
           {os.central_id ? (
@@ -89,19 +89,19 @@ export function OSPrint({ os }: OSPrintProps) {
               <div style={{ fontSize: 13, fontWeight: 600 }}>
                 {os.central_id.marca} {os.central_id.modelo}
               </div>
-              <div style={{ fontSize: 11, color: "#555", fontFamily: "monospace" }}>
+              <div style={{ fontSize: 12, color: "#555", fontFamily: "monospace" }}>
                 Cód: {os.central_id.codigo}
               </div>
             </>
           ) : (
-            <div style={{ fontSize: 12, color: "#999" }}>—</div>
+            <div style={{ fontSize: 12, color: "#555" }}>—</div>
           )}
         </div>
       </div>
 
       {/* Defeito */}
       <div style={{ marginBottom: 20, padding: 12, border: "1px solid #ddd", borderRadius: 4 }}>
-        <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#555", marginBottom: 6 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#555", marginBottom: 6 }}>
           Defeito relatado
         </div>
         <div style={{ fontSize: 12 }}>{os.defeito_descricao}</div>
@@ -110,7 +110,7 @@ export function OSPrint({ os }: OSPrintProps) {
       {/* Solução */}
       {os.solucao_descricao && (
         <div style={{ marginBottom: 20, padding: 12, border: "1px solid #ddd", borderRadius: 4 }}>
-          <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#555", marginBottom: 6 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#555", marginBottom: 6 }}>
             Solução aplicada
           </div>
           <div style={{ fontSize: 12 }}>{os.solucao_descricao}</div>
@@ -120,12 +120,12 @@ export function OSPrint({ os }: OSPrintProps) {
       {/* Devolução */}
       {os.devolucao && (
         <div style={{ marginBottom: 20, padding: 12, border: "1px solid #ddd", borderRadius: 4 }}>
-          <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#555", marginBottom: 6 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#555", marginBottom: 6 }}>
             {os.devolucao.tipo === "reembolso" ? "Devolução — Reembolso" : "Devolução — Substituição de central"}
           </div>
           <div style={{ fontSize: 12 }}>{os.devolucao.motivo}</div>
           {os.devolucao.central_adquirida && (
-            <div style={{ fontSize: 11, color: "#555", marginTop: 4 }}>
+            <div style={{ fontSize: 12, color: "#555", marginTop: 4 }}>
               Central substituta: {os.devolucao.central_adquirida}
             </div>
           )}
@@ -134,19 +134,19 @@ export function OSPrint({ os }: OSPrintProps) {
 
       {/* Valores */}
       <div style={{ marginBottom: 24, padding: 12, border: "1px solid #ddd", borderRadius: 4 }}>
-        <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#555", marginBottom: 10 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#555", marginBottom: 10 }}>
           Resumo financeiro
         </div>
 
         {os.pecas.length > 0 && (
           <div style={{ marginBottom: 10 }}>
             {os.pecas.map((p, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#555", marginBottom: 2 }}>
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#555", marginBottom: 2 }}>
                 <span>{p.nome}</span>
                 <span style={{ fontFamily: "monospace" }}>R$ {p.custo.toFixed(2).replace(".", ",")}</span>
               </div>
             ))}
-            <div style={{ borderTop: "1px solid #eee", marginTop: 6, paddingTop: 6, display: "flex", justifyContent: "space-between", fontSize: 11, color: "#555" }}>
+            <div style={{ borderTop: "1px solid #eee", marginTop: 6, paddingTop: 6, display: "flex", justifyContent: "space-between", fontSize: 12, color: "#555" }}>
               <span>Custo de peças</span>
               <span style={{ fontFamily: "monospace" }}>R$ {os.custo_total_pecas.toFixed(2).replace(".", ",")}</span>
             </div>
@@ -161,20 +161,20 @@ export function OSPrint({ os }: OSPrintProps) {
 
       {/* Garantia */}
       {garantiaAte && (
-        <div style={{ marginBottom: 24, fontSize: 11, color: "#555" }}>
+        <div style={{ marginBottom: 24, fontSize: 12, color: "#555" }}>
           Garantia de {os.garantia_dias} dias — válida até <strong>{garantiaAte}</strong>
         </div>
       )}
 
       {/* Rodapé */}
       <div style={{ marginTop: 40, paddingTop: 16, borderTop: "1px solid #ddd", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div style={{ fontSize: 9, color: "#999" }}>
+        <div style={{ fontSize: 11, color: "#555" }}>
           Tech Code — Laboratório de Reparo de Centrais Automotivas
         </div>
         <div style={{ textAlign: "center" }}>
           <div style={{ borderTop: "1px solid #000", width: 180, marginBottom: 4 }} />
-          <div style={{ fontSize: 10 }}>Assinatura do cliente</div>
-          <div style={{ fontSize: 9, color: "#999", marginTop: 2 }}>{os.cliente_id?.nome ?? ""}</div>
+          <div style={{ fontSize: 12 }}>Assinatura do cliente</div>
+          <div style={{ fontSize: 11, color: "#555", marginTop: 2 }}>{os.cliente_id?.nome ?? ""}</div>
         </div>
       </div>
     </div>

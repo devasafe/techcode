@@ -40,9 +40,9 @@ export function Sidebar({ perfis }: SidebarProps) {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-[220px] min-h-screen bg-[#111111] border-r border-[#1C1C1C]">
+      <aside className="hidden md:flex flex-col w-[240px] min-h-screen bg-[#111111] border-r border-[#1C1C1C]">
         <div className="px-6 py-5 border-b border-[#1C1C1C]">
-          <span className="font-mono text-sm font-bold text-[#E8FF47] tracking-tighter">
+          <span className="font-mono text-base font-bold text-[#E8FF47] tracking-tighter">
             Tech Code
           </span>
         </div>
@@ -54,10 +54,10 @@ export function Sidebar({ perfis }: SidebarProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-2.5 text-xs font-semibold uppercase tracking-widest transition-colors ${
+                className={`flex items-center gap-3 px-4 py-2.5 text-sm font-bold uppercase tracking-wide transition-colors ${
                   ativo
                     ? "border-l-2 border-[#E8FF47] text-white bg-[#1A1A1A]"
-                    : "border-l-2 border-transparent text-[#555555] hover:text-white hover:bg-[#161616]"
+                    : "border-l-2 border-transparent text-[#B4B4B4] hover:text-white hover:bg-[#161616]"
                 }`}
               >
                 <item.icon size={15} />
@@ -70,7 +70,7 @@ export function Sidebar({ perfis }: SidebarProps) {
         <div className="px-2 py-3 border-t border-[#1C1C1C]">
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-[#555555] hover:text-white hover:bg-[#161616] transition-colors border-l-2 border-transparent"
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white hover:bg-[#161616] transition-colors border-l-2 border-transparent"
           >
             <LogOut size={15} />
             Sair
@@ -87,11 +87,11 @@ export function Sidebar({ perfis }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center justify-center gap-1 w-[20%] min-w-[20%] h-full shrink-0 snap-start transition-colors ${
-                ativo ? "text-[#E8FF47]" : "text-[#555555]"
+                ativo ? "text-[#E8FF47]" : "text-[#B4B4B4]"
               }`}
             >
               <item.icon size={18} />
-              <span className="text-[9px] font-semibold uppercase tracking-widest leading-none">
+              <span className="text-[11px] font-bold uppercase tracking-wide leading-none">
                 {item.label.split(" ")[0]}
               </span>
             </Link>
@@ -99,10 +99,10 @@ export function Sidebar({ perfis }: SidebarProps) {
         })}
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex flex-col items-center justify-center gap-1 w-[20%] min-w-[20%] h-full shrink-0 snap-start text-[#555555] transition-colors"
+          className="flex flex-col items-center justify-center gap-1 w-[20%] min-w-[20%] h-full shrink-0 snap-start text-[#B4B4B4] transition-colors"
         >
           <LogOut size={18} />
-          <span className="text-[9px] font-semibold uppercase tracking-widest leading-none">Sair</span>
+          <span className="text-[11px] font-bold uppercase tracking-wide leading-none">Sair</span>
         </button>
       </nav>
     </>

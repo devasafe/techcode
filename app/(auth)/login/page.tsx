@@ -40,16 +40,16 @@ export default function LoginPage() {
     >
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <p className="font-mono text-xs font-bold uppercase tracking-widest text-[#E8FF47]">
+          <p className="font-mono text-sm font-bold uppercase tracking-wide text-[#E8FF47]">
             Tech Code
           </p>
-          <p className="text-[#555555] text-xs mt-1 uppercase tracking-widest">Laboratório de ECUs</p>
+          <p className="text-[#B4B4B4] text-sm mt-1 uppercase tracking-wide">Laboratório de ECUs</p>
         </div>
 
         <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label htmlFor="email" className="block text-[10px] font-semibold uppercase tracking-widest text-[#555555]">
+              <label htmlFor="email" className="block text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
                 Email
               </label>
               <input
@@ -58,12 +58,12 @@ export default function LoginPage() {
                 type="email"
                 required
                 autoComplete="email"
-                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333]"
+                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A]"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="senha" className="block text-[10px] font-semibold uppercase tracking-widest text-[#555555]">
+              <label htmlFor="senha" className="block text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
                 Senha
               </label>
               <input
@@ -72,16 +72,16 @@ export default function LoginPage() {
                 type="password"
                 required
                 autoComplete="current-password"
-                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors"
+                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors"
               />
             </div>
 
-            {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
+            {erro && <p className="text-sm text-[#FF4444]">{erro}</p>}
 
             <button
               type="submit"
               disabled={carregando}
-              className="w-full bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest py-2.5 rounded-sm hover:brightness-110 disabled:opacity-60 transition-all mt-2"
+              className="w-full bg-[#E8FF47] text-black text-sm font-bold uppercase tracking-wide py-2.5 rounded-sm hover:brightness-110 disabled:opacity-60 transition-all mt-2"
             >
               {carregando ? "Entrando..." : "Entrar"}
             </button>

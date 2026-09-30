@@ -53,13 +53,13 @@ const STATUS_BADGE: Record<OSStatus, { label: string; cls: string }> = {
   concluida:     { label: "Concluída",     cls: "bg-[#0D2A1A] text-[#22C55E]" },
   devolvida:     { label: "Devolvida",     cls: "bg-[#2A0D0D] text-[#FF4444]" },
   substituida:   { label: "Substituída",   cls: "bg-[#2A1500] text-[#FB923C]" },
-  cancelada:     { label: "Cancelada",     cls: "bg-[#1A1A1A] text-[#555555]" },
+  cancelada:     { label: "Cancelada",     cls: "bg-[#1A1A1A] text-[#B4B4B4]" },
 }
 
 const PODE_CANCELAR: OSStatus[] = ["aberta", "na_fila", "em_andamento"]
 
-const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333]"
-const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-1"
+const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A]"
+const labelCls = "block text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-1"
 
 export default function OSDetalhePage() {
   const { id } = useParams<{ id: string }>()
@@ -287,7 +287,7 @@ export default function OSDetalhePage() {
     }
   }
 
-  if (carregando) return <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+  if (carregando) return <p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>
   if (!os) return null
 
   const badge = STATUS_BADGE[os.status] ?? STATUS_BADGE.aberta
@@ -303,25 +303,25 @@ export default function OSDetalhePage() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => router.push("/os")}
-          className="text-[#555555] hover:text-white transition-colors print:hidden"
+          className="text-[#B4B4B4] hover:text-white transition-colors print:hidden"
         >
           <ArrowLeft size={16} />
         </button>
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="font-mono text-sm font-bold text-[#E8FF47]">OS #{os.numero_os}</h1>
-            <span className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm ${badge.cls}`}>
+            <h1 className="font-mono text-xl font-bold text-[#E8FF47]">OS #{os.numero_os}</h1>
+            <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm ${badge.cls}`}>
               {badge.label}
             </span>
             {os.status === "concluida" && (
-              <span className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm ${
+              <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm ${
                 os.pago ? "bg-[#0D2A1A] text-[#22C55E]" : "bg-[#2A1500] text-[#F59E0B]"
               }`}>
                 {os.pago ? "Pago" : "Pagamento pendente"}
               </span>
             )}
           </div>
-          <p className="font-mono text-[10px] text-[#555555] mt-0.5">
+          <p className="font-mono text-[12px] text-[#B4B4B4] mt-0.5">
             Aberta em {new Date(os.created_at).toLocaleDateString("pt-BR")}
             {os.closed_at && ` · Concluída em ${new Date(os.closed_at).toLocaleDateString("pt-BR")}`}
           </p>
@@ -329,7 +329,7 @@ export default function OSDetalhePage() {
         <div className="print:hidden flex items-center gap-2">
           <button
             onClick={() => router.push(`/os/${id}/editar`)}
-            className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white border border-[#1C1C1C] hover:border-[#2A2A2A] px-3 py-1.5 rounded-sm transition-colors"
+            className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white border border-[#1C1C1C] hover:border-[#2A2A2A] px-3 py-1.5 rounded-sm transition-colors"
           >
             <Pencil size={12} />
             Editar
@@ -337,14 +337,14 @@ export default function OSDetalhePage() {
           {PODE_CANCELAR.includes(os.status) && (
             <button
               onClick={() => setAbrirCancelar(true)}
-              className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-[#FF4444] border border-[#1C1C1C] hover:border-[#2A0D0D] px-3 py-1.5 rounded-sm transition-colors"
+              className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-[#FF4444] border border-[#1C1C1C] hover:border-[#2A0D0D] px-3 py-1.5 rounded-sm transition-colors"
             >
               Cancelar
             </button>
           )}
           <button
             onClick={exportarPDF}
-            className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white border border-[#1C1C1C] hover:border-[#2A2A2A] px-3 py-1.5 rounded-sm transition-colors"
+            className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white border border-[#1C1C1C] hover:border-[#2A2A2A] px-3 py-1.5 rounded-sm transition-colors"
           >
             <FileDown size={12} />
             PDF
@@ -357,7 +357,7 @@ export default function OSDetalhePage() {
         <button
           onClick={() => atualizarStatus("na_fila")}
           disabled={atualizando}
-          className="bg-[#1E2A3A] text-[#60A5FA] text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
+          className="bg-[#1E2A3A] text-[#60A5FA] text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
         >
           Colocar na fila
         </button>
@@ -366,7 +366,7 @@ export default function OSDetalhePage() {
         <button
           onClick={() => atualizarStatus("em_andamento")}
           disabled={atualizando}
-          className="bg-[#2A2000] text-[#F59E0B] text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
+          className="bg-[#2A2000] text-[#F59E0B] text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
         >
           Iniciar serviço
         </button>
@@ -374,7 +374,7 @@ export default function OSDetalhePage() {
       {os.status === "em_andamento" && (
         <button
           onClick={() => setAbrirConcluir(true)}
-          className="bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 transition-all"
+          className="bg-[#E8FF47] text-black text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 transition-all"
         >
           Concluir OS
         </button>
@@ -383,32 +383,32 @@ export default function OSDetalhePage() {
       {/* Cards cliente + central */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-2">Cliente</p>
+          <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-2">Cliente</p>
           {os.cliente_id ? (
             <>
               <Link href={`/clientes/${os.cliente_id._id}`}
-                className="text-sm font-medium text-[#F0F0F0] hover:text-[#E8FF47] transition-colors">
+                className="text-base font-medium text-[#F0F0F0] hover:text-[#E8FF47] transition-colors">
                 {os.cliente_id.nome}
               </Link>
-              <p className="font-mono text-[10px] text-[#555555] mt-0.5">{os.cliente_id.telefone}</p>
+              <p className="font-mono text-[12px] text-[#B4B4B4] mt-0.5">{os.cliente_id.telefone}</p>
             </>
           ) : (
-            <p className="text-sm text-[#555555]">—</p>
+            <p className="text-base text-[#B4B4B4]">—</p>
           )}
         </div>
 
         <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-2">Central</p>
+          <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-2">Central</p>
           {os.central_id ? (
             <>
               <Link href={`/centrais/${os.central_id._id}`}
-                className="text-sm font-medium text-[#F0F0F0] hover:text-[#E8FF47] transition-colors">
+                className="text-base font-medium text-[#F0F0F0] hover:text-[#E8FF47] transition-colors">
                 {os.central_id.marca} <span className="font-mono text-[#E8FF47]">{os.central_id.modelo}</span>
               </Link>
-              <p className="font-mono text-[10px] text-[#555555] mt-0.5">{os.central_id.codigo}</p>
+              <p className="font-mono text-[12px] text-[#B4B4B4] mt-0.5">{os.central_id.codigo}</p>
             </>
           ) : (
-            <p className="text-sm text-[#555555]">—</p>
+            <p className="text-base text-[#B4B4B4]">—</p>
           )}
         </div>
       </div>
@@ -416,29 +416,29 @@ export default function OSDetalhePage() {
       {/* Defeito */}
       <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Defeito relatado</p>
+          <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Defeito relatado</p>
           <div className="flex items-center gap-1.5">
             {os.tipo_cliente && (
-              <span className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm ${
+              <span className={`text-[12px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm ${
                 os.tipo_cliente === "mecanico" ? "bg-[#1E2A3A] text-[#60A5FA]" : "bg-[#1C1C1C] text-[#888888]"
               }`}>
                 {os.tipo_cliente === "mecanico" ? "Mecânico" : "Usuário"}
               </span>
             )}
             {os.tipo_os === "teste" && (
-              <span className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm bg-[#2A2000] text-[#F59E0B]">
+              <span className="text-[12px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm bg-[#2A2000] text-[#F59E0B]">
                 Teste
               </span>
             )}
           </div>
         </div>
-        <p className="text-sm text-[#F0F0F0]">{os.defeito_descricao}</p>
+        <p className="text-base text-[#F0F0F0]">{os.defeito_descricao}</p>
       </div>
 
       {/* Fotos */}
       {os.fotos && os.fotos.length > 0 && (
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-2">
+          <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-2">
             Fotos do defeito
           </p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -455,8 +455,8 @@ export default function OSDetalhePage() {
       {/* Cancelamento */}
       {os.status === "cancelada" && (
         <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-2">OS Cancelada</p>
-          <p className="text-sm text-[#555555]">
+          <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-2">OS Cancelada</p>
+          <p className="text-base text-[#B4B4B4]">
             {os.motivo_cancelamento || "Sem motivo registrado."}
           </p>
         </div>
@@ -465,48 +465,48 @@ export default function OSDetalhePage() {
       {/* Solução */}
       {os.solucao_descricao && (
         <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#22C55E] mb-2">Solução aplicada</p>
-          <p className="text-sm text-[#F0F0F0]">{os.solucao_descricao}</p>
+          <p className="text-[12px] font-bold uppercase tracking-wide text-[#22C55E] mb-2">Solução aplicada</p>
+          <p className="text-base text-[#F0F0F0]">{os.solucao_descricao}</p>
         </div>
       )}
 
       {/* Resultado financeiro */}
       {os.status === "concluida" && (
         <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-3">Resultado</p>
+          <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-3">Resultado</p>
           {os.tecnico_id && (
-            <div className="flex justify-between text-xs mb-3">
-              <span className="text-[#555555]">Técnico responsável</span>
+            <div className="flex justify-between text-sm mb-3">
+              <span className="text-[#B4B4B4]">Técnico responsável</span>
               <span className="text-[#F0F0F0] font-medium">{os.tecnico_id.nome}</span>
             </div>
           )}
           {os.pecas.length > 0 && (
             <div className="mb-3 space-y-1">
-              <p className="text-[9px] uppercase tracking-widest text-[#555555] mb-1">Peças</p>
+              <p className="text-[11px] uppercase tracking-wide text-[#B4B4B4] mb-1">Peças</p>
               {os.pecas.map((p, i) => (
-                <div key={i} className="flex justify-between text-xs">
+                <div key={i} className="flex justify-between text-sm">
                   <span className="text-[#F0F0F0]">{p.nome}</span>
-                  <span className="font-mono text-[#555555]">R$ {p.custo.toFixed(2).replace(".", ",")}</span>
+                  <span className="font-mono text-[#B4B4B4]">R$ {p.custo.toFixed(2).replace(".", ",")}</span>
                 </div>
               ))}
             </div>
           )}
           <div className="border-t border-[#1C1C1C] pt-3 space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <span className="text-[#555555]">Custo de peças</span>
-              <span className="font-mono text-[#555555]">R$ {os.custo_total_pecas.toFixed(2).replace(".", ",")}</span>
-            </div>
             <div className="flex justify-between text-sm">
-              <span className="text-[#555555]">Valor cobrado</span>
+              <span className="text-[#B4B4B4]">Custo de peças</span>
+              <span className="font-mono text-[#B4B4B4]">R$ {os.custo_total_pecas.toFixed(2).replace(".", ",")}</span>
+            </div>
+            <div className="flex justify-between text-base">
+              <span className="text-[#B4B4B4]">Valor cobrado</span>
               <span className="font-mono font-medium text-[#F0F0F0]">R$ {os.valor_cobrado.toFixed(2).replace(".", ",")}</span>
             </div>
-            <div className={`flex justify-between text-sm font-medium ${os.lucro_liquido >= 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
+            <div className={`flex justify-between text-base font-medium ${os.lucro_liquido >= 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
               <span>Lucro líquido</span>
               <span className="font-mono">R$ {os.lucro_liquido.toFixed(2).replace(".", ",")}</span>
             </div>
           </div>
           {os.garantia_ate && (
-            <p className="text-[10px] text-[#555555] mt-3">
+            <p className="text-[12px] text-[#B4B4B4] mt-3">
               Garantia até {new Date(os.garantia_ate).toLocaleDateString("pt-BR")}
             </p>
           )}
@@ -517,24 +517,24 @@ export default function OSDetalhePage() {
       {os.status === "concluida" && (
         <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">
+            <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
               Retornos de garantia <span className="font-mono">{os.retornos_garantia.length}</span>
             </p>
             <button
               onClick={() => setAbrirRetorno(true)}
-              className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors"
+              className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white transition-colors"
             >
               + Registrar
             </button>
           </div>
           {os.retornos_garantia.length === 0 ? (
-            <p className="text-[10px] text-[#333333]">Nenhum retorno registrado.</p>
+            <p className="text-[12px] text-[#8A8A8A]">Nenhum retorno registrado.</p>
           ) : (
             <div className="space-y-3">
               {os.retornos_garantia.map((r) => (
                 <div key={r._id}>
-                  <p className="text-sm text-[#F0F0F0]">{r.descricao}</p>
-                  <p className="font-mono text-[10px] text-[#555555]">{new Date(r.data).toLocaleDateString("pt-BR")}</p>
+                  <p className="text-base text-[#F0F0F0]">{r.descricao}</p>
+                  <p className="font-mono text-[12px] text-[#B4B4B4]">{new Date(r.data).toLocaleDateString("pt-BR")}</p>
                 </div>
               ))}
             </div>
@@ -545,20 +545,20 @@ export default function OSDetalhePage() {
       {/* Devolução registrada */}
       {os.devolucao && (
         <div className="bg-[#111111] border border-[#2A0D0D] rounded-sm p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#FF4444] mb-3">
+          <p className="text-[12px] font-bold uppercase tracking-wide text-[#FF4444] mb-3">
             {os.devolucao.tipo === "reembolso" ? "Devolução — Reembolso" : "Devolução — Substituição"}
           </p>
-          <div className="space-y-1 text-sm">
+          <div className="space-y-1 text-base">
             <p className="text-[#F0F0F0]">{os.devolucao.motivo}</p>
             {os.devolucao.valor_reembolsado != null && (
-              <p className="font-mono text-xs text-[#555555]">
+              <p className="font-mono text-sm text-[#B4B4B4]">
                 Reembolso: R$ {os.devolucao.valor_reembolsado.toFixed(2).replace(".", ",")}
               </p>
             )}
             {os.devolucao.central_adquirida && (
-              <p className="text-xs text-[#555555]">Central substituta: {os.devolucao.central_adquirida}</p>
+              <p className="text-sm text-[#B4B4B4]">Central substituta: {os.devolucao.central_adquirida}</p>
             )}
-            <p className="font-mono text-[10px] text-[#555555]">
+            <p className="font-mono text-[12px] text-[#B4B4B4]">
               {new Date(os.devolucao.data).toLocaleDateString("pt-BR")}
             </p>
           </div>
@@ -572,7 +572,7 @@ export default function OSDetalhePage() {
             <button
               disabled={atualizando}
               onClick={marcarComoPago}
-              className="text-[10px] font-semibold uppercase tracking-widest text-[#F59E0B] hover:text-[#22C55E] border border-[#2A1500] hover:border-[#0D2A1A] px-4 py-2 rounded-sm transition-colors disabled:opacity-50"
+              className="text-[12px] font-bold uppercase tracking-wide text-[#F59E0B] hover:text-[#22C55E] border border-[#2A1500] hover:border-[#0D2A1A] px-4 py-2 rounded-sm transition-colors disabled:opacity-50"
             >
               Marcar como pago
             </button>
@@ -580,7 +580,7 @@ export default function OSDetalhePage() {
           {!os.devolucao && (
             <button
               onClick={() => setAbrirDevolucao(true)}
-              className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-[#FF4444] border border-[#1C1C1C] hover:border-[#2A0D0D] px-4 py-2 rounded-sm transition-colors"
+              className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-[#FF4444] border border-[#1C1C1C] hover:border-[#2A0D0D] px-4 py-2 rounded-sm transition-colors"
             >
               Registrar devolução
             </button>
@@ -592,12 +592,12 @@ export default function OSDetalhePage() {
       <Dialog open={abrirCancelar} onOpenChange={(open) => { setAbrirCancelar(open); if (!open) { setMotivoCancelamento(""); setErroCancelamento("") } }}>
         <DialogContent className="bg-[#111111] border-[#1C1C1C] max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">
+            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">
               Cancelar OS #{os.numero_os}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-xs text-[#555555]">
+            <p className="text-sm text-[#B4B4B4]">
               A OS será marcada como cancelada. Essa ação não pode ser desfeita.
             </p>
             <div>
@@ -607,21 +607,21 @@ export default function OSDetalhePage() {
                 onChange={(e) => setMotivoCancelamento(e.target.value)}
                 rows={3}
                 placeholder="Ex: cliente não aceitou o orçamento..."
-                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333] resize-none"
+                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A] resize-none"
               />
             </div>
-            {erroCancelamento && <p className="text-xs text-[#FF4444]">{erroCancelamento}</p>}
+            {erroCancelamento && <p className="text-sm text-[#FF4444]">{erroCancelamento}</p>}
             <div className="flex gap-2">
               <button
                 onClick={cancelarOS}
                 disabled={salvandoCancelamento}
-                className="bg-[#2A0D0D] text-[#FF4444] text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
+                className="bg-[#2A0D0D] text-[#FF4444] text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
               >
                 {salvandoCancelamento ? "Cancelando..." : "Confirmar cancelamento"}
               </button>
               <button
                 onClick={() => setAbrirCancelar(false)}
-                className="text-xs font-semibold uppercase tracking-widest text-[#555555] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
+                className="text-sm font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
               >
                 Voltar
               </button>
@@ -634,7 +634,7 @@ export default function OSDetalhePage() {
       <Dialog open={abrirConcluir} onOpenChange={setAbrirConcluir}>
         <DialogContent className="bg-[#111111] border-[#1C1C1C] max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">
+            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">
               Concluir OS #{os.numero_os}
             </DialogTitle>
           </DialogHeader>
@@ -655,7 +655,7 @@ export default function OSDetalhePage() {
               }`}
             >
               <div className={`w-4 h-4 rounded-sm border flex items-center justify-center shrink-0 ${
-                centralEmBomEstado ? "border-[#22C55E] bg-[#22C55E]" : "border-[#555555]"
+                centralEmBomEstado ? "border-[#22C55E] bg-[#22C55E]" : "border-[#B4B4B4]"
               }`}>
                 {centralEmBomEstado && (
                   <svg viewBox="0 0 10 8" fill="none" className="w-2.5 h-2.5">
@@ -664,10 +664,10 @@ export default function OSDetalhePage() {
                 )}
               </div>
               <div>
-                <p className={`text-xs font-semibold ${centralEmBomEstado ? "text-[#22C55E]" : "text-[#F0F0F0]"}`}>
+                <p className={`text-sm font-semibold ${centralEmBomEstado ? "text-[#22C55E]" : "text-[#F0F0F0]"}`}>
                   Central em bom estado
                 </p>
-                <p className="text-[10px] text-[#555555]">Nenhum defeito encontrado — apenas teste</p>
+                <p className="text-[12px] text-[#B4B4B4]">Nenhum defeito encontrado — apenas teste</p>
               </div>
             </button>
 
@@ -675,12 +675,12 @@ export default function OSDetalhePage() {
               <div>
                 <label className={labelCls}>Técnico responsável</label>
                 <Select value={tecnicoId} onValueChange={(v) => setTecnicoId(v ?? "")}>
-                  <SelectTrigger className="bg-[#0C0C0C] border-[#1C1C1C] text-[#F0F0F0] text-xs rounded-sm focus:ring-0 focus:border-[#E8FF47]">
+                  <SelectTrigger className="bg-[#0C0C0C] border-[#1C1C1C] text-[#F0F0F0] text-sm rounded-sm focus:ring-0 focus:border-[#E8FF47]">
                     <SelectValue placeholder="Sem técnico (sem comissão)" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#111111] border-[#1C1C1C]">
                     {tecnicos.map((t) => (
-                      <SelectItem key={t._id} value={t._id} className="text-[#F0F0F0] focus:bg-[#1C1C1C] text-xs">
+                      <SelectItem key={t._id} value={t._id} className="text-[#F0F0F0] focus:bg-[#1C1C1C] text-sm">
                         {t.nome} — {t.comissao_pct}%
                       </SelectItem>
                     ))}
@@ -697,7 +697,7 @@ export default function OSDetalhePage() {
                 rows={3}
                 required
                 placeholder="Descreva o que foi feito..."
-                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333] resize-none"
+                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A] resize-none"
               />
             </div>
 
@@ -706,11 +706,11 @@ export default function OSDetalhePage() {
                 <label className={labelCls}>Peças utilizadas</label>
                 <div className="space-y-1.5 mb-2">
                   {pecas.map((p, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-1.5 rounded-sm">
+                    <div key={i} className="flex items-center gap-2 text-sm bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-1.5 rounded-sm">
                       <span className="flex-1 text-[#F0F0F0]">{p.nome}</span>
-                      <span className="font-mono text-[#555555]">R$ {p.custo.toFixed(2).replace(".", ",")}</span>
+                      <span className="font-mono text-[#B4B4B4]">R$ {p.custo.toFixed(2).replace(".", ",")}</span>
                       <button type="button" onClick={() => setPecas(pecas.filter((_, idx) => idx !== i))}>
-                        <Trash2 size={12} className="text-[#555555] hover:text-[#FF4444] transition-colors" />
+                        <Trash2 size={12} className="text-[#B4B4B4] hover:text-[#FF4444] transition-colors" />
                       </button>
                     </div>
                   ))}
@@ -723,12 +723,12 @@ export default function OSDetalhePage() {
                     placeholder="R$" type="number" step="0.01" min="0"
                     className={`${inputCls} w-24`} />
                   <button type="button" onClick={adicionarPeca}
-                    className="bg-[#1C1C1C] text-[#F0F0F0] text-xs font-semibold px-3 py-2 rounded-sm hover:bg-[#2A2A2A] transition-colors">
+                    className="bg-[#1C1C1C] text-[#F0F0F0] text-sm font-semibold px-3 py-2 rounded-sm hover:bg-[#2A2A2A] transition-colors">
                     +
                   </button>
                 </div>
                 {pecas.length > 0 && (
-                  <p className="font-mono text-[10px] text-[#555555] mt-1">
+                  <p className="font-mono text-[12px] text-[#B4B4B4] mt-1">
                     Total: R$ {custoTotal.toFixed(2).replace(".", ",")}
                   </p>
                 )}
@@ -751,25 +751,25 @@ export default function OSDetalhePage() {
             {parseFloat(valorCobrado) > 0 && (() => {
               const lucro = parseFloat(valorCobrado) - custoTotal
               return (
-                <p className={`font-mono text-xs ${lucro >= 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
+                <p className={`font-mono text-sm ${lucro >= 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
                   Lucro estimado: R$ {lucro.toFixed(2).replace(".", ",")}
                 </p>
               )
             })()}
 
-            {erroConcluir && <p className="text-xs text-[#FF4444]">{erroConcluir}</p>}
+            {erroConcluir && <p className="text-sm text-[#FF4444]">{erroConcluir}</p>}
 
             <div className="flex gap-2 pt-1">
               <button
                 onClick={concluirOS}
                 disabled={salvando || !solucao.trim()}
-                className="bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
+                className="bg-[#E8FF47] text-black text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
               >
                 {salvando ? "Salvando..." : "Confirmar conclusão"}
               </button>
               <button
                 onClick={() => setAbrirConcluir(false)}
-                className="text-xs font-semibold uppercase tracking-widest text-[#555555] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
+                className="text-sm font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
               >
                 Cancelar
               </button>
@@ -782,7 +782,7 @@ export default function OSDetalhePage() {
       <Dialog open={abrirRetorno} onOpenChange={setAbrirRetorno}>
         <DialogContent className="bg-[#111111] border-[#1C1C1C]">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">
+            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">
               Registrar retorno de garantia
             </DialogTitle>
           </DialogHeader>
@@ -794,21 +794,21 @@ export default function OSDetalhePage() {
                 onChange={(e) => setDescricaoRetorno(e.target.value)}
                 rows={3}
                 placeholder="Descreva o que o cliente relatou..."
-                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333] resize-none"
+                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A] resize-none"
               />
             </div>
-            {erroRetorno && <p className="text-xs text-[#FF4444]">{erroRetorno}</p>}
+            {erroRetorno && <p className="text-sm text-[#FF4444]">{erroRetorno}</p>}
             <div className="flex gap-2">
               <button
                 onClick={enviarRetorno}
                 disabled={salvandoRetorno || !descricaoRetorno.trim()}
-                className="bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
+                className="bg-[#E8FF47] text-black text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
               >
                 {salvandoRetorno ? "Salvando..." : "Confirmar"}
               </button>
               <button
                 onClick={() => setAbrirRetorno(false)}
-                className="text-xs font-semibold uppercase tracking-widest text-[#555555] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
+                className="text-sm font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
               >
                 Cancelar
               </button>
@@ -824,7 +824,7 @@ export default function OSDetalhePage() {
       <Dialog open={abrirDevolucao} onOpenChange={setAbrirDevolucao}>
         <DialogContent className="bg-[#111111] border-[#1C1C1C] max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">
+            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">
               Registrar devolução
             </DialogTitle>
           </DialogHeader>
@@ -832,12 +832,12 @@ export default function OSDetalhePage() {
             <div>
               <label className={labelCls}>Tipo de devolução</label>
               <Select value={tipoDevolucao} onValueChange={(v) => setTipoDevolucao(v as "reembolso" | "substituicao")}>
-                <SelectTrigger className="bg-[#0C0C0C] border-[#1C1C1C] text-[#F0F0F0] text-xs rounded-sm focus:ring-0 focus:border-[#E8FF47]">
+                <SelectTrigger className="bg-[#0C0C0C] border-[#1C1C1C] text-[#F0F0F0] text-sm rounded-sm focus:ring-0 focus:border-[#E8FF47]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-[#111111] border-[#1C1C1C]">
-                  <SelectItem value="reembolso" className="text-[#F0F0F0] focus:bg-[#1C1C1C] text-xs">Reembolso</SelectItem>
-                  <SelectItem value="substituicao" className="text-[#F0F0F0] focus:bg-[#1C1C1C] text-xs">Substituição de central</SelectItem>
+                  <SelectItem value="reembolso" className="text-[#F0F0F0] focus:bg-[#1C1C1C] text-sm">Reembolso</SelectItem>
+                  <SelectItem value="substituicao" className="text-[#F0F0F0] focus:bg-[#1C1C1C] text-sm">Substituição de central</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -849,7 +849,7 @@ export default function OSDetalhePage() {
                 onChange={(e) => setMotivoDevolucao(e.target.value)}
                 rows={2}
                 placeholder="Motivo da devolução..."
-                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333] resize-none"
+                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A] resize-none"
               />
             </div>
 
@@ -883,19 +883,19 @@ export default function OSDetalhePage() {
               </div>
             )}
 
-            {erroDevolucao && <p className="text-xs text-[#FF4444]">{erroDevolucao}</p>}
+            {erroDevolucao && <p className="text-sm text-[#FF4444]">{erroDevolucao}</p>}
 
             <div className="flex gap-2">
               <button
                 onClick={enviarDevolucao}
                 disabled={salvandoDevolucao || !motivoDevolucao.trim()}
-                className="bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
+                className="bg-[#E8FF47] text-black text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
               >
                 {salvandoDevolucao ? "Salvando..." : "Confirmar devolução"}
               </button>
               <button
                 onClick={() => setAbrirDevolucao(false)}
-                className="text-xs font-semibold uppercase tracking-widest text-[#555555] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
+                className="text-sm font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
               >
                 Cancelar
               </button>

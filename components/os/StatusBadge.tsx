@@ -24,7 +24,7 @@ export function StatusBadge({ status }: { status: string }) {
   const label = STATUS_LABEL[status as OSStatus] ?? status
   const color = STATUS_COLOR[status as OSStatus] ?? "bg-zinc-700 text-zinc-300"
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full ${color}`}>
+    <span className={`text-sm px-2 py-0.5 rounded-full ${color}`}>
       {label}
     </span>
   )

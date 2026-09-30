@@ -14,8 +14,8 @@ type OSFormProps = {
   onCancelar: () => void
 }
 
-const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333]"
-const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-1"
+const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A]"
+const labelCls = "block text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-1"
 
 export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) {
   const [erro, setErro] = useState("")
@@ -172,11 +172,11 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
         <label className={labelCls}>Cliente *</label>
         {clienteId ? (
           <div className="flex items-center gap-2">
-            <span className="flex-1 text-sm text-[#F0F0F0] bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-2 rounded-sm truncate">
+            <span className="flex-1 text-base text-[#F0F0F0] bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-2 rounded-sm truncate">
               {clienteDisplay}
             </span>
             <button type="button" onClick={() => { setClienteId(""); setClienteDisplay("") }}
-              className="text-[#555555] hover:text-white transition-colors shrink-0">
+              className="text-[#B4B4B4] hover:text-white transition-colors shrink-0">
               <X size={14} />
             </button>
           </div>
@@ -192,7 +192,7 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
               <div className="absolute z-10 top-full mt-1 w-full bg-[#111111] border border-[#1C1C1C] rounded-sm shadow-lg max-h-48 overflow-auto">
                 {resultadosCliente.map((c) => (
                   <button key={c._id} type="button" onClick={() => selecionarCliente(c)}
-                    className="w-full text-left px-3 py-2 text-sm text-[#F0F0F0] hover:bg-[#1C1C1C]">
+                    className="w-full text-left px-3 py-2 text-base text-[#F0F0F0] hover:bg-[#1C1C1C]">
                     {c.nome} — {c.telefone}
                   </button>
                 ))}
@@ -204,18 +204,18 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
 
       {/* Alerta de score do cliente */}
       {clienteId && clienteScore && clienteScore.score && clienteScore.score !== "verde" && (
-        <div className={`flex items-start gap-2 px-3 py-2 rounded-sm border text-xs ${
+        <div className={`flex items-start gap-2 px-3 py-2 rounded-sm border text-sm ${
           clienteScore.score === "vermelho"
             ? "bg-[#2A0D0D] border-[#FF4444]/30 text-[#FF4444]"
             : "bg-[#2A2000] border-[#F59E0B]/30 text-[#F59E0B]"
         }`}>
           <AlertTriangle size={13} className="shrink-0 mt-0.5" />
           <div>
-            <p className="font-semibold uppercase tracking-widest text-[10px]">
+            <p className="font-bold uppercase tracking-wide text-[12px]">
               {clienteScore.flag_problematico ? "Cliente problemático" : "Atenção: histórico negativo"}
             </p>
             {clienteScore.observacao && (
-              <p className="mt-0.5 text-[#F0F0F0] text-xs">{clienteScore.observacao}</p>
+              <p className="mt-0.5 text-[#F0F0F0] text-sm">{clienteScore.observacao}</p>
             )}
           </div>
         </div>
@@ -226,11 +226,11 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
         <label className={labelCls}>Central *</label>
         {centralId ? (
           <div className="flex items-center gap-2">
-            <span className="flex-1 text-sm text-[#F0F0F0] bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-2 rounded-sm truncate">
+            <span className="flex-1 text-base text-[#F0F0F0] bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-2 rounded-sm truncate">
               {centralDisplay}
             </span>
             <button type="button" onClick={() => { setCentralId(""); setCentralDisplay("") }}
-              className="text-[#555555] hover:text-white transition-colors shrink-0">
+              className="text-[#B4B4B4] hover:text-white transition-colors shrink-0">
               <X size={14} />
             </button>
           </div>
@@ -246,7 +246,7 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
               <div className="absolute z-10 top-full mt-1 w-full bg-[#111111] border border-[#1C1C1C] rounded-sm shadow-lg max-h-48 overflow-auto">
                 {resultadosCentral.map((c) => (
                   <button key={c._id} type="button" onClick={() => selecionarCentral(c)}
-                    className="w-full text-left px-3 py-2 text-sm text-[#F0F0F0] hover:bg-[#1C1C1C]">
+                    className="w-full text-left px-3 py-2 text-base text-[#F0F0F0] hover:bg-[#1C1C1C]">
                     {c.marca} {c.modelo} — {c.codigo}
                   </button>
                 ))}
@@ -278,10 +278,10 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
               key={tipo}
               type="button"
               onClick={() => setTipoCliente(tipoCliente === tipo ? "" : tipo)}
-              className={`px-3 py-1.5 rounded-sm text-xs font-semibold uppercase tracking-widest border transition-colors ${
+              className={`px-3 py-1.5 rounded-sm text-sm font-bold uppercase tracking-wide border transition-colors ${
                 tipoCliente === tipo
                   ? "bg-[#E8FF47] text-black border-[#E8FF47]"
-                  : "bg-transparent text-[#555555] border-[#1C1C1C] hover:border-[#555555]"
+                  : "bg-transparent text-[#B4B4B4] border-[#1C1C1C] hover:border-[#B4B4B4]"
               }`}
             >
               {tipo === "usuario" ? "Usuário" : "Mecânico"}
@@ -297,7 +297,7 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
           <button
             type="button"
             onClick={() => inputFotoRef.current?.click()}
-            className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white transition-colors"
           >
             <Upload size={11} />
             Adicionar
@@ -316,7 +316,7 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
           <button
             type="button"
             onClick={() => inputFotoRef.current?.click()}
-            className="w-full border border-dashed border-[#1C1C1C] rounded-sm py-5 text-xs text-[#333333] hover:border-[#2A2A2A] hover:text-[#555555] transition-colors"
+            className="w-full border border-dashed border-[#1C1C1C] rounded-sm py-5 text-sm text-[#8A8A8A] hover:border-[#2A2A2A] hover:text-[#B4B4B4] transition-colors"
           >
             Toque para adicionar fotos
           </button>
@@ -337,7 +337,7 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
             <button
               type="button"
               onClick={() => inputFotoRef.current?.click()}
-              className="aspect-square border border-dashed border-[#1C1C1C] rounded-sm flex items-center justify-center text-[#333333] hover:border-[#2A2A2A] hover:text-[#555555] transition-colors"
+              className="aspect-square border border-dashed border-[#1C1C1C] rounded-sm flex items-center justify-center text-[#8A8A8A] hover:border-[#2A2A2A] hover:text-[#B4B4B4] transition-colors"
             >
               <Upload size={16} />
             </button>
@@ -345,13 +345,13 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
         )}
       </div>
 
-      {erro && <p className="text-xs text-red-400">{erro}</p>}
+      {erro && <p className="text-sm text-red-400">{erro}</p>}
 
       <div className="flex gap-2 pt-1">
         <button
           type="submit"
           disabled={carregando}
-          className="flex-1 py-2.5 text-xs font-semibold uppercase tracking-widest bg-[#E8FF47] text-black rounded-sm hover:bg-[#d4eb3a] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+          className="flex-1 py-2.5 text-sm font-bold uppercase tracking-wide bg-[#E8FF47] text-black rounded-sm hover:bg-[#d4eb3a] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
         >
           {carregando && <Loader2 size={12} className="animate-spin" />}
           {progressoFotos || (carregando ? "Criando..." : "Criar OS")}
@@ -360,7 +360,7 @@ export function OSForm({ clientePreenchido, onSalvo, onCancelar }: OSFormProps) 
           type="button"
           onClick={onCancelar}
           disabled={carregando}
-          className="px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-[#555555] hover:text-white border border-[#1C1C1C] rounded-sm transition-colors disabled:opacity-50"
+          className="px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white border border-[#1C1C1C] rounded-sm transition-colors disabled:opacity-50"
         >
           Cancelar
         </button>

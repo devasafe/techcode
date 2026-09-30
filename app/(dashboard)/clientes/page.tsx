@@ -58,10 +58,10 @@ export default function ClientesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">Clientes</h1>
+        <h1 className="text-xl font-bold uppercase tracking-wide text-[#F0F0F0]">Clientes</h1>
         <button
           onClick={() => setAbrirForm(true)}
-          className="flex items-center gap-2 bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 transition-all"
+          className="flex items-center gap-2 bg-[#E8FF47] text-black text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 transition-all"
         >
           <UserPlus size={14} />
           Novo cliente
@@ -69,27 +69,27 @@ export default function ClientesPage() {
       </div>
 
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555555]" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#B4B4B4]" />
         <input
           value={busca}
           onChange={handleBusca}
           placeholder="Buscar por nome ou telefone..."
-          className="w-full bg-[#111111] border border-[#1C1C1C] text-sm text-[#F0F0F0] placeholder:text-[#555555] pl-9 pr-4 py-2.5 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors"
+          className="w-full bg-[#111111] border border-[#1C1C1C] text-base text-[#F0F0F0] placeholder:text-[#B4B4B4] pl-9 pr-4 py-2.5 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors"
         />
       </div>
 
-      {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
+      {erro && <p className="text-sm text-[#FF4444]">{erro}</p>}
 
       {carregando && !busca ? (
-        <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+        <p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#111111] border-b border-[#1C1C1C]">
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Nome</th>
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Telefone</th>
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden md:table-cell">Email</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Nome</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Telefone</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hidden md:table-cell">Email</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1C1C1C]">
@@ -102,17 +102,17 @@ export default function ClientesPage() {
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <span className={`shrink-0 w-2 h-2 rounded-full ${SCORE_DOT[c.score ?? "verde"]}`} />
-                      <span className="text-sm font-medium text-[#F0F0F0]">{c.nome}</span>
+                      <span className="text-base font-medium text-[#F0F0F0]">{c.nome}</span>
                     </div>
                   </td>
-                  <td className="py-3 px-4 font-mono text-sm text-[#555555]">{c.telefone}</td>
-                  <td className="py-3 px-4 text-sm text-[#555555] hidden md:table-cell">{c.email ?? "—"}</td>
+                  <td className="py-3 px-4 font-mono text-base text-[#B4B4B4]">{c.telefone}</td>
+                  <td className="py-3 px-4 text-base text-[#B4B4B4] hidden md:table-cell">{c.email ?? "—"}</td>
                 </tr>
               ))}
             </tbody>
           </table>
           {clientes.length === 0 && !carregando && (
-            <p className="text-xs text-[#555555] text-center py-8">
+            <p className="text-sm text-[#B4B4B4] text-center py-8">
               {busca ? "Nenhum cliente encontrado." : "Nenhum cliente cadastrado ainda."}
             </p>
           )}
@@ -122,7 +122,7 @@ export default function ClientesPage() {
       <Dialog open={abrirForm} onOpenChange={setAbrirForm}>
         <DialogContent className="bg-[#111111] border-[#1C1C1C]">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">Novo cliente</DialogTitle>
+            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">Novo cliente</DialogTitle>
           </DialogHeader>
           <ClienteForm
             onSalvo={() => { setAbrirForm(false); carregar(busca) }}

@@ -73,7 +73,7 @@ export function UsuarioForm({ onSalvo, onCancelar }: UsuarioFormProps) {
         <Label>Perfis</Label>
         <div className="flex gap-4">
           {(["admin", "atendente", "tecnico"] as Perfil[]).map((p) => (
-            <label key={p} className="flex items-center gap-2 text-sm text-zinc-300 cursor-pointer">
+            <label key={p} className="flex items-center gap-2 text-base text-zinc-300 cursor-pointer">
               <Checkbox
                 checked={perfis.includes(p)}
                 onCheckedChange={() => togglePerfil(p)}
@@ -96,7 +96,7 @@ export function UsuarioForm({ onSalvo, onCancelar }: UsuarioFormProps) {
           />
         </div>
       )}
-      {erro && <p className="text-red-400 text-sm">{erro}</p>}
+      {erro && <p className="text-red-400 text-base">{erro}</p>}
       <div className="flex gap-2 pt-2">
         <Button type="submit" disabled={carregando}>
           {carregando ? "Salvando..." : "Salvar"}

@@ -49,7 +49,7 @@ type Reparo = {
 function IconeArquivo({ tipo }: { tipo: Arquivo["tipo"] }) {
   if (tipo === "imagem") return <Image size={14} className="text-[#60A5FA]" />
   if (tipo === "pdf") return <FileText size={14} className="text-[#FF4444]" />
-  return <File size={14} className="text-[#555555]" />
+  return <File size={14} className="text-[#B4B4B4]" />
 }
 
 function formatarTamanho(bytes: number) {
@@ -127,32 +127,32 @@ export default function CentralDetalhePage() {
     }
   }
 
-  if (carregando) return <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+  if (carregando) return <p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>
   if (!central) return null
 
   return (
     <div className="space-y-6 max-w-2xl">
       {/* Cabeçalho */}
       <div className="flex items-center gap-3">
-        <button onClick={() => router.push("/centrais")} className="text-[#555555] hover:text-white transition-colors">
+        <button onClick={() => router.push("/centrais")} className="text-[#B4B4B4] hover:text-white transition-colors">
           <ArrowLeft size={16} />
         </button>
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+            <h1 className="text-xl font-bold uppercase tracking-wide text-[#F0F0F0]">
               {central.marca} <span className="font-mono text-[#E8FF47]">{central.modelo}</span>
             </h1>
             {central.tipo_modulo && (
-              <span className="text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm bg-[#1C1C1C] text-[#888888]">
+              <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm bg-[#1C1C1C] text-[#888888]">
                 {TIPO_LABEL[central.tipo_modulo]}
               </span>
             )}
           </div>
-          <p className="font-mono text-[10px] text-[#555555] mt-0.5">{central.codigo}</p>
+          <p className="font-mono text-[12px] text-[#B4B4B4] mt-0.5">{central.codigo}</p>
         </div>
         <button
           onClick={() => setEditando(true)}
-          className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors"
+          className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white transition-colors"
         >
           <Pencil size={12} />
           Editar
@@ -160,7 +160,7 @@ export default function CentralDetalhePage() {
       </div>
 
       {central.descricao && (
-        <p className="text-sm text-[#555555]">{central.descricao}</p>
+        <p className="text-base text-[#B4B4B4]">{central.descricao}</p>
       )}
 
       <input ref={inputFotoRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
@@ -173,16 +173,16 @@ export default function CentralDetalhePage() {
           <div>
             <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#1C1C1C]">
               <div className="flex items-center gap-2">
-                <Image size={12} className="text-[#555555]" />
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Fotos</span>
+                <Image size={12} className="text-[#B4B4B4]" />
+                <span className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Fotos</span>
                 {fotos.length > 0 && (
-                  <span className="font-mono text-xs text-[#555555]">{fotos.length}</span>
+                  <span className="font-mono text-sm text-[#B4B4B4]">{fotos.length}</span>
                 )}
               </div>
               <button
                 onClick={() => inputFotoRef.current?.click()}
                 disabled={uploadando}
-                className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white transition-colors disabled:opacity-50"
               >
                 {uploadando ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
                 {uploadando ? "Enviando..." : "Adicionar"}
@@ -190,7 +190,7 @@ export default function CentralDetalhePage() {
             </div>
             {fotos.length === 0 ? (
               <div className="border border-dashed border-[#1C1C1C] rounded-sm p-6 text-center">
-                <p className="text-xs text-[#555555]">Nenhuma foto adicionada.</p>
+                <p className="text-sm text-[#B4B4B4]">Nenhuma foto adicionada.</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -221,16 +221,16 @@ export default function CentralDetalhePage() {
           <div>
             <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#1C1C1C]">
               <div className="flex items-center gap-2">
-                <File size={12} className="text-[#555555]" />
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Arquivos</span>
+                <File size={12} className="text-[#B4B4B4]" />
+                <span className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Arquivos</span>
                 {docs.length > 0 && (
-                  <span className="font-mono text-xs text-[#555555]">{docs.length}</span>
+                  <span className="font-mono text-sm text-[#B4B4B4]">{docs.length}</span>
                 )}
               </div>
               <button
                 onClick={() => inputArquivoRef.current?.click()}
                 disabled={uploadando}
-                className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white transition-colors disabled:opacity-50"
               >
                 {uploadando ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
                 {uploadando ? "Enviando..." : "Adicionar"}
@@ -238,8 +238,8 @@ export default function CentralDetalhePage() {
             </div>
             {docs.length === 0 ? (
               <div className="border border-dashed border-[#1C1C1C] rounded-sm p-6 text-center">
-                <p className="text-xs text-[#555555]">Nenhum arquivo adicionado.</p>
-                <p className="text-[10px] text-[#333333] mt-1">Manuais, esquemas elétricos, PDFs...</p>
+                <p className="text-sm text-[#B4B4B4]">Nenhum arquivo adicionado.</p>
+                <p className="text-[12px] text-[#8A8A8A] mt-1">Manuais, esquemas elétricos, PDFs...</p>
               </div>
             ) : (
               <div className="space-y-1">
@@ -247,19 +247,19 @@ export default function CentralDetalhePage() {
                   <div key={arq._id} className="flex items-center gap-3 bg-[#111111] border border-[#1C1C1C] rounded-sm px-3 py-2.5 group">
                     <IconeArquivo tipo={arq.tipo} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-[#F0F0F0] truncate">{arq.nome}</p>
-                      <p className="text-[10px] text-[#555555]">
+                      <p className="text-base text-[#F0F0F0] truncate">{arq.nome}</p>
+                      <p className="text-[12px] text-[#B4B4B4]">
                         {formatarTamanho(arq.tamanho)} · {new Date(arq.created_at).toLocaleDateString("pt-BR")}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <a href={arq.url} target="_blank" rel="noopener noreferrer" className="text-[#555555] hover:text-white transition-colors">
+                      <a href={arq.url} target="_blank" rel="noopener noreferrer" className="text-[#B4B4B4] hover:text-white transition-colors">
                         <ExternalLink size={12} />
                       </a>
                       <button
                         onClick={() => handleRemover(arq)}
                         disabled={removendo === arq._id}
-                        className="text-[#555555] hover:text-[#FF4444] transition-colors disabled:opacity-50"
+                        className="text-[#B4B4B4] hover:text-[#FF4444] transition-colors disabled:opacity-50"
                       >
                         {removendo === arq._id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
                       </button>
@@ -275,10 +275,10 @@ export default function CentralDetalhePage() {
       {/* Base de Conhecimento */}
       <div>
         <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[#1C1C1C]">
-          <Wrench size={12} className="text-[#555555]" />
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Base de Conhecimento</span>
+          <Wrench size={12} className="text-[#B4B4B4]" />
+          <span className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Base de Conhecimento</span>
           {reparos.length > 0 && (
-            <span className="font-mono text-xs text-[#555555]">{reparos.length}</span>
+            <span className="font-mono text-sm text-[#B4B4B4]">{reparos.length}</span>
           )}
         </div>
 
@@ -291,26 +291,26 @@ export default function CentralDetalhePage() {
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-[#E8FF47]">#{r.numero_os}</span>
+                  <span className="font-mono text-sm text-[#E8FF47]">#{r.numero_os}</span>
                   {r.cliente_id && (
-                    <span className="text-xs text-[#555555]">— {r.cliente_id.nome}</span>
+                    <span className="text-sm text-[#B4B4B4]">— {r.cliente_id.nome}</span>
                   )}
                 </div>
                 {r.closed_at && (
-                  <span className="font-mono text-[10px] text-[#555555]">
+                  <span className="font-mono text-[12px] text-[#B4B4B4]">
                     {new Date(r.closed_at).toLocaleDateString("pt-BR")}
                   </span>
                 )}
               </div>
               <div className="space-y-2">
                 <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-widest text-[#555555] mb-0.5">Defeito</p>
-                  <p className="text-sm text-[#F0F0F0]">{r.defeito_descricao}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-0.5">Defeito</p>
+                  <p className="text-base text-[#F0F0F0]">{r.defeito_descricao}</p>
                 </div>
                 {r.solucao_descricao && (
                   <div>
-                    <p className="text-[9px] font-semibold uppercase tracking-widest text-[#22C55E] mb-0.5">Solução</p>
-                    <p className="text-sm text-[#F0F0F0]">{r.solucao_descricao}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#22C55E] mb-0.5">Solução</p>
+                    <p className="text-base text-[#F0F0F0]">{r.solucao_descricao}</p>
                   </div>
                 )}
               </div>
@@ -318,8 +318,8 @@ export default function CentralDetalhePage() {
           ))}
           {reparos.length === 0 && (
             <div className="border border-dashed border-[#1C1C1C] rounded-sm p-8 text-center">
-              <p className="text-xs text-[#555555]">Nenhum reparo concluído registrado para este modelo.</p>
-              <p className="text-[10px] text-[#333333] mt-1">Reparos aparecerão aqui quando OS forem concluídas.</p>
+              <p className="text-sm text-[#B4B4B4]">Nenhum reparo concluído registrado para este modelo.</p>
+              <p className="text-[12px] text-[#8A8A8A] mt-1">Reparos aparecerão aqui quando OS forem concluídas.</p>
             </div>
           )}
         </div>
@@ -328,7 +328,7 @@ export default function CentralDetalhePage() {
       <Dialog open={editando} onOpenChange={setEditando}>
         <DialogContent className="bg-[#111111] border-[#1C1C1C]">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">Editar central</DialogTitle>
+            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">Editar central</DialogTitle>
           </DialogHeader>
           <CentralForm
             central={central}

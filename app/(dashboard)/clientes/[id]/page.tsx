@@ -61,8 +61,8 @@ const SCORE_CONFIG: Record<ScoreCliente, { label: string; dot: string; bg: strin
   vermelho: { label: "Problemático",    dot: "bg-[#FF4444]", bg: "bg-[#2A0D0D]", text: "text-[#FF4444]" },
 }
 
-const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-1"
-const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333]"
+const labelCls = "block text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-1"
+const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A]"
 
 export default function ClientePerfilPage() {
   const { id } = useParams<{ id: string }>()
@@ -122,7 +122,7 @@ export default function ClientePerfilPage() {
     await carregar()
   }
 
-  if (carregando) return <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+  if (carregando) return <p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>
   if (!cliente) return null
 
   const score = cliente.score ?? "verde"
@@ -132,16 +132,16 @@ export default function ClientePerfilPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div className="flex items-center gap-3">
-        <button onClick={() => router.push("/clientes")} className="text-[#555555] hover:text-white transition-colors">
+        <button onClick={() => router.push("/clientes")} className="text-[#B4B4B4] hover:text-white transition-colors">
           <ArrowLeft size={16} />
         </button>
         <div className="flex items-center gap-2 flex-1">
           <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${scoreConf.dot}`} />
-          <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">{cliente.nome}</h1>
+          <h1 className="text-xl font-bold uppercase tracking-wide text-[#F0F0F0]">{cliente.nome}</h1>
         </div>
         <button
           onClick={() => setEditando(true)}
-          className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors"
+          className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white transition-colors"
         >
           <Pencil size={12} />
           Editar
@@ -157,17 +157,17 @@ export default function ClientePerfilPage() {
             <div className="flex items-center gap-2">
               {score === "vermelho" && <ShieldAlert size={14} className="text-[#FF4444]" />}
               {score === "amarelo" && <AlertTriangle size={14} className="text-[#F59E0B]" />}
-              <span className={`text-xs font-semibold uppercase tracking-widest ${scoreConf.text}`}>
+              <span className={`text-sm font-bold uppercase tracking-wide ${scoreConf.text}`}>
                 {scoreConf.label}
               </span>
             </div>
             <button
               onClick={toggleFlag}
               disabled={togglingFlag}
-              className={`text-[10px] font-semibold uppercase tracking-widest px-3 py-1 rounded-sm border transition-colors disabled:opacity-50 ${
+              className={`text-[12px] font-bold uppercase tracking-wide px-3 py-1 rounded-sm border transition-colors disabled:opacity-50 ${
                 cliente.flag_problematico
                   ? "bg-[#FF4444]/20 border-[#FF4444]/40 text-[#FF4444] hover:bg-[#FF4444]/30"
-                  : "bg-transparent border-[#1C1C1C] text-[#555555] hover:border-[#555555] hover:text-white"
+                  : "bg-transparent border-[#1C1C1C] text-[#B4B4B4] hover:border-[#B4B4B4] hover:text-white"
               }`}
             >
               {cliente.flag_problematico ? "⚑ Problemático" : "Marcar problemático"}
@@ -175,32 +175,32 @@ export default function ClientePerfilPage() {
           </div>
 
           {stats.total > 0 && (
-            <div className="flex flex-wrap gap-4 text-[10px]">
-              <span className="text-[#555555]">
+            <div className="flex flex-wrap gap-4 text-[12px]">
+              <span className="text-[#B4B4B4]">
                 Total <span className="font-mono text-[#F0F0F0]">{stats.total}</span>
               </span>
               {stats.concluidas > 0 && (
-                <span className="text-[#555555]">
+                <span className="text-[#B4B4B4]">
                   Concluídas <span className="font-mono text-[#22C55E]">{stats.concluidas}</span>
                 </span>
               )}
               {stats.testes > 0 && (
-                <span className="text-[#555555]">
+                <span className="text-[#B4B4B4]">
                   Testes <span className="font-mono text-[#F59E0B]">{stats.testes}</span>
                 </span>
               )}
               {stats.devolvidas > 0 && (
-                <span className="text-[#555555]">
+                <span className="text-[#B4B4B4]">
                   Devoluções <span className="font-mono text-[#FF4444]">{stats.devolvidas}</span>
                 </span>
               )}
               {stats.retornos > 0 && (
-                <span className="text-[#555555]">
+                <span className="text-[#B4B4B4]">
                   Ret. garantia <span className="font-mono text-[#F59E0B]">{stats.retornos}</span>
                 </span>
               )}
               {stats.canceladas > 0 && (
-                <span className="text-[#555555]">
+                <span className="text-[#B4B4B4]">
                   Canceladas <span className="font-mono text-[#888888]">{stats.canceladas}</span>
                 </span>
               )}
@@ -233,12 +233,12 @@ export default function ClientePerfilPage() {
 
       {/* Dados de contato */}
       <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 space-y-3">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Dados de contato</p>
+        <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Dados de contato</p>
         <div className="space-y-2">
           {cliente.tipo_cliente && (
             <div className="flex gap-4">
-              <span className="text-[10px] uppercase tracking-widest text-[#555555] w-20 shrink-0">Tipo</span>
-              <span className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm ${
+              <span className="text-[12px] uppercase tracking-wide text-[#B4B4B4] w-20 shrink-0">Tipo</span>
+              <span className={`text-[12px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm ${
                 cliente.tipo_cliente === "mecanico" ? "bg-[#1E2A3A] text-[#60A5FA]" : "bg-[#1C1C1C] text-[#888888]"
               }`}>
                 {cliente.tipo_cliente === "mecanico" ? "Mecânico" : "Usuário"}
@@ -246,25 +246,25 @@ export default function ClientePerfilPage() {
             </div>
           )}
           <div className="flex gap-4">
-            <span className="text-[10px] uppercase tracking-widest text-[#555555] w-20 shrink-0">Telefone</span>
-            <span className="font-mono text-sm text-[#F0F0F0]">{cliente.telefone}</span>
+            <span className="text-[12px] uppercase tracking-wide text-[#B4B4B4] w-20 shrink-0">Telefone</span>
+            <span className="font-mono text-base text-[#F0F0F0]">{cliente.telefone}</span>
           </div>
           {cliente.email && (
             <div className="flex gap-4">
-              <span className="text-[10px] uppercase tracking-widest text-[#555555] w-20 shrink-0">Email</span>
-              <span className="text-sm text-[#F0F0F0]">{cliente.email}</span>
+              <span className="text-[12px] uppercase tracking-wide text-[#B4B4B4] w-20 shrink-0">Email</span>
+              <span className="text-base text-[#F0F0F0]">{cliente.email}</span>
             </div>
           )}
           {cliente.cpf_cnpj && (
             <div className="flex gap-4">
-              <span className="text-[10px] uppercase tracking-widest text-[#555555] w-20 shrink-0">CPF/CNPJ</span>
-              <span className="font-mono text-sm text-[#F0F0F0]">{cliente.cpf_cnpj}</span>
+              <span className="text-[12px] uppercase tracking-wide text-[#B4B4B4] w-20 shrink-0">CPF/CNPJ</span>
+              <span className="font-mono text-base text-[#F0F0F0]">{cliente.cpf_cnpj}</span>
             </div>
           )}
           {cliente.endereco && (
             <div className="flex gap-4">
-              <span className="text-[10px] uppercase tracking-widest text-[#555555] w-20 shrink-0">Endereço</span>
-              <span className="text-sm text-[#F0F0F0]">{cliente.endereco}</span>
+              <span className="text-[12px] uppercase tracking-wide text-[#B4B4B4] w-20 shrink-0">Endereço</span>
+              <span className="text-base text-[#F0F0F0]">{cliente.endereco}</span>
             </div>
           )}
         </div>
@@ -274,12 +274,12 @@ export default function ClientePerfilPage() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Histórico de OS</span>
-            {os.length > 0 && <span className="font-mono text-xs text-[#555555]">{os.length}</span>}
+            <span className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Histórico de OS</span>
+            {os.length > 0 && <span className="font-mono text-sm text-[#B4B4B4]">{os.length}</span>}
           </div>
           <Link
             href={`/os/nova?cliente=${id}`}
-            className="flex items-center gap-1.5 bg-[#E8FF47] text-black text-[10px] font-semibold uppercase tracking-widest px-3 py-1.5 rounded-sm hover:brightness-110 transition-all"
+            className="flex items-center gap-1.5 bg-[#E8FF47] text-black text-[12px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-sm hover:brightness-110 transition-all"
           >
             <Plus size={11} />
             Nova OS
@@ -296,30 +296,30 @@ export default function ClientePerfilPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-mono text-xs text-[#E8FF47]">#{o.numero_os}</span>
-                        <span className={`text-[9px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded-sm ${badge.cls}`}>
+                        <span className="font-mono text-sm text-[#E8FF47]">#{o.numero_os}</span>
+                        <span className={`text-[11px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-sm ${badge.cls}`}>
                           {badge.label}
                         </span>
                         {o.tipo_os === "teste" && (
-                          <span className="text-[9px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded-sm bg-[#2A1500] text-[#FB923C]">
+                          <span className="text-[11px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-sm bg-[#2A1500] text-[#FB923C]">
                             Teste
                           </span>
                         )}
                       </div>
                       {o.central_id && (
-                        <p className="text-[10px] text-[#555555]">{o.central_id.marca} {o.central_id.modelo}</p>
+                        <p className="text-[12px] text-[#B4B4B4]">{o.central_id.marca} {o.central_id.modelo}</p>
                       )}
-                      <p className="text-[10px] text-[#555555] truncate mt-0.5">{o.defeito_descricao}</p>
+                      <p className="text-[12px] text-[#B4B4B4] truncate mt-0.5">{o.defeito_descricao}</p>
                     </div>
                     <div className="text-right shrink-0 space-y-1">
-                      <p className="font-mono text-sm text-white">
+                      <p className="font-mono text-base text-white">
                         {o.valor_cobrado > 0 ? `R$ ${o.valor_cobrado.toFixed(2).replace(".", ",")}` : "—"}
                       </p>
-                      <p className="font-mono text-[10px] text-[#555555]">
+                      <p className="font-mono text-[12px] text-[#B4B4B4]">
                         {new Date(o.created_at).toLocaleDateString("pt-BR")}
                       </p>
                       {pontos !== 0 && (
-                        <p className={`font-mono text-[10px] ${pontos < 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
+                        <p className={`font-mono text-[12px] ${pontos < 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
                           {pontos > 0 ? "+" : ""}{pontos % 1 === 0 ? pontos : pontos.toFixed(1)} pts
                         </p>
                       )}
@@ -330,7 +330,7 @@ export default function ClientePerfilPage() {
             )
           })}
           {os.length === 0 && (
-            <p className="text-xs text-[#555555] text-center py-8">Nenhuma OS encontrada.</p>
+            <p className="text-sm text-[#B4B4B4] text-center py-8">Nenhuma OS encontrada.</p>
           )}
         </div>
       </div>
@@ -338,7 +338,7 @@ export default function ClientePerfilPage() {
       <Dialog open={editando} onOpenChange={setEditando}>
         <DialogContent className="bg-[#111111] border-[#1C1C1C]">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">Editar cliente</DialogTitle>
+            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">Editar cliente</DialogTitle>
           </DialogHeader>
           <ClienteForm
             cliente={cliente}

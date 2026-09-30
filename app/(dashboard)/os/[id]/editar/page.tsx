@@ -8,8 +8,8 @@ type ClienteOpcao = { _id: string; nome: string; telefone: string }
 type CentralOpcao = { _id: string; marca: string; modelo: string; codigo: string }
 type TecnicoOpcao = { _id: string; nome: string }
 
-const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-sm text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#333333]"
-const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-1"
+const inputCls = "w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A]"
+const labelCls = "block text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-1"
 
 function EditarOSContent() {
   const { id } = useParams<{ id: string }>()
@@ -177,16 +177,16 @@ function EditarOSContent() {
   }
 
   if (carregando) return (
-    <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+    <p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>
   )
 
   return (
     <div className="max-w-xl space-y-6">
       <div className="flex items-center gap-3">
-        <button onClick={() => { router.refresh(); router.push(`/os/${id}`) }} className="text-[#555555] hover:text-white transition-colors">
+        <button onClick={() => { router.refresh(); router.push(`/os/${id}`) }} className="text-[#B4B4B4] hover:text-white transition-colors">
           <ArrowLeft size={16} />
         </button>
-        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+        <h1 className="text-base font-bold uppercase tracking-wide text-[#F0F0F0]">
           {isNova ? "Nova OS criada" : "Editar OS"}
         </h1>
       </div>
@@ -195,11 +195,11 @@ function EditarOSContent() {
         <div className="flex items-center justify-between bg-[#0D2A1A] border border-[#22C55E]/30 rounded-sm px-4 py-3">
           <div className="flex items-center gap-2">
             <CheckCircle size={14} className="text-[#22C55E]" />
-            <span className="text-xs text-[#22C55E]">OS criada com sucesso. Adicione fotos do defeito se desejar.</span>
+            <span className="text-sm text-[#22C55E]">OS criada com sucesso. Adicione fotos do defeito se desejar.</span>
           </div>
           <button
             onClick={() => { router.refresh(); router.push(`/os/${id}`) }}
-            className="text-[10px] font-semibold uppercase tracking-widest text-[#22C55E] hover:text-white transition-colors ml-4 shrink-0"
+            className="text-[12px] font-bold uppercase tracking-wide text-[#22C55E] hover:text-white transition-colors ml-4 shrink-0"
           >
             Ir para a OS →
           </button>
@@ -212,11 +212,11 @@ function EditarOSContent() {
           <label className={labelCls}>Cliente *</label>
           {clienteId ? (
             <div className="flex items-center gap-2">
-              <span className="flex-1 text-sm text-[#F0F0F0] bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-2 rounded-sm">
+              <span className="flex-1 text-base text-[#F0F0F0] bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-2 rounded-sm">
                 {clienteDisplay}
               </span>
               <button type="button" onClick={() => { setClienteId(""); setClienteDisplay("") }}
-                className="text-[#555555] hover:text-white transition-colors">
+                className="text-[#B4B4B4] hover:text-white transition-colors">
                 <X size={14} />
               </button>
             </div>
@@ -232,7 +232,7 @@ function EditarOSContent() {
                 <div className="absolute z-10 top-full mt-1 w-full bg-[#111111] border border-[#1C1C1C] rounded-sm shadow-lg max-h-48 overflow-auto">
                   {resultadosCliente.map((c) => (
                     <button key={c._id} type="button" onClick={() => selecionarCliente(c)}
-                      className="w-full text-left px-3 py-2 text-sm text-[#F0F0F0] hover:bg-[#1C1C1C]">
+                      className="w-full text-left px-3 py-2 text-base text-[#F0F0F0] hover:bg-[#1C1C1C]">
                       {c.nome} — {c.telefone}
                     </button>
                   ))}
@@ -247,11 +247,11 @@ function EditarOSContent() {
           <label className={labelCls}>Central *</label>
           {centralId ? (
             <div className="flex items-center gap-2">
-              <span className="flex-1 text-sm text-[#F0F0F0] bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-2 rounded-sm">
+              <span className="flex-1 text-base text-[#F0F0F0] bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-2 rounded-sm">
                 {centralDisplay}
               </span>
               <button type="button" onClick={() => { setCentralId(""); setCentralDisplay("") }}
-                className="text-[#555555] hover:text-white transition-colors">
+                className="text-[#B4B4B4] hover:text-white transition-colors">
                 <X size={14} />
               </button>
             </div>
@@ -267,7 +267,7 @@ function EditarOSContent() {
                 <div className="absolute z-10 top-full mt-1 w-full bg-[#111111] border border-[#1C1C1C] rounded-sm shadow-lg max-h-48 overflow-auto">
                   {resultadosCentral.map((c) => (
                     <button key={c._id} type="button" onClick={() => selecionarCentral(c)}
-                      className="w-full text-left px-3 py-2 text-sm text-[#F0F0F0] hover:bg-[#1C1C1C]">
+                      className="w-full text-left px-3 py-2 text-base text-[#F0F0F0] hover:bg-[#1C1C1C]">
                       {c.marca} {c.modelo} — {c.codigo}
                     </button>
                   ))}
@@ -312,10 +312,10 @@ function EditarOSContent() {
                 key={tipo}
                 type="button"
                 onClick={() => setTipoCliente(tipoCliente === tipo ? "" : tipo)}
-                className={`px-3 py-1.5 rounded-sm text-xs font-semibold uppercase tracking-widest border transition-colors ${
+                className={`px-3 py-1.5 rounded-sm text-sm font-bold uppercase tracking-wide border transition-colors ${
                   tipoCliente === tipo
                     ? "bg-[#E8FF47] text-black border-[#E8FF47]"
-                    : "bg-transparent text-[#555555] border-[#1C1C1C] hover:border-[#555555]"
+                    : "bg-transparent text-[#B4B4B4] border-[#1C1C1C] hover:border-[#B4B4B4]"
                 }`}
               >
                 {tipo === "usuario" ? "Usuário" : "Mecânico"}
@@ -341,12 +341,12 @@ function EditarOSContent() {
           </div>
         )}
 
-        {erro && <p className="text-xs text-red-400">{erro}</p>}
+        {erro && <p className="text-sm text-red-400">{erro}</p>}
 
         <button
           type="submit"
           disabled={salvando}
-          className="w-full py-2.5 text-xs font-semibold uppercase tracking-widest bg-[#E8FF47] text-black rounded-sm hover:bg-[#d4eb3a] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2.5 text-sm font-bold uppercase tracking-wide bg-[#E8FF47] text-black rounded-sm hover:bg-[#d4eb3a] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
         >
           {salvando && <Loader2 size={12} className="animate-spin" />}
           {salvando ? "Salvando..." : "Salvar alterações"}
@@ -356,14 +356,14 @@ function EditarOSContent() {
       {/* Fotos */}
       <div>
         <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#1C1C1C]">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">
+          <span className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
             Fotos do defeito
           </span>
           <button
             type="button"
             onClick={() => inputFotoRef.current?.click()}
             disabled={uploadandoFoto}
-            className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hover:text-white transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white transition-colors disabled:opacity-50"
           >
             {uploadandoFoto
               ? <Loader2 size={12} className="animate-spin" />
@@ -381,7 +381,7 @@ function EditarOSContent() {
 
         {fotos.length === 0 ? (
           <div className="border border-dashed border-[#1C1C1C] rounded-sm p-8 text-center">
-            <p className="text-xs text-[#555555]">Nenhuma foto adicionada.</p>
+            <p className="text-sm text-[#B4B4B4]">Nenhuma foto adicionada.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -406,7 +406,7 @@ function EditarOSContent() {
 
 export default function EditarOSPage() {
   return (
-    <Suspense fallback={<p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>}>
+    <Suspense fallback={<p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>}>
       <EditarOSContent />
     </Suspense>
   )

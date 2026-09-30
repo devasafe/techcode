@@ -74,7 +74,7 @@ export default function DashboardPage() {
   const emAberto    = aberta + naFila + emAndamento
 
   if (carregando) return (
-    <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+    <p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>
   )
 
   return (
@@ -92,14 +92,14 @@ export default function DashboardPage() {
               >
                 <AlertTriangle size={14} className="text-[#F59E0B] shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-[#F59E0B] font-semibold">
+                  <p className="text-sm text-[#F59E0B] font-semibold">
                     OS #{g.numero_os} — garantia vence em {dias === 0 ? "hoje" : `${dias} dia${dias !== 1 ? "s" : ""}`}
                   </p>
-                  <p className="text-xs text-[#888888] truncate">
+                  <p className="text-sm text-[#888888] truncate">
                     {g.cliente_id?.nome ?? "—"} · {g.central_id ? `${g.central_id.marca} ${g.central_id.modelo}` : "—"}
                   </p>
                 </div>
-                <span className="font-mono text-[10px] text-[#555555] shrink-0">
+                <span className="font-mono text-[12px] text-[#B4B4B4] shrink-0">
                   {new Date(g.garantia_ate).toLocaleDateString("pt-BR")}
                 </span>
               </div>
@@ -110,8 +110,8 @@ export default function DashboardPage() {
 
       {/* KPI Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        <div className="bg-[#111111] border border-[#1C1C1C] p-4 flex flex-col justify-between h-28">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">
+        <div className="bg-[#111111] border border-[#1C1C1C] p-4 flex flex-col justify-between min-h-28">
+          <span className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
             OS este mês
           </span>
           <span className="font-mono text-4xl font-bold text-[#E8FF47]">
@@ -119,8 +119,8 @@ export default function DashboardPage() {
           </span>
         </div>
 
-        <div className="bg-[#111111] border border-[#1C1C1C] p-4 flex flex-col justify-between h-28">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">
+        <div className="bg-[#111111] border border-[#1C1C1C] p-4 flex flex-col justify-between min-h-28">
+          <span className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
             Receita
           </span>
           <span className="font-mono text-xl text-white">
@@ -128,8 +128,8 @@ export default function DashboardPage() {
           </span>
         </div>
 
-        <div className="bg-[#111111] border border-[#1C1C1C] p-4 flex flex-col justify-between h-28">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">
+        <div className="bg-[#111111] border border-[#1C1C1C] p-4 flex flex-col justify-between min-h-28">
+          <span className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
             Lucro
           </span>
           <span className={`font-mono text-xl ${(stats?.mes.lucro ?? 0) >= 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
@@ -137,8 +137,8 @@ export default function DashboardPage() {
           </span>
         </div>
 
-        <div className="bg-[#111111] border border-[#1C1C1C] p-4 flex flex-col justify-between h-28">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">
+        <div className="bg-[#111111] border border-[#1C1C1C] p-4 flex flex-col justify-between min-h-28">
+          <span className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
             Em aberto
           </span>
           <span className="font-mono text-4xl font-bold text-[#F59E0B]">
@@ -156,7 +156,7 @@ export default function DashboardPage() {
             { label: "Em andamento",  valor: emAndamento, cls: "text-[#F59E0B]" },
           ].map(({ label, valor, cls }) => (
             <div key={label} className="bg-[#111111] border border-[#1C1C1C] px-4 py-3 flex items-center justify-between rounded-sm">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#555555]">{label}</span>
+              <span className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">{label}</span>
               <span className={`font-mono text-lg font-bold ${cls}`}>{valor}</span>
             </div>
           ))}
@@ -165,22 +165,22 @@ export default function DashboardPage() {
 
       {/* Últimas OS */}
       <div>
-        <h2 className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-4">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-[#F0F0F0] mb-4">
           Últimas OS concluídas
         </h2>
 
         {!stats?.recentes.length ? (
-          <p className="text-xs text-[#555555]">Nenhuma OS concluída ainda.</p>
+          <p className="text-sm text-[#B4B4B4]">Nenhuma OS concluída ainda.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#111111] border-b border-[#1C1C1C]">
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">#</th>
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Cliente</th>
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden sm:table-cell">Central</th>
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right">Valor</th>
-                  <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] text-right hidden md:table-cell">Data</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">#</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Cliente</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hidden sm:table-cell">Central</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] text-right">Valor</th>
+                  <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] text-right hidden md:table-cell">Data</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1C1C1C]">
@@ -190,13 +190,13 @@ export default function DashboardPage() {
                     className="hover:bg-[#141414] transition-colors cursor-pointer"
                     onClick={() => router.push(`/os/${o._id}`)}
                   >
-                    <td className="py-3 px-4 font-mono text-sm text-[#E8FF47]">#{o.numero_os}</td>
-                    <td className="py-3 px-4 text-sm text-[#F0F0F0]">{o.cliente_id?.nome ?? "—"}</td>
-                    <td className="py-3 px-4 text-sm text-[#555555] hidden sm:table-cell">
+                    <td className="py-3 px-4 font-mono text-base text-[#E8FF47]">#{o.numero_os}</td>
+                    <td className="py-3 px-4 text-base text-[#F0F0F0]">{o.cliente_id?.nome ?? "—"}</td>
+                    <td className="py-3 px-4 text-base text-[#B4B4B4] hidden sm:table-cell">
                       {o.central_id ? `${o.central_id.marca} ${o.central_id.modelo}` : "—"}
                     </td>
-                    <td className="py-3 px-4 font-mono text-sm text-right text-white">{moeda(o.valor_cobrado)}</td>
-                    <td className="py-3 px-4 font-mono text-sm text-right text-[#555555] hidden md:table-cell">
+                    <td className="py-3 px-4 font-mono text-base text-right text-white">{moeda(o.valor_cobrado)}</td>
+                    <td className="py-3 px-4 font-mono text-base text-right text-[#B4B4B4] hidden md:table-cell">
                       {o.closed_at ? new Date(o.closed_at).toLocaleDateString("pt-BR") : "—"}
                     </td>
                   </tr>
@@ -210,38 +210,38 @@ export default function DashboardPage() {
       {/* Por técnico */}
       {porTecnico.length > 0 && (
         <div>
-          <h2 className="text-[10px] font-semibold uppercase tracking-widest text-[#555555] mb-4">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-[#F0F0F0] mb-4">
             {isAdmin ? "Desempenho por técnico — este mês" : "Meu desempenho — este mês"}
           </h2>
           <div className="space-y-2">
             {porTecnico.map((t) => (
               <div key={t._id} className="bg-[#111111] border border-[#1C1C1C] rounded-sm px-4 py-3">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-[#F0F0F0]">{t.nome}</span>
+                  <span className="text-base font-medium text-[#F0F0F0]">{t.nome}</span>
                   {t.em_aberto > 0 && (
-                    <span className="text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm bg-[#2A2000] text-[#F59E0B]">
+                    <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm bg-[#2A2000] text-[#F59E0B]">
                       {t.em_aberto} em aberto
                     </span>
                   )}
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <p className="text-[9px] font-semibold uppercase tracking-widest text-[#555555] mb-0.5">OS concluídas</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-0.5">OS concluídas</p>
                     <p className="font-mono text-lg font-bold text-[#E8FF47]">{t.os_mes}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-semibold uppercase tracking-widest text-[#555555] mb-0.5">Receita</p>
-                    <p className="font-mono text-sm text-white">{moeda(t.receita_mes)}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-0.5">Receita</p>
+                    <p className="font-mono text-base text-white">{moeda(t.receita_mes)}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-semibold uppercase tracking-widest text-[#555555] mb-0.5">Lucro</p>
-                    <p className={`font-mono text-sm ${t.lucro_mes >= 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-0.5">Lucro</p>
+                    <p className={`font-mono text-base ${t.lucro_mes >= 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
                       {moeda(t.lucro_mes)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-semibold uppercase tracking-widest text-[#555555] mb-0.5">Comissão</p>
-                    <p className="font-mono text-sm text-[#60A5FA]">{moeda(t.comissao_mes)}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-0.5">Comissão</p>
+                    <p className="font-mono text-base text-[#60A5FA]">{moeda(t.comissao_mes)}</p>
                   </div>
                 </div>
               </div>

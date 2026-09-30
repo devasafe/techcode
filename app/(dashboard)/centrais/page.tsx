@@ -62,12 +62,12 @@ export default function CentraisPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-sm font-semibold uppercase tracking-widest text-[#F0F0F0]">
+        <h1 className="text-xl font-bold uppercase tracking-wide text-[#F0F0F0]">
           Centrais
         </h1>
         <button
           onClick={() => setAbrirForm(true)}
-          className="flex items-center gap-2 bg-[#E8FF47] text-black text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-sm hover:brightness-110 transition-all"
+          className="flex items-center gap-2 bg-[#E8FF47] text-black text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 transition-all"
         >
           <Plus size={14} />
           Nova central
@@ -75,29 +75,29 @@ export default function CentraisPage() {
       </div>
 
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555555]" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#B4B4B4]" />
         <input
           value={busca}
           onChange={handleBusca}
           placeholder="Buscar por marca, modelo ou código..."
-          className="w-full bg-[#111111] border border-[#1C1C1C] text-sm text-[#F0F0F0] placeholder:text-[#555555] pl-9 pr-4 py-2.5 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors"
+          className="w-full bg-[#111111] border border-[#1C1C1C] text-base text-[#F0F0F0] placeholder:text-[#B4B4B4] pl-9 pr-4 py-2.5 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors"
         />
       </div>
 
-      {erro && <p className="text-xs text-[#FF4444]">{erro}</p>}
+      {erro && <p className="text-sm text-[#FF4444]">{erro}</p>}
 
       {carregando && !busca ? (
-        <p className="text-xs uppercase tracking-widest text-[#555555]">Carregando...</p>
+        <p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#111111] border-b border-[#1C1C1C]">
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Marca</th>
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Modelo</th>
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555]">Código</th>
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden sm:table-cell">Tipo</th>
-                <th className="py-2 px-4 text-[10px] font-semibold uppercase tracking-widest text-[#555555] hidden md:table-cell">Descrição</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Marca</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Modelo</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">Código</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hidden sm:table-cell">Tipo</th>
+                <th className="py-2 px-4 text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] hidden md:table-cell">Descrição</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1C1C1C]">
@@ -107,25 +107,25 @@ export default function CentraisPage() {
                   className="hover:bg-[#141414] transition-colors cursor-pointer"
                   onClick={() => router.push(`/centrais/${c._id}`)}
                 >
-                  <td className="py-3 px-4 text-sm font-medium text-[#F0F0F0]">{c.marca}</td>
-                  <td className="py-3 px-4 font-mono text-sm text-[#E8FF47]">{c.modelo}</td>
-                  <td className="py-3 px-4 font-mono text-sm text-[#555555]">{c.codigo}</td>
+                  <td className="py-3 px-4 text-base font-medium text-[#F0F0F0]">{c.marca}</td>
+                  <td className="py-3 px-4 font-mono text-base text-[#E8FF47]">{c.modelo}</td>
+                  <td className="py-3 px-4 font-mono text-base text-[#B4B4B4]">{c.codigo}</td>
                   <td className="py-3 px-4 hidden sm:table-cell">
                     {c.tipo_modulo ? (
-                      <span className="text-[9px] font-semibold uppercase tracking-widest px-2 py-1 rounded-sm bg-[#1C1C1C] text-[#888888]">
+                      <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-1 rounded-sm bg-[#1C1C1C] text-[#888888]">
                         {TIPO_LABEL[c.tipo_modulo]}
                       </span>
                     ) : (
-                      <span className="text-sm text-[#333333]">—</span>
+                      <span className="text-base text-[#8A8A8A]">—</span>
                     )}
                   </td>
-                  <td className="py-3 px-4 text-sm text-[#555555] hidden md:table-cell">{c.descricao ?? "—"}</td>
+                  <td className="py-3 px-4 text-base text-[#B4B4B4] hidden md:table-cell">{c.descricao ?? "—"}</td>
                 </tr>
               ))}
             </tbody>
           </table>
           {centrais.length === 0 && !carregando && (
-            <p className="text-xs text-[#555555] text-center py-8">
+            <p className="text-sm text-[#B4B4B4] text-center py-8">
               {busca ? "Nenhuma central encontrada." : "Nenhuma central cadastrada ainda."}
             </p>
           )}
@@ -135,7 +135,7 @@ export default function CentraisPage() {
       <Dialog open={abrirForm} onOpenChange={setAbrirForm}>
         <DialogContent className="bg-[#111111] border-[#1C1C1C]">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-sm uppercase tracking-widest">
+            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">
               Nova central
             </DialogTitle>
           </DialogHeader>
