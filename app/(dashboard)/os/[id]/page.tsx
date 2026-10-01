@@ -485,13 +485,13 @@ export default function OSDetalhePage() {
                 <audio controls src={m.url} className="w-full" />
                 {m.transcricao?.texto ? (
                   <p className="text-base text-[#F0F0F0]">{m.transcricao.texto}</p>
-                ) : (
-                  <p className="text-sm text-[#B4B4B4]">
-                    {m.transcricao?.status === "pendente"
-                      ? "Transcrição na fila."
-                      : "Sem transcrição."}
+                ) : m.transcricao?.status === "processando" ? (
+                  <p className="text-sm text-[#B4B4B4]">Transcrevendo...</p>
+                ) : m.transcricao?.status === "falhou" ? (
+                  <p className="text-sm text-[#F59E0B]">
+                    Não deu para transcrever. O áudio continua aí.
                   </p>
-                )}
+                ) : null}
               </div>
             ))}
         </div>
