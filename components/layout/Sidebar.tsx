@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   PackagePlus,
+  Archive,
   LayoutDashboard,
   Users,
   FileText,
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { href: "/os", label: "OS", icon: FileText, roles: ["admin", "atendente", "tecnico"] },
   { href: "/fila", label: "Fila", icon: ListOrdered, roles: ["admin", "atendente", "tecnico"] },
   { href: "/centrais", label: "Centrais", icon: Cpu, roles: ["admin", "atendente", "tecnico"] },
+  { href: "/acervo", label: "Acervo", icon: Archive, roles: ["admin", "atendente", "tecnico"] },
   { href: "/financeiro", label: "Financeiro", icon: DollarSign, roles: ["admin"] },
   { href: "/comissoes", label: "Comissões", icon: Receipt, roles: ["admin"] },
   { href: "/equipe", label: "Equipe", icon: UserCog, roles: ["admin"] },

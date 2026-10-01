@@ -111,3 +111,123 @@ export async function acrescentarTermosBusca(id: string, termos: string) {
   await central.save()
   return central
 }
+
+/**
+ * Busca no acervo. Usa o índice de texto (que cobre apelido, marca, modelo,
+ * código e `termos_busca` — onde as transcrições vão), com queda para regex
+ * quando o termo é curto demais para o `$text` ser útil.
+ *
+ * `$text` roda no mongodb-memory-server, então é testável. Atlas Search seria
+ * mais poderoso, mas ficaria fora do harness de testes e exige configurar
+ * índice no painel — para centenas ou milhares de peças não se paga.
+ */
+export async function buscarAcervo(
+  q?: string,
+  opts: { incluirRascunhos?: boolean; limite?: number } = {}
+) {
+  await connectDB()
+  const limite = opts.limite ?? 60
+  const base = opts.incluirRascunhos ? {} : { status_catalogo: { $ne: "rascunho" } }
+
+  const termo = (q ?? "").trim()
+  if (!termo) {
+    return Central.find(base).sort({ created_at: -1 }).limit(limite).lean()
+  }
+
+  // Termo curto: regex acha "4GV" ou "Gol" melhor que a busca por palavra.
+  if (termo.length < 4) {
+    const escapado = termo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    const regex = new RegExp(escapado, "i")
+    return Central.find({
+      ...base,
+      $or: [
+        { apelido: regex },
+        { marca: regex },
+        { modelo: regex },
+        { codigo: regex },
+        { termos_busca: regex },
+      ],
+    })
+      .limit(limite)
+      .lean()
+  }
+
+  const porTexto = await Central.find(
+    { ...base, $text: { $search: termo } },
+    { score: { $meta: "textScore" } }
+  )
+    .sort({ score: { $meta: "textScore" } })
+    .limit(limite)
+    .lean()
+
+  if (porTexto.length) return porTexto
+
+  // `$text` casa palavra inteira; "capacit" não acha "capacitor". O regex pega.
+  const escapado = termo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  const regex = new RegExp(escapado, "i")
+  return Central.find({
+    ...base,
+    $or: [
+      { apelido: regex },
+      { marca: regex },
+      { modelo: regex },
+      { codigo: regex },
+      { termos_busca: regex },
+    ],
+  })
+    .limit(limite)
+    .lean()
+}
+
+/** Quantas peças esperam identificação — para o badge na navegação. */
+export async function contarRascunhos() {
+  await connectDB()
+  return Central.countDocuments({ status_catalogo: "rascunho" })
+}
+
+/**
+ * Rascunhos com o que ajuda a identificar: as fotos e os áudios transcritos das
+ * OS que passaram por essa peça. Sem isso a fila de identificação seria uma
+ * lista de "Peça #26" sem contexto nenhum.
+ */
+export async function listarRascunhosComContexto(limite = 50) {
+  await connectDB()
+  const rascunhos = await Central.find({ status_catalogo: "rascunho" })
+    .sort({ created_at: -1 })
+    .limit(limite)
+    .lean()
+
+  if (!rascunhos.length) return []
+
+  const ids = rascunhos.map((r) => r._id)
+  const oss = await OS.find({ central_id: { $in: ids } })
+    .populate("cliente_id", "nome telefone")
+    .sort({ created_at: -1 })
+    .lean()
+
+  return rascunhos.map((r) => {
+    const minhas = oss.filter((o) => String(o.central_id) === String(r._id))
+    const midias = minhas.flatMap((o) => o.midias ?? [])
+    return {
+      ...r,
+      os: minhas.map((o) => ({
+        _id: String(o._id),
+        numero_os: o.numero_os,
+        cliente: o.cliente_id,
+        defeito: o.defeito_descricao || o.defeito_transcrito || null,
+        created_at: o.created_at,
+      })),
+      fotos: [
+        ...midias.filter((m) => m.tipo === "foto").map((m) => m.url),
+        ...minhas.flatMap((o) => o.fotos ?? []),
+      ],
+      audios: midias
+        .filter((m) => m.tipo === "audio")
+        .map((m) => ({
+          url: m.url,
+          papel: m.papel ?? "defeito",
+          texto: m.transcricao?.texto ?? null,
+        })),
+    }
+  })
+}

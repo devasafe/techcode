@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { buscarCentralPorId, atualizarCentral } from "@/lib/services/central.service"
+import {
+  buscarCentralPorId,
+  atualizarCentral,
+  confirmarCentral,
+} from "@/lib/services/central.service"
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -20,13 +24,18 @@ export async function GET(_req: Request, { params }: Params) {
 
 export async function PUT(req: Request, { params }: Params) {
   const session = await auth()
-  if (!session?.user?.perfis?.includes("admin")) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 403 })
+  // Identificar peça deixa de ser privilégio de admin: quem está na bancada é
+  // quem sabe o que é a peça, e a fila de identificação é trabalho dela.
+  if (!session?.user?.perfis?.length) {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
   }
   const { id } = await params
   try {
     const body = await req.json()
-    const central = await atualizarCentral(id, body)
+    // `confirmar: true` promove rascunho a item de catálogo.
+    const central = body?.confirmar
+      ? await confirmarCentral(id, body)
+      : await atualizarCentral(id, body)
     if (!central) return NextResponse.json({ error: "Não encontrado" }, { status: 404 })
     return NextResponse.json(central)
   } catch (err: unknown) {

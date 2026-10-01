@@ -8,6 +8,9 @@ import {
   confirmarCentral,
   listarRascunhos,
   acrescentarTermosBusca,
+  buscarAcervo,
+  contarRascunhos,
+  listarRascunhosComContexto,
 } from "@/lib/services/central.service"
 import { criarCliente } from "@/lib/services/cliente.service"
 import Central from "@/models/Central"
@@ -160,5 +163,110 @@ describe("central.service — peça sem catálogo", () => {
     await criarCentralRascunho({ apelido: "painel Gol 2010 chicote diferente" })
     const achados = await listarCentrais("chicote", { incluirRascunhos: true })
     expect(achados).toHaveLength(1)
+  })
+})
+
+describe("buscarAcervo", () => {
+  beforeEach(async () => {
+    // $text exige o indice de texto criado; Central.init() espera por ele.
+    await Central.init()
+  })
+
+  it("acha a peca pelo que foi FALADO no audio (termos_busca)", async () => {
+    const c = await criarCentralRascunho({ apelido: "Peça #26" })
+    await acrescentarTermosBusca(String(c._id), "749 Peugeot defeito de capacitor")
+
+    const achados = await buscarAcervo("Peugeot", { incluirRascunhos: true })
+    expect(achados).toHaveLength(1)
+    expect(String(achados[0]._id)).toBe(String(c._id))
+  })
+
+  it("acha por termo parcial, que o $text sozinho nao pegaria", async () => {
+    const c = await criarCentralRascunho({ apelido: "Peça #27" })
+    await acrescentarTermosBusca(String(c._id), "defeito de capacitor estufado")
+    // "capacit" nao e palavra inteira: so o fallback regex acha.
+    const achados = await buscarAcervo("capacit", { incluirRascunhos: true })
+    expect(achados).toHaveLength(1)
+  })
+
+  it("acha por termo curto tipo 4GV", async () => {
+    await criarCentral({
+      marca: "Magneti Marelli",
+      modelo: "IAW 4GV",
+      codigo: "4GVBR",
+      status_catalogo: "confirmada",
+    })
+    expect(await buscarAcervo("4GV")).toHaveLength(1)
+  })
+
+  it("esconde rascunho por padrao e mostra quando pedido", async () => {
+    const c = await criarCentralRascunho({ apelido: "Peça #28" })
+    await acrescentarTermosBusca(String(c._id), "painel Gol 2010")
+
+    expect(await buscarAcervo("painel")).toHaveLength(0)
+    expect(await buscarAcervo("painel", { incluirRascunhos: true })).toHaveLength(1)
+  })
+
+  it("sem termo devolve o acervo mais recente primeiro", async () => {
+    await criarCentral({ marca: "A", modelo: "antiga", codigo: "A1", status_catalogo: "confirmada" })
+    await criarCentral({ marca: "B", modelo: "nova", codigo: "B1", status_catalogo: "confirmada" })
+    const lista = await buscarAcervo()
+    expect(lista).toHaveLength(2)
+    expect(lista[0].modelo).toBe("nova")
+  })
+
+  it("termo sem resultado devolve vazio em vez de tudo", async () => {
+    await criarCentral({ marca: "Bosch", modelo: "4GV", codigo: "X", status_catalogo: "confirmada" })
+    expect(await buscarAcervo("helicoptero")).toHaveLength(0)
+  })
+})
+
+describe("fila de identificacao", () => {
+  it("contarRascunhos conta so os nao identificados", async () => {
+    await criarCentralRascunho({ apelido: "a" })
+    await criarCentralRascunho({ apelido: "b" })
+    await criarCentral({ marca: "x", modelo: "y", codigo: "z", status_catalogo: "confirmada" })
+    expect(await contarRascunhos()).toBe(2)
+  })
+
+  it("traz a foto e o audio transcrito junto, para dar contexto", async () => {
+    const central = await criarCentralRascunho({ apelido: "Peça #30" })
+    const cliente = await criarCliente({ nome: "Ze", telefone: "22999887766" })
+    await OS.create({
+      cliente_id: cliente._id,
+      central_id: central._id,
+      midias: [
+        {
+          tipo: "foto",
+          url: "https://x/foto.jpg",
+          public_id: "p1",
+          resource_type: "image",
+          origem: "camera",
+        },
+        {
+          tipo: "audio",
+          papel: "peca",
+          url: "https://x/audio.webm",
+          public_id: "p2",
+          resource_type: "video",
+          origem: "camera",
+          transcricao: { status: "concluida", texto: "749 Peugeot", tentativas: 1 },
+        },
+      ],
+    })
+
+    const fila = await listarRascunhosComContexto()
+    expect(fila).toHaveLength(1)
+    expect(fila[0].fotos).toContain("https://x/foto.jpg")
+    expect(fila[0].audios[0].texto).toBe("749 Peugeot")
+    expect(fila[0].audios[0].papel).toBe("peca")
+    expect(fila[0].os[0].cliente).toMatchObject({ nome: "Ze" })
+  })
+
+  it("rascunho sem OS nenhuma nao quebra a fila", async () => {
+    await criarCentralRascunho({ apelido: "orfa" })
+    const fila = await listarRascunhosComContexto()
+    expect(fila[0].os).toEqual([])
+    expect(fila[0].fotos).toEqual([])
   })
 })
