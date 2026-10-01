@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { auth } from "@/auth"
 import { registrarEntrada, type ArquivoEntrada } from "@/lib/services/entrada.service"
 import {
@@ -6,6 +6,8 @@ import {
   LIMITE_FOTO_BYTES,
   LIMITE_AUDIO_BYTES,
 } from "@/lib/schemas/entrada"
+import { processarTranscricao } from "@/lib/services/midia.service"
+import { transcricaoConfigurada } from "@/lib/transcricao"
 
 /**
  * Rota única da entrada rápida. É composta de propósito: o OSForm antigo fazia
@@ -77,6 +79,24 @@ export async function POST(req: Request) {
       { ...parsed.data, arquivos },
       { usuario_id: session.user.id }
     )
+
+    // Transcreve DEPOIS de responder: quem está na bancada não espera por isso.
+    // O sweeper (app/api/jobs/transcrever) recupera o que o `after` perder,
+    // porque o container morre a cada deploy com 10s de grace period.
+    if (!reaproveitada && transcricaoConfigurada()) {
+      const audios = (os.midias ?? []).filter(
+        (m) => m.tipo === "audio" && m.transcricao?.status === "pendente"
+      )
+      if (audios.length) {
+        const os_id = String(os._id)
+        const ids = audios.map((m) => String(m._id))
+        after(async () => {
+          for (const midia_id of ids) {
+            await processarTranscricao(os_id, midia_id)
+          }
+        })
+      }
+    }
 
     // 200 em vez de 201 quando foi o mesmo toque chegando duas vezes.
     return NextResponse.json(

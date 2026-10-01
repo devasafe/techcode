@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { BlocoAudio } from "@/components/os/BlocoAudio"
 import { useParams, useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
@@ -39,7 +40,11 @@ type OS = {
     tipo: "foto" | "audio"
     url: string
     duracao_s?: number
-    transcricao?: { status: string; texto?: string }
+    transcricao?: {
+      status: "pendente" | "processando" | "concluida" | "falhou"
+      texto?: string
+      erro?: string
+    }
   }[]
   defeito_transcrito?: string
   pago: boolean
@@ -471,31 +476,19 @@ export default function OSDetalhePage() {
         )
       })()}
 
-      {/* Audio gravado na bancada. A transcricao chega na Fase 2; por ora o
-          audio fica tocavel, que ja e melhor que papel. */}
-      {(os.midias ?? []).filter((m) => m.tipo === "audio").length > 0 && (
-        <div className="space-y-2">
-          <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
-            Descrição em áudio
-          </p>
-          {(os.midias ?? [])
-            .filter((m) => m.tipo === "audio")
-            .map((m) => (
-              <div key={m._id} className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 space-y-2">
-                <audio controls src={m.url} className="w-full" />
-                {m.transcricao?.texto ? (
-                  <p className="text-base text-[#F0F0F0]">{m.transcricao.texto}</p>
-                ) : m.transcricao?.status === "processando" ? (
-                  <p className="text-sm text-[#B4B4B4]">Transcrevendo...</p>
-                ) : m.transcricao?.status === "falhou" ? (
-                  <p className="text-sm text-[#F59E0B]">
-                    Não deu para transcrever. O áudio continua aí.
-                  </p>
-                ) : null}
-              </div>
-            ))}
-        </div>
-      )}
+      {/* Audio: o componente cuida de transcrever e corrigir */}
+      <BlocoAudio
+        osId={id}
+        midias={(os.midias ?? [])
+          .filter((m) => m.tipo === "audio")
+          .map((m) => ({
+            _id: m._id,
+            url: m.url,
+            duracao_s: m.duracao_s,
+            transcricao: m.transcricao as never,
+          }))}
+        onAtualizado={carregar}
+      />
 
       {/* Cancelamento */}
       {os.status === "cancelada" && (
