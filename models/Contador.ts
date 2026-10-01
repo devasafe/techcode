@@ -23,7 +23,7 @@ export async function proximoNumero(nome: string): Promise<number> {
   const doc = await Contador.findOneAndUpdate(
     { _id: nome },
     { $inc: { seq: 1 } },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
   )
   return doc.seq
 }

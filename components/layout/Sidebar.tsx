@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
+  PackagePlus,
   LayoutDashboard,
   Users,
   FileText,
@@ -16,6 +17,7 @@ import {
 import { signOut } from "next-auth/react"
 
 const NAV_ITEMS = [
+  { href: "/entrada", label: "Entrada", icon: PackagePlus, roles: ["admin", "atendente", "tecnico"] },
   { href: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "atendente", "tecnico"] },
   { href: "/clientes", label: "Clientes", icon: Users, roles: ["admin", "atendente", "tecnico"] },
   { href: "/os", label: "OS", icon: FileText, roles: ["admin", "atendente", "tecnico"] },

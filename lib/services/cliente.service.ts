@@ -91,7 +91,7 @@ export async function criarCliente(data: CreateClienteInput) {
 
 export async function atualizarCliente(id: string, data: UpdateClienteInput) {
   await connectDB()
-  return Cliente.findByIdAndUpdate(id, data, { new: true }).lean()
+  return Cliente.findByIdAndUpdate(id, data, { returnDocument: "after" }).lean()
 }
 
 export async function listarOSDoCliente(clienteId: string) {

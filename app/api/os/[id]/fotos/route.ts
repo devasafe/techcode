@@ -24,7 +24,7 @@ export async function POST(req: Request, { params }: Params) {
     const os = await OS.findByIdAndUpdate(
       id,
       { $push: { fotos: url } },
-      { new: true }
+      { returnDocument: "after" }
     ).lean()
 
     if (!os) return NextResponse.json({ error: "OS não encontrada" }, { status: 404 })
@@ -55,7 +55,7 @@ export async function DELETE(req: Request, { params }: Params) {
     const os = await OS.findByIdAndUpdate(
       id,
       { $pull: { fotos: url } },
-      { new: true }
+      { returnDocument: "after" }
     ).lean()
 
     if (!os) return NextResponse.json({ error: "OS não encontrada" }, { status: 404 })

@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { listarClientes, listarClientesComScore, criarCliente } from "@/lib/services/cliente.service"
+import {
+  listarClientes,
+  listarClientesComScore,
+  listarClientesRecentes,
+  criarCliente,
+} from "@/lib/services/cliente.service"
 
 export async function GET(req: Request) {
   const session = await auth()
@@ -8,8 +13,13 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const q = searchParams.get("q") ?? undefined
   const comScore = searchParams.get("score") === "1"
+  const recentes = searchParams.get("recentes") === "1"
   try {
-    const clientes = comScore ? await listarClientesComScore(q) : await listarClientes(q)
+    const clientes = recentes
+      ? await listarClientesRecentes()
+      : comScore
+        ? await listarClientesComScore(q)
+        : await listarClientes(q)
     return NextResponse.json(clientes)
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Erro interno"
