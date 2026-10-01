@@ -31,6 +31,9 @@ export interface IOS extends Document {
   tipo_cliente?: "mecanico" | "usuario"
   tipo_os?: "reparo" | "teste"
   solucao_descricao?: string
+  /** Rótulo curto do serviço, normalizado — é o que alimenta os chips de saída.
+   *  Convive com `solucao_descricao`, que é texto livre. */
+  servico_tag?: string
   motivo_cancelamento?: string
   /** Legado: so URLs. Midia nova vai em `midias`, que guarda public_id. */
   fotos: string[]
@@ -65,6 +68,7 @@ const OSSchema = new Schema<IOS>({
   tipo_cliente: { type: String, enum: ["mecanico", "usuario"] },
   tipo_os: { type: String, enum: ["reparo", "teste"] },
   solucao_descricao: String,
+  servico_tag: { type: String, trim: true },
   motivo_cancelamento: String,
   fotos: [String],
   midias: { type: [MidiaSchema], default: [] },

@@ -10,6 +10,7 @@ import {
   listarOSFila,
   adicionarRetornoGarantia,
   registrarDevolucao,
+  sugestoesSaida,
 } from "@/lib/services/os.service"
 import type { TipoDevolucao } from "@/types"
 
@@ -161,5 +162,64 @@ describe("OS service", () => {
     const os = await criarOS({ cliente_id: clienteId, central_id: centralId, defeito_descricao: "Teste" })
     const result = await registrarDevolucao(os._id.toString(), { tipo: "reembolso", motivo: "Teste" })
     expect(result).toBeNull()
+  })
+})
+
+describe("sugestoesSaida", () => {
+  async function concluir(servico: string, valor: number) {
+    const os = await criarOS({
+      cliente_id: clienteId,
+      central_id: centralId,
+      defeito_descricao: "x",
+    })
+    return atualizarOS(String(os._id), {
+      status: "concluida",
+      servico_tag: servico,
+      valor_cobrado: valor,
+    })
+  }
+
+  it("ordena servicos pela frequencia real", async () => {
+    await concluir("reparo ECU", 200)
+    await concluir("reparo ECU", 200)
+    await concluir("imobilizador", 150)
+    const { servicos } = await sugestoesSaida()
+    expect(servicos[0]).toBe("reparo ECU")
+    expect(servicos).toContain("imobilizador")
+  })
+
+  it("ordena valores pela frequencia real", async () => {
+    await concluir("a", 150)
+    await concluir("b", 150)
+    await concluir("c", 300)
+    const { valores } = await sugestoesSaida()
+    expect(valores[0]).toBe(150)
+  })
+
+  it("ignora OS que nao foi concluida", async () => {
+    const os = await criarOS({
+      cliente_id: clienteId,
+      central_id: centralId,
+      defeito_descricao: "x",
+    })
+    await atualizarOS(String(os._id), { servico_tag: "nao concluido", valor_cobrado: 999 })
+    const { servicos, valores } = await sugestoesSaida()
+    expect(servicos).not.toContain("nao concluido")
+    expect(valores).not.toContain(999)
+  })
+
+  it("devolve listas vazias sem historico", async () => {
+    const { servicos, valores } = await sugestoesSaida()
+    expect(servicos).toEqual([])
+    expect(valores).toEqual([])
+  })
+
+  it("concluir pelo caminho rapido continua calculando o financeiro", async () => {
+    const os = await concluir("reparo ECU", 250)
+    // Regressao: a conta continua no atualizarOS, que nao foi tocado.
+    expect(os!.status).toBe("concluida")
+    expect(os!.lucro_liquido).toBe(250)
+    expect(os!.closed_at).toBeTruthy()
+    expect(os!.servico_tag).toBe("reparo ECU")
   })
 })

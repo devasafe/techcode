@@ -22,6 +22,7 @@ export type UpdateOSInput = {
   tipo_cliente?: "mecanico" | "usuario"
   tipo_os?: "reparo" | "teste"
   solucao_descricao?: string
+  servico_tag?: string
   pecas?: { nome: string; custo: number }[]
   valor_cobrado?: number
   garantia_dias?: number
@@ -67,6 +68,7 @@ export async function atualizarOS(id: string, data: UpdateOSInput) {
   if (data.tipo_cliente !== undefined) update.tipo_cliente = data.tipo_cliente
   if (data.tipo_os !== undefined) update.tipo_os = data.tipo_os
   if (data.solucao_descricao !== undefined) update.solucao_descricao = data.solucao_descricao
+  if (data.servico_tag !== undefined) update.servico_tag = data.servico_tag
   if (data.tecnico_id !== undefined) update.tecnico_id = data.tecnico_id
   if (data.valor_cobrado !== undefined) update.valor_cobrado = data.valor_cobrado
   if (data.garantia_dias !== undefined) update.garantia_dias = data.garantia_dias
@@ -174,4 +176,33 @@ export async function registrarDevolucao(id: string, data: DevolucaoInput) {
     .populate("cliente_id", "nome telefone")
     .populate("central_id", "marca modelo codigo apelido status_catalogo")
     .lean()
+}
+
+/**
+ * Sugestões para fechar a OS, tiradas do HISTÓRICO REAL em vez de uma lista
+ * fixa no código. Com 20 OS já sai algo útil; com 200, o chip certo quase
+ * sempre é o primeiro, e fechar vira um toque.
+ */
+export async function sugestoesSaida(limite = 6) {
+  await connectDB()
+
+  const [servicos, valores] = await Promise.all([
+    OS.aggregate<{ _id: string; n: number }>([
+      { $match: { status: "concluida", servico_tag: { $nin: [null, ""] } } },
+      { $group: { _id: "$servico_tag", n: { $sum: 1 } } },
+      { $sort: { n: -1 } },
+      { $limit: limite },
+    ]),
+    OS.aggregate<{ _id: number; n: number }>([
+      { $match: { status: "concluida", valor_cobrado: { $gt: 0 } } },
+      { $group: { _id: "$valor_cobrado", n: { $sum: 1 } } },
+      { $sort: { n: -1 } },
+      { $limit: limite },
+    ]),
+  ])
+
+  return {
+    servicos: servicos.map((s) => s._id).filter(Boolean),
+    valores: valores.map((v) => v._id).filter((v) => typeof v === "number"),
+  }
 }

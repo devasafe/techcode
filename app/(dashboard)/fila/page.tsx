@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { FinalizarOS } from "@/components/os/FinalizarOS"
 import { useRouter } from "next/navigation"
 import type { OSStatus } from "@/types"
 
@@ -8,10 +9,11 @@ type OSFila = {
   _id: string
   numero_os: number
   status: OSStatus
-  defeito_descricao: string
+  defeito_descricao?: string
+  defeito_transcrito?: string
   created_at: string
   cliente_id: { nome: string } | null
-  central_id: { marca: string; modelo: string } | null
+  central_id: { marca?: string; modelo?: string; codigo?: string; apelido?: string } | null
 }
 
 const COLUNAS: { status: OSStatus; label: string; accent: string }[] = [
@@ -24,21 +26,29 @@ export default function FilaPage() {
   const router = useRouter()
   const [os, setOS] = useState<OSFila[]>([])
   const [carregando, setCarregando] = useState(true)
+  const [finalizando, setFinalizando] = useState<{ id: string; numero: number } | null>(null)
   const [erro, setErro] = useState("")
+
+  async function carregar(signal?: AbortSignal) {
+    setCarregando(true)
+    setErro("")
+    try {
+      const res = await fetch("/api/os?fila=true", { signal })
+      if (!res.ok) {
+        setErro("Erro ao carregar fila.")
+        return
+      }
+      setOS(await res.json())
+    } catch (err) {
+      if (err instanceof Error && err.name !== "AbortError") setErro("Erro ao carregar fila.")
+    } finally {
+      if (!signal?.aborted) setCarregando(false)
+    }
+  }
 
   useEffect(() => {
     const controller = new AbortController()
-    setCarregando(true)
-    setErro("")
-    fetch("/api/os?fila=true", { signal: controller.signal })
-      .then(async (res) => {
-        if (!res.ok) { setErro("Erro ao carregar fila."); return }
-        setOS(await res.json())
-      })
-      .catch((err) => {
-        if (err instanceof Error && err.name !== "AbortError") setErro("Erro ao carregar fila.")
-      })
-      .finally(() => { if (!controller.signal.aborted) setCarregando(false) })
+    carregar(controller.signal)
     return () => controller.abort()
   }, [])
 
@@ -87,10 +97,26 @@ export default function FilaPage() {
                       )}
                       {o.central_id && (
                         <p className="text-[12px] text-[#B4B4B4]">
-                          {o.central_id.marca} {o.central_id.modelo}
+                          {o.central_id.marca || o.central_id.modelo
+                            ? `${o.central_id.marca ?? ""} ${o.central_id.modelo ?? ""}`.trim()
+                            : o.central_id.apelido || "Peça sem identificação"}
                         </p>
                       )}
-                      <p className="text-[12px] text-[#B4B4B4] truncate mt-1">{o.defeito_descricao}</p>
+                      <p className="text-[12px] text-[#B4B4B4] truncate mt-1">
+                        {o.defeito_descricao || o.defeito_transcrito || "—"}
+                      </p>
+                      {/* Fechar a OS sem sair da fila: stopPropagation para o
+                          clique nao navegar para o detalhe. */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setFinalizando({ id: o._id, numero: o.numero_os })
+                        }}
+                        className="mt-3 w-full py-2.5 rounded-sm text-[12px] font-bold uppercase tracking-wide text-[#E8FF47] border border-[#1C1C1C] hover:border-[#E8FF47] transition-colors"
+                      >
+                        Finalizar
+                      </button>
                     </div>
                   ))}
                   {lista.length === 0 && (
@@ -101,6 +127,16 @@ export default function FilaPage() {
             )
           })}
         </div>
+      )}
+
+      {finalizando && (
+        <FinalizarOS
+          osId={finalizando.id}
+          numeroOS={finalizando.numero}
+          aberto
+          onFechar={() => setFinalizando(null)}
+          onConcluido={carregar}
+        />
       )}
     </div>
   )
