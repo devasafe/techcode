@@ -24,18 +24,46 @@ export async function GET(_req: Request, { params }: Params) {
 
 export async function PUT(req: Request, { params }: Params) {
   const session = await auth()
-  // Identificar peça deixa de ser privilégio de admin: quem está na bancada é
-  // quem sabe o que é a peça, e a fila de identificação é trabalho dela.
   if (!session?.user?.perfis?.length) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
   }
   const { id } = await params
+
   try {
     const body = await req.json()
-    // `confirmar: true` promove rascunho a item de catálogo.
-    const central = body?.confirmar
-      ? await confirmarCentral(id, body)
-      : await atualizarCentral(id, body)
+
+    // Identificar peça é trabalho da bancada, então qualquer perfil pode — mas
+    // SÓ isso: campos explícitos, e o `confirmarCentral` só age sobre documento
+    // que ainda está em rascunho. Editar catálogo já confirmado segue admin.
+    if (body?.confirmar) {
+      const central = await confirmarCentral(id, {
+        marca: body.marca,
+        modelo: body.modelo,
+        codigo: body.codigo,
+        tipo_modulo: body.tipo_modulo,
+        apelido: body.apelido,
+      })
+      if (!central) {
+        return NextResponse.json(
+          { error: "Peça não encontrada ou já identificada" },
+          { status: 404 }
+        )
+      }
+      return NextResponse.json(central)
+    }
+
+    if (!session.user.perfis.includes("admin")) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 403 })
+    }
+
+    const central = await atualizarCentral(id, {
+      marca: body.marca,
+      modelo: body.modelo,
+      codigo: body.codigo,
+      apelido: body.apelido,
+      tipo_modulo: body.tipo_modulo,
+      descricao: body.descricao,
+    })
     if (!central) return NextResponse.json({ error: "Não encontrado" }, { status: 404 })
     return NextResponse.json(central)
   } catch (err: unknown) {

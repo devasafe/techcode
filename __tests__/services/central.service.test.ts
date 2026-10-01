@@ -270,3 +270,28 @@ describe("fila de identificacao", () => {
     expect(fila[0].fotos).toEqual([])
   })
 })
+
+describe("confirmarCentral: limite do que a bancada pode mexer", () => {
+  it("nao confirma peca que JA foi confirmada", async () => {
+    const c = await criarCentral({
+      marca: "Bosch", modelo: "4GV", codigo: "X", status_catalogo: "confirmada",
+    })
+    // Devolve null: a rota transforma isso em 404 e o fluxo da bancada nao
+    // serve para reeditar catalogo pronto.
+    expect(await confirmarCentral(String(c._id), { marca: "HACK" })).toBeNull()
+    expect((await Central.findById(c._id))!.marca).toBe("Bosch")
+  })
+
+  it("ignora campo fora da whitelist (mass assignment)", async () => {
+    const r = await criarCentralRascunho({ apelido: "Peça #1" })
+    await confirmarCentral(String(r._id), {
+      marca: "Bosch",
+      criado_por: "507f1f77bcf86cd799439099",
+      termos_busca: "injetado",
+    } as never)
+    const final = await Central.findById(r._id)
+    expect(final!.marca).toBe("Bosch")
+    expect(final!.criado_por).toBeUndefined()
+    expect(final!.termos_busca).toBeUndefined()
+  })
+})

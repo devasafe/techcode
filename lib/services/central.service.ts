@@ -49,9 +49,27 @@ export async function criarCentral(data: CreateCentralInput) {
   return Central.create(data)
 }
 
+/**
+ * Campos que um update de central pode tocar. Lista explícita de propósito:
+ * passar o body cru para o `findByIdAndUpdate` permitiria injetar
+ * `status_catalogo`, `criado_por`, `midias` ou operadores como `$unset`.
+ */
+function camposPermitidos(data: UpdateCentralInput) {
+  const update: Record<string, unknown> = {}
+  if (data.marca !== undefined) update.marca = data.marca
+  if (data.modelo !== undefined) update.modelo = data.modelo
+  if (data.codigo !== undefined) update.codigo = data.codigo
+  if (data.apelido !== undefined) update.apelido = data.apelido
+  if (data.tipo_modulo !== undefined) update.tipo_modulo = data.tipo_modulo
+  if (data.descricao !== undefined) update.descricao = data.descricao
+  return update
+}
+
 export async function atualizarCentral(id: string, data: UpdateCentralInput) {
   await connectDB()
-  return Central.findByIdAndUpdate(id, data, { returnDocument: "after" }).lean()
+  return Central.findByIdAndUpdate(id, { $set: camposPermitidos(data) }, {
+    returnDocument: "after",
+  }).lean()
 }
 
 export async function listarReparosDaCentral(centralId: string) {
@@ -82,15 +100,18 @@ export async function criarCentralRascunho(data: {
   })
 }
 
-/** Promove rascunho a item de catálogo, quando a bancada está parada. */
-export async function confirmarCentral(
-  id: string,
-  data: { marca?: string; modelo?: string; codigo?: string; tipo_modulo?: string; apelido?: string }
-) {
+/**
+ * Promove rascunho a item de catálogo, quando a bancada está parada.
+ *
+ * Só age sobre documento que ESTÁ em rascunho: é o que permite liberar esta
+ * ação para qualquer perfil sem abrir edição de catálogo já confirmado.
+ * Devolve null se a peça não existe ou já foi confirmada.
+ */
+export async function confirmarCentral(id: string, data: UpdateCentralInput) {
   await connectDB()
-  return Central.findByIdAndUpdate(
-    id,
-    { ...data, status_catalogo: "confirmada" },
+  return Central.findOneAndUpdate(
+    { _id: id, status_catalogo: "rascunho" },
+    { $set: { ...camposPermitidos(data), status_catalogo: "confirmada" } },
     { returnDocument: "after" }
   ).lean()
 }
@@ -201,7 +222,9 @@ export async function listarRascunhosComContexto(limite = 50) {
 
   const ids = rascunhos.map((r) => r._id)
   const oss = await OS.find({ central_id: { $in: ids } })
-    .populate("cliente_id", "nome telefone")
+    // Só o nome: a fila de identificação não precisa de telefone, e expor
+    // menos é melhor que expor por descuido.
+    .populate("cliente_id", "nome")
     .sort({ created_at: -1 })
     .lean()
 
