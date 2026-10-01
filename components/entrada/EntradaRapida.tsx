@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Check, Loader2, Cpu, AlertTriangle, RefreshCw } from "lucide-react"
+import { Check, Loader2, AlertTriangle, RefreshCw } from "lucide-react"
 import { CapturaFoto } from "@/components/captura/CapturaFoto"
 import { GravadorAudio } from "@/components/captura/GravadorAudio"
 import { SeletorOficina, type ClienteResumo } from "@/components/entrada/SeletorOficina"
@@ -26,7 +26,7 @@ export function EntradaRapida() {
   const [digitarDefeito, setDigitarDefeito] = useState(false)
   const [defeito, setDefeito] = useState("")
   const [apelidoPeca, setApelidoPeca] = useState("")
-  const [mostrarApelido, setMostrarApelido] = useState(false)
+  const [digitarPeca, setDigitarPeca] = useState(false)
 
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState("")
@@ -191,13 +191,32 @@ export function EntradaRapida() {
         <CapturaFoto fotos={fotos} onChange={setFotos} desabilitado={enviando} />
 
         {/* Qual é a peça: vira o nome dela no acervo */}
-        <GravadorAudio
-          audio={audioPeca}
-          onChange={setAudioPeca}
-          desabilitado={enviando}
-          rotulo="Falar qual é a peça"
-          nomeArquivo="peca"
-        />
+        {!digitarPeca ? (
+          <GravadorAudio
+            audio={audioPeca}
+            onChange={setAudioPeca}
+            onPrecisaDigitar={() => setDigitarPeca(true)}
+            desabilitado={enviando}
+            rotulo="Falar qual é a peça"
+            nomeArquivo="peca"
+          />
+        ) : (
+          <div className="space-y-2">
+            <input
+              value={apelidoPeca}
+              onChange={(e) => setApelidoPeca(e.target.value)}
+              placeholder="Qual é a peça? (ex: painel Gol 2010 cinza)"
+              className="w-full bg-[#111111] border border-[#1C1C1C] text-base text-[#F0F0F0] px-4 py-3 rounded-sm focus:outline-none focus:border-[#E8FF47] placeholder:text-[#8A8A8A]"
+            />
+            <button
+              type="button"
+              onClick={() => setDigitarPeca(false)}
+              className="w-full py-2 text-sm font-bold text-[#B4B4B4] hover:text-white"
+            >
+              voltar a gravar
+            </button>
+          </div>
+        )}
 
         {/* O que ela tem: vira o defeito relatado */}
         {!digitarDefeito ? (
@@ -226,23 +245,6 @@ export function EntradaRapida() {
               voltar a gravar
             </button>
           </div>
-        )}
-
-        {!mostrarApelido ? (
-          <button
-            type="button"
-            onClick={() => setMostrarApelido(true)}
-            className="w-full flex items-center justify-center gap-2 py-2 text-sm font-bold text-[#B4B4B4] hover:text-white"
-          >
-            <Cpu size={16} /> dar um nome à peça
-          </button>
-        ) : (
-          <input
-            value={apelidoPeca}
-            onChange={(e) => setApelidoPeca(e.target.value)}
-            placeholder="ex: painel Gol 2010 cinza"
-            className="w-full bg-[#111111] border border-[#1C1C1C] text-base text-[#F0F0F0] px-4 py-3 rounded-sm focus:outline-none focus:border-[#E8FF47] placeholder:text-[#8A8A8A]"
-          />
         )}
 
         <p className="text-sm text-[#B4B4B4]">
