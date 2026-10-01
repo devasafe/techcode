@@ -5,12 +5,16 @@
 export const uploadsFeitos: { pasta: string; resource_type: string }[] = []
 
 /** Liga a falha de upload para testar que a entrada sobrevive a ela. */
-export const controle = { falhar: false }
+export const controle: {
+  falhar: boolean
+  falharCom?: { http_code?: number; message?: string }
+} = { falhar: false }
 
 export async function uploadArquivo(
   _buffer: Buffer,
   opcoes: { pasta: string; public_id?: string; resource_type?: string }
 ) {
+  if (controle.falharCom) throw controle.falharCom
   if (controle.falhar) throw new Error("cloudinary fora do ar")
   const resource_type = opcoes.resource_type === "auto" ? "image" : opcoes.resource_type ?? "image"
   uploadsFeitos.push({ pasta: opcoes.pasta, resource_type })
@@ -36,4 +40,5 @@ export async function deletarArquivo() {
 export function limparUploads() {
   uploadsFeitos.length = 0
   controle.falhar = false
+  controle.falharCom = undefined
 }

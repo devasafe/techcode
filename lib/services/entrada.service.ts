@@ -28,11 +28,16 @@ export type EntradaInput = {
   arquivos?: ArquivoEntrada[]
 }
 
+export type FalhaMidia = { tipo: "foto" | "audio"; motivo: string }
+
 export type ResultadoEntrada = {
   /** `IOS` explícito: `ReturnType<typeof OS.create>` degrada para `any[]`
    *  por causa do overload que aceita array. */
   os: IOS
   reaproveitada: boolean
+  /** Mídia que não subiu. Vai até a tela: perder foto em silêncio é pior que
+   *  avisar, mesmo que a OS tenha sido registrada. */
+  falhas: FalhaMidia[]
 }
 
 /**
@@ -52,7 +57,7 @@ export async function registrarEntrada(
     const existente = (await OS.findOne({
       chave_idempotencia: input.chave_idempotencia,
     })) as IOS | null
-    if (existente) return { os: existente, reaproveitada: true }
+    if (existente) return { os: existente, reaproveitada: true, falhas: [] }
   }
 
   // 1. Cliente
@@ -97,7 +102,7 @@ export async function registrarEntrada(
       const existente = (await OS.findOne({
         chave_idempotencia: input.chave_idempotencia,
       })) as IOS | null
-      if (existente) return { os: existente, reaproveitada: true }
+      if (existente) return { os: existente, reaproveitada: true, falhas: [] }
     }
     throw err
   }
@@ -109,22 +114,28 @@ export async function registrarEntrada(
 
   // 5. Mídia. Depois da OS existir de propósito: se o upload falhar, a entrada
   //    já está registrada e dá para reanexar — travar a bancada é pior.
+  let falhas: FalhaMidia[] = []
   if (input.arquivos?.length) {
-    await anexarArquivos(String(os._id), central_id, input.arquivos, ctx.usuario_id)
+    falhas = await anexarArquivos(String(os._id), central_id, input.arquivos, ctx.usuario_id)
     os = (await OS.findById(os._id)) as IOS
   }
 
-  return { os, reaproveitada: false }
+  return { os, reaproveitada: false, falhas }
 }
 
-/** Sobe cada arquivo e pendura na OS. Falha de um não derruba os outros. */
+/**
+ * Sobe cada arquivo e pendura na OS. Falha de um não derruba os outros, e as
+ * falhas são DEVOLVIDAS — a entrada continua registrada, mas quem está na
+ * bancada precisa saber que a foto não subiu.
+ */
 export async function anexarArquivos(
   os_id: string,
   central_id: string,
   arquivos: ArquivoEntrada[],
   usuario_id?: string
-) {
+): Promise<FalhaMidia[]> {
   await connectDB()
+  const falhas: FalhaMidia[] = []
 
   for (const arq of arquivos) {
     try {
@@ -156,8 +167,23 @@ export async function anexarArquivos(
         },
       })
     } catch (err) {
-      // Registrado e seguimos: a entrada já existe, a mídia pode ser reanexada.
-      console.error(`falha ao anexar ${arq.tipo} na OS ${os_id}:`, err)
+      // A entrada já existe; a mídia pode ser reanexada. Mas a falha sobe.
+      const motivo = extrairMotivo(err)
+      console.error(`falha ao anexar ${arq.tipo} na OS ${os_id}: ${motivo}`)
+      falhas.push({ tipo: arq.tipo, motivo })
     }
   }
+
+  return falhas
+}
+
+function extrairMotivo(err: unknown): string {
+  const e = err as { http_code?: number; message?: string; error?: { message?: string } }
+  const base = e?.error?.message || e?.message || "erro desconhecido"
+  // 401/403 do Cloudinary quase sempre é chave sem permissão de upload, e o
+  // texto cru ("unexpected status code") não diz isso a ninguém.
+  if (e?.http_code === 403 || e?.http_code === 401) {
+    return "o serviço de imagens recusou o envio (chave sem permissão de upload)"
+  }
+  return base
 }

@@ -32,7 +32,16 @@ type OS = {
   tecnico_id: { _id: string; nome: string } | null
   tipo_cliente?: "mecanico" | "usuario"
   tipo_os?: "reparo" | "teste"
+  /** Legado: só URLs. A mídia nova vem em `midias`. */
   fotos: string[]
+  midias?: {
+    _id: string
+    tipo: "foto" | "audio"
+    url: string
+    duracao_s?: number
+    transcricao?: { status: string; texto?: string }
+  }[]
+  defeito_transcrito?: string
   pago: boolean
   retornos_garantia: { _id: string; data: string; descricao: string }[]
   devolucao?: {
@@ -432,23 +441,59 @@ export default function OSDetalhePage() {
             )}
           </div>
         </div>
-        <p className="text-base text-[#F0F0F0]">{os.defeito_descricao}</p>
+        <p className="text-base text-[#F0F0F0]">
+          {os.defeito_descricao || os.defeito_transcrito || (
+            <span className="text-[#B4B4B4]">Sem descrição escrita.</span>
+          )}
+        </p>
       </div>
 
-      {/* Fotos */}
-      {os.fotos && os.fotos.length > 0 && (
-        <div>
-          <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-2">
-            Fotos do defeito
-          </p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {os.fotos.map((url: string) => (
-              <a key={url} href={url} target="_blank" rel="noopener noreferrer"
-                className="aspect-square bg-[#111111] rounded-sm overflow-hidden border border-[#1C1C1C] block hover:border-[#E8FF47] transition-colors">
-                <img src={url} alt="Foto do defeito" className="w-full h-full object-cover" />
-              </a>
-            ))}
+      {/* Fotos: o array legado e as midias novas aparecem juntos */}
+      {(() => {
+        const urlsLegado = os.fotos ?? []
+        const urlsMidia = (os.midias ?? []).filter((m) => m.tipo === "foto").map((m) => m.url)
+        const todas = [...urlsLegado, ...urlsMidia]
+        if (!todas.length) return null
+        return (
+          <div>
+            <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4] mb-2">
+              Fotos da peça
+            </p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {todas.map((url: string) => (
+                <a key={url} href={url} target="_blank" rel="noopener noreferrer"
+                  className="aspect-square bg-[#111111] rounded-sm overflow-hidden border border-[#1C1C1C] block hover:border-[#E8FF47] transition-colors">
+                  <img src={url} alt="Foto da peça" className="w-full h-full object-cover" />
+                </a>
+              ))}
+            </div>
           </div>
+        )
+      })()}
+
+      {/* Audio gravado na bancada. A transcricao chega na Fase 2; por ora o
+          audio fica tocavel, que ja e melhor que papel. */}
+      {(os.midias ?? []).filter((m) => m.tipo === "audio").length > 0 && (
+        <div className="space-y-2">
+          <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
+            Descrição em áudio
+          </p>
+          {(os.midias ?? [])
+            .filter((m) => m.tipo === "audio")
+            .map((m) => (
+              <div key={m._id} className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 space-y-2">
+                <audio controls src={m.url} className="w-full" />
+                {m.transcricao?.texto ? (
+                  <p className="text-base text-[#F0F0F0]">{m.transcricao.texto}</p>
+                ) : (
+                  <p className="text-sm text-[#B4B4B4]">
+                    {m.transcricao?.status === "pendente"
+                      ? "Transcrição na fila."
+                      : "Sem transcrição."}
+                  </p>
+                )}
+              </div>
+            ))}
         </div>
       )}
 

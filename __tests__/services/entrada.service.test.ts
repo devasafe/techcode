@@ -118,15 +118,38 @@ describe("registrarEntrada", () => {
     expect(uploadsFeitos.map((u) => u.resource_type)).toEqual(["image", "video"])
   })
 
-  it("entrada sobrevive a falha de upload", async () => {
+  it("entrada sobrevive a falha de upload E DEVOLVE a falha", async () => {
     controle.falhar = true
-    const { os } = await registrarEntrada({
+    const { os, falhas } = await registrarEntrada({
       telefone: "22999887766",
-      arquivos: [{ tipo: "foto", buffer: Buffer.from("x") }],
+      arquivos: [
+        { tipo: "foto", buffer: Buffer.from("x") },
+        { tipo: "audio", buffer: Buffer.from("y") },
+      ],
     })
     // A OS existe mesmo sem a midia: travar a bancada seria pior que perder a foto.
     expect(os.numero_os).toBeGreaterThan(0)
     expect(os.midias).toHaveLength(0)
+    // Mas a falha NAO pode ser engolida: quem esta na bancada tem de saber.
+    expect(falhas).toHaveLength(2)
+    expect(falhas.map((f) => f.tipo).sort()).toEqual(["audio", "foto"])
+  })
+
+  it("traduz 403 do Cloudinary para algo que se entende", async () => {
+    controle.falharCom = { http_code: 403, message: "Server returned unexpected status code - 403" }
+    const { falhas } = await registrarEntrada({
+      telefone: "22999887766",
+      arquivos: [{ tipo: "foto", buffer: Buffer.from("x") }],
+    })
+    expect(falhas[0].motivo).toContain("chave sem permissão de upload")
+  })
+
+  it("sem falha de upload, falhas vem vazio", async () => {
+    const { falhas } = await registrarEntrada({
+      telefone: "22999887766",
+      arquivos: [{ tipo: "foto", buffer: Buffer.from("x") }],
+    })
+    expect(falhas).toEqual([])
   })
 
   it("exige cliente ou telefone", async () => {

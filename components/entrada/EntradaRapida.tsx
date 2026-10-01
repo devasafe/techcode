@@ -2,10 +2,18 @@
 
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Check, Loader2, Cpu } from "lucide-react"
+import { Check, Loader2, Cpu, AlertTriangle, RefreshCw } from "lucide-react"
 import { CapturaFoto } from "@/components/captura/CapturaFoto"
 import { GravadorAudio } from "@/components/captura/GravadorAudio"
 import { SeletorOficina, type ClienteResumo } from "@/components/entrada/SeletorOficina"
+
+type FalhaMidia = { tipo: "foto" | "audio"; motivo: string }
+
+type Registrada = {
+  _id: string
+  numero_os: number
+  falhas: FalhaMidia[]
+}
 
 export function EntradaRapida() {
   const router = useRouter()
@@ -21,12 +29,26 @@ export function EntradaRapida() {
 
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState("")
+  /** Preenchido quando a OS foi criada MAS alguma mídia não subiu. */
+  const [registrada, setRegistrada] = useState<Registrada | null>(null)
+  const [reenviando, setReenviando] = useState(false)
 
   // Gerada uma vez por formulário: é o que faz duplo toque ou retry em wifi ruim
   // não criarem duas OS.
   const chaveRef = useRef<string>(gerarChave())
 
   const podeEnviar = Boolean(cliente) && !enviando
+
+  function montarMidia() {
+    const form = new FormData()
+    for (const f of fotos) form.append("foto", f)
+    if (audio) {
+      form.set("audio", audio)
+      // O tipo real varia por plataforma; o servidor guarda o que veio.
+      form.set("audio_mime", audio.type)
+    }
+    return form
+  }
 
   async function enviar() {
     if (!cliente) {
@@ -36,18 +58,12 @@ export function EntradaRapida() {
     setEnviando(true)
     setErro("")
 
-    const form = new FormData()
+    const form = montarMidia()
     form.set("chave_idempotencia", chaveRef.current)
     if (cliente._id) form.set("cliente_id", cliente._id)
     else if (telefoneNovo) form.set("telefone", telefoneNovo)
     if (defeito.trim()) form.set("defeito", defeito.trim())
     if (apelidoPeca.trim()) form.set("apelido_peca", apelidoPeca.trim())
-    for (const f of fotos) form.append("foto", f)
-    if (audio) {
-      form.set("audio", audio)
-      // O tipo real varia por plataforma; o servidor guarda o que veio.
-      form.set("audio_mime", audio.type)
-    }
 
     try {
       const res = await fetch("/api/entrada", { method: "POST", body: form })
@@ -57,11 +73,99 @@ export function EntradaRapida() {
         setEnviando(false)
         return
       }
+
+      // A OS existe. Se alguma mídia falhou, NÃO seguimos em silêncio: perder a
+      // foto sem avisar é pior que mostrar o problema.
+      if (dados.falhas?.length) {
+        setRegistrada({ _id: dados._id, numero_os: dados.numero_os, falhas: dados.falhas })
+        setEnviando(false)
+        return
+      }
+
       router.push(`/os/${dados._id}`)
     } catch {
       setErro("Sem conexão. Tente de novo.")
       setEnviando(false)
     }
+  }
+
+  async function reenviarMidia() {
+    if (!registrada) return
+    setReenviando(true)
+    try {
+      const res = await fetch(`/api/os/${registrada._id}/midias`, {
+        method: "POST",
+        body: montarMidia(),
+      })
+      const dados = await res.json()
+      if (res.ok && !dados.falhas?.length) {
+        router.push(`/os/${registrada._id}`)
+        return
+      }
+      setRegistrada({ ...registrada, falhas: dados.falhas ?? registrada.falhas })
+    } catch {
+      // mantém o aviso na tela
+    } finally {
+      setReenviando(false)
+    }
+  }
+
+  if (registrada) {
+    return (
+      <div className="space-y-4 max-w-lg mx-auto">
+        <div className="bg-[#0D2A1A] border border-[#22C55E]/40 rounded-sm px-4 py-4">
+          <p className="text-base font-bold text-[#22C55E]">
+            OS #{registrada.numero_os} registrada
+          </p>
+          <p className="text-sm text-[#B4B4B4] mt-1">A peça já está na fila.</p>
+        </div>
+
+        <div className="bg-[#2A1800] border border-[#F59E0B]/40 rounded-sm px-4 py-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={20} className="text-[#F59E0B] shrink-0 mt-0.5" />
+            <div>
+              <p className="text-base font-bold text-[#F59E0B]">
+                {registrada.falhas.length === 1
+                  ? "Um arquivo não subiu"
+                  : `${registrada.falhas.length} arquivos não subiram`}
+              </p>
+              <ul className="mt-2 space-y-1">
+                {registrada.falhas.map((f, i) => (
+                  <li key={i} className="text-sm text-[#F0F0F0]">
+                    <span className="font-bold uppercase">{f.tipo}</span>: {f.motivo}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={reenviarMidia}
+            disabled={reenviando}
+            className="w-full flex items-center justify-center gap-2 bg-[#E8FF47] text-black py-4 rounded-sm text-base font-bold uppercase tracking-wide disabled:opacity-50"
+          >
+            {reenviando ? (
+              <>
+                <Loader2 size={18} className="animate-spin" /> Enviando...
+              </>
+            ) : (
+              <>
+                <RefreshCw size={18} /> Tentar enviar de novo
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.push(`/os/${registrada._id}`)}
+            className="w-full py-3 text-sm font-bold text-[#B4B4B4] hover:text-white"
+          >
+            seguir sem os arquivos
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (

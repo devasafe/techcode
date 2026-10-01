@@ -73,14 +73,14 @@ export async function POST(req: Request) {
       })
     }
 
-    const { os, reaproveitada } = await registrarEntrada(
+    const { os, reaproveitada, falhas } = await registrarEntrada(
       { ...parsed.data, arquivos },
       { usuario_id: session.user.id }
     )
 
     // 200 em vez de 201 quando foi o mesmo toque chegando duas vezes.
     return NextResponse.json(
-      { _id: os._id, numero_os: os.numero_os, reaproveitada },
+      { _id: os._id, numero_os: os.numero_os, reaproveitada, falhas },
       { status: reaproveitada ? 200 : 201 }
     )
   } catch (err: unknown) {
