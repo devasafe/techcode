@@ -14,11 +14,22 @@ type Props = {
   audio: File | null
   onChange: (audio: File | null) => void
   /** Chamado quando o aparelho não grava: a tela cai para texto digitado. */
-  onPrecisaDigitar: () => void
+  onPrecisaDigitar?: () => void
   desabilitado?: boolean
+  /** Texto do botão. O mesmo gravador serve para a peça e para o defeito. */
+  rotulo?: string
+  /** Nome do arquivo gerado, para separar os papéis no armazenamento. */
+  nomeArquivo?: string
 }
 
-export function GravadorAudio({ audio, onChange, onPrecisaDigitar, desabilitado }: Props) {
+export function GravadorAudio({
+  audio,
+  onChange,
+  onPrecisaDigitar,
+  desabilitado,
+  rotulo = "Gravar descrição",
+  nomeArquivo = "audio",
+}: Props) {
   const [gravando, setGravando] = useState(false)
   const [segundos, setSegundos] = useState(0)
   const [nivel, setNivel] = useState(0)
@@ -77,7 +88,7 @@ export function GravadorAudio({ audio, onChange, onPrecisaDigitar, desabilitado 
   async function iniciar() {
     setErro("")
     if (!gravacaoSuportada()) {
-      onPrecisaDigitar()
+      onPrecisaDigitar?.()
       return
     }
     try {
@@ -98,7 +109,7 @@ export function GravadorAudio({ audio, onChange, onPrecisaDigitar, desabilitado 
         const tipo = rec.mimeType || mimeType || "audio/webm"
         const blob = new Blob(pedacos, { type: tipo })
         if (blob.size > 0) {
-          onChange(new File([blob], `defeito.${extensaoDoMime(tipo)}`, { type: tipo }))
+          onChange(new File([blob], `${nomeArquivo}.${extensaoDoMime(tipo)}`, { type: tipo }))
         }
         encerrarTudo()
         setGravando(false)
@@ -123,7 +134,7 @@ export function GravadorAudio({ audio, onChange, onPrecisaDigitar, desabilitado 
       setErro("Não deu para usar o microfone")
       encerrarTudo()
       setGravando(false)
-      onPrecisaDigitar()
+      onPrecisaDigitar?.()
     }
   }
 
@@ -132,7 +143,7 @@ export function GravadorAudio({ audio, onChange, onPrecisaDigitar, desabilitado 
       <div className="bg-[#111111] border border-[#1C1C1C] rounded-sm p-4 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
-            Áudio gravado
+            {rotulo}
           </span>
           <button
             type="button"
@@ -160,7 +171,7 @@ export function GravadorAudio({ audio, onChange, onPrecisaDigitar, desabilitado 
         }`}
       >
         {gravando ? <Square size={20} /> : <Mic size={22} className="text-[#E8FF47]" />}
-        {gravando ? `Parar — ${formatarDuracao(segundos)}` : "Gravar descrição"}
+        {gravando ? `Parar — ${formatarDuracao(segundos)}` : rotulo}
       </button>
 
       {gravando && (
@@ -174,7 +185,7 @@ export function GravadorAudio({ audio, onChange, onPrecisaDigitar, desabilitado 
 
       {erro && <p className="text-sm text-[#FF4444]">{erro}</p>}
 
-      {!gravando && (
+      {!gravando && onPrecisaDigitar && (
         <button
           type="button"
           onClick={onPrecisaDigitar}

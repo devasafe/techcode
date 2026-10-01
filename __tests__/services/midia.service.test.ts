@@ -10,8 +10,16 @@ import {
 import OS from "@/models/OS"
 import Central from "@/models/Central"
 
-async function criarOSComAudio(opts: { defeito?: string; status?: string; tentativas?: number } = {}) {
-  const central = await Central.create({ apelido: "Peça teste" })
+async function criarOSComAudio(
+  opts: {
+    defeito?: string
+    status?: string
+    tentativas?: number
+    papel?: "peca" | "defeito"
+    apelidoPeca?: string
+  } = {}
+) {
+  const central = await Central.create({ apelido: opts.apelidoPeca ?? "Peça teste" })
   const os = await OS.create({
     cliente_id: "507f1f77bcf86cd799439011",
     central_id: central._id,
@@ -19,6 +27,7 @@ async function criarOSComAudio(opts: { defeito?: string; status?: string; tentat
     midias: [
       {
         tipo: "audio",
+        ...(opts.papel ? { papel: opts.papel } : {}),
         url: "https://res.cloudinary.test/audio.webm",
         public_id: "techcode/os/x/audio",
         resource_type: "video",
@@ -196,5 +205,82 @@ describe("corrigirTranscricao", () => {
     expect(t.texto).toBe("modulo 4GV")
     expect(t.texto_original).toBe("modulo quatro ge ve")
     expect(final!.defeito_transcrito).toBe("modulo 4GV")
+  })
+})
+
+describe("papel do audio: peca vs defeito", () => {
+  // O problema real: "749 Peugeot, defeito de capacitor" num audio so punha o
+  // modelo da central no campo de defeito. Dois papeis separam isso.
+  it("audio de PECA nomeia a peca e nao toca no defeito", async () => {
+    const { os, central, midia_id } = await criarOSComAudio({
+      papel: "peca",
+      apelidoPeca: "Peça #99",
+    })
+    await salvarTranscricao(String(os._id), midia_id, {
+      texto: "749 Peugeot",
+      provedor: "groq",
+      modelo: "m",
+    })
+
+    const c = await Central.findById(central._id)
+    expect(c!.apelido).toBe("749 Peugeot")
+
+    const final = await OS.findById(os._id)
+    expect(final!.defeito_transcrito).toBeUndefined()
+  })
+
+  it("audio de DEFEITO preenche o defeito e nao renomeia a peca", async () => {
+    const { os, central, midia_id } = await criarOSComAudio({
+      papel: "defeito",
+      apelidoPeca: "Peça #99",
+    })
+    await salvarTranscricao(String(os._id), midia_id, {
+      texto: "defeito de capacitor",
+      provedor: "groq",
+      modelo: "m",
+    })
+
+    const final = await OS.findById(os._id)
+    expect(final!.defeito_transcrito).toBe("defeito de capacitor")
+
+    const c = await Central.findById(central._id)
+    expect(c!.apelido).toBe("Peça #99")
+  })
+
+  it("NAO sobrescreve nome de peca escrito por gente", async () => {
+    const { os, central, midia_id } = await criarOSComAudio({
+      papel: "peca",
+      apelidoPeca: "painel Gol 2010 cinza",
+    })
+    await salvarTranscricao(String(os._id), midia_id, {
+      texto: "texto da maquina",
+      provedor: "groq",
+      modelo: "m",
+    })
+    const c = await Central.findById(central._id)
+    expect(c!.apelido).toBe("painel Gol 2010 cinza")
+  })
+
+  it("audio antigo sem papel continua valendo como defeito", async () => {
+    // Compatibilidade: a OS que ja existia foi gravada antes do campo `papel`.
+    const { os, midia_id } = await criarOSComAudio({ apelidoPeca: "Peça #99" })
+    await salvarTranscricao(String(os._id), midia_id, {
+      texto: "749 Peugeot, defeito de capacitor",
+      provedor: "groq",
+      modelo: "m",
+    })
+    const final = await OS.findById(os._id)
+    expect(final!.defeito_transcrito).toBe("749 Peugeot, defeito de capacitor")
+  })
+
+  it("os dois audios alimentam a busca do acervo", async () => {
+    const { os, central, midia_id } = await criarOSComAudio({ papel: "peca" })
+    await salvarTranscricao(String(os._id), midia_id, {
+      texto: "modulo 4GV UF",
+      provedor: "groq",
+      modelo: "m",
+    })
+    const c = await Central.findById(central._id)
+    expect(c!.termos_busca).toContain("4GV UF")
   })
 })

@@ -16,7 +16,12 @@ type OSPrintProps = {
     created_at: string
     closed_at?: string
     cliente_id: { nome: string; telefone: string } | null
-    central_id: { marca: string; modelo: string; codigo: string } | null
+    central_id: {
+      marca?: string
+      modelo?: string
+      codigo?: string
+      apelido?: string
+    } | null
     devolucao?: {
       tipo: string
       motivo: string
@@ -87,11 +92,15 @@ export function OSPrint({ os }: OSPrintProps) {
           {os.central_id ? (
             <>
               <div style={{ fontSize: 13, fontWeight: 600 }}>
-                {os.central_id.marca} {os.central_id.modelo}
+                {os.central_id.marca || os.central_id.modelo
+                  ? `${os.central_id.marca ?? ""} ${os.central_id.modelo ?? ""}`.trim()
+                  : os.central_id.apelido || "Peça sem identificação"}
               </div>
-              <div style={{ fontSize: 12, color: "#555", fontFamily: "monospace" }}>
-                Cód: {os.central_id.codigo}
-              </div>
+              {os.central_id.codigo && (
+                <div style={{ fontSize: 12, color: "#555", fontFamily: "monospace" }}>
+                  Cód: {os.central_id.codigo}
+                </div>
+              )}
             </>
           ) : (
             <div style={{ fontSize: 12, color: "#555" }}>—</div>

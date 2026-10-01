@@ -8,6 +8,8 @@ import { uploadArquivo, uploadAudio } from "@/lib/cloudinary"
 
 export type ArquivoEntrada = {
   tipo: "foto" | "audio"
+  /** Só para áudio: "peca" descreve o que é, "defeito" o que tem. */
+  papel?: "peca" | "defeito"
   buffer: Buffer
   mime?: string
   tamanho?: number
@@ -141,7 +143,9 @@ export async function anexarArquivos(
     try {
       const enviado =
         arq.tipo === "audio"
-          ? await uploadAudio(arq.buffer, { pasta: `techcode/os/${os_id}/audio` })
+          ? await uploadAudio(arq.buffer, {
+              pasta: `techcode/os/${os_id}/audio/${arq.papel ?? "defeito"}`,
+            })
           : await uploadArquivo(arq.buffer, {
               pasta: `techcode/os/${os_id}`,
               resource_type: "image",
@@ -151,6 +155,7 @@ export async function anexarArquivos(
         $push: {
           midias: {
             tipo: arq.tipo,
+            ...(arq.tipo === "audio" ? { papel: arq.papel ?? "defeito" } : {}),
             url: enviado.url,
             public_id: enviado.public_id,
             resource_type: enviado.resource_type,

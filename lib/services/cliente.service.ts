@@ -97,7 +97,7 @@ export async function atualizarCliente(id: string, data: UpdateClienteInput) {
 export async function listarOSDoCliente(clienteId: string) {
   await connectDB()
   return OS.find({ cliente_id: clienteId })
-    .populate("central_id", "marca modelo codigo")
+    .populate("central_id", "marca modelo codigo apelido status_catalogo")
     .sort({ created_at: -1 })
     .lean()
 }

@@ -60,18 +60,31 @@ export async function POST(req: Request) {
       })
     }
 
-    const audio = form.get("audio")
-    if (audio instanceof File && audio.size > 0) {
-      if (audio.size > LIMITE_AUDIO_BYTES) {
+    // Dois áudios com papéis diferentes: um diz O QUE É a peça, o outro O QUE
+    // ELA TEM. `audio` sem sufixo é aceito como defeito, que era o formato
+    // anterior desta rota.
+    for (const [campo, papel] of [
+      ["audio_peca", "peca"],
+      ["audio_defeito", "defeito"],
+      ["audio", "defeito"],
+    ] as const) {
+      const a = form.get(campo)
+      if (!(a instanceof File) || a.size === 0) continue
+      if (a.size > LIMITE_AUDIO_BYTES) {
         return NextResponse.json({ error: "Áudio acima de 16 MB" }, { status: 400 })
+      }
+      // Não duplica o defeito se vierem `audio_defeito` e `audio` juntos.
+      if (papel === "defeito" && arquivos.some((x) => x.tipo === "audio" && x.papel === "defeito")) {
+        continue
       }
       arquivos.push({
         tipo: "audio",
-        buffer: Buffer.from(await audio.arrayBuffer()),
+        papel,
+        buffer: Buffer.from(await a.arrayBuffer()),
         // O mimeType real varia por plataforma (webm no Android, mp4 no iOS),
         // então vem do cliente e é guardado como veio.
-        mime: str(form.get("audio_mime")) ?? audio.type,
-        tamanho: audio.size,
+        mime: str(form.get(`${campo}_mime`)) ?? a.type,
+        tamanho: a.size,
       })
     }
 

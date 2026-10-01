@@ -1,6 +1,7 @@
 import { Types } from "mongoose"
 import { connectDB } from "@/lib/db"
 import OS, { type IOS } from "@/models/OS"
+import Central from "@/models/Central"
 import { acrescentarTermosBusca } from "./central.service"
 import { transcrever, baixarMidia, ErroTranscricao } from "@/lib/transcricao"
 
@@ -43,11 +44,17 @@ export async function claimTranscricao(os_id: string, midia_id: string) {
 }
 
 /**
- * Grava o texto em três lugares, cada um com um papel:
- *  - na mídia: a fonte, com proveniência (provedor/modelo)
- *  - em `OS.defeito_transcrito`: campo derivado, SEPARADO de `defeito_descricao`
- *    para a máquina nunca apagar o que a pessoa digitou
- *  - em `Central.termos_busca`: é o que o índice de texto varre (acervo)
+ * Grava o texto onde ele pertence, e isso depende do PAPEL do áudio.
+ *
+ * Áudio de "defeito" vira `OS.defeito_transcrito` — campo derivado, SEPARADO de
+ * `defeito_descricao`, para a máquina nunca apagar o que a pessoa digitou.
+ *
+ * Áudio de "peca" vira o nome da peça (`Central.apelido`), substituindo o
+ * "Peça #26" automático. Mas NÃO sobrescreve apelido escrito por gente: só
+ * troca quando o apelido atual é o padrão gerado ou está vazio.
+ *
+ * Nos dois casos o texto entra em `Central.termos_busca`, que é o que o índice
+ * de texto varre — é assim que o acervo nasce do uso.
  */
 export async function salvarTranscricao(
   os_id: string,
@@ -55,6 +62,11 @@ export async function salvarTranscricao(
   resultado: { texto: string; provedor: string; modelo: string }
 ) {
   await connectDB()
+
+  const antes = (await OS.findById(os_id)) as IOS | null
+  const midia = antes?.midias?.find((m) => String(m._id) === String(midia_id))
+  // Mídia criada antes do campo `papel` existir descrevia o defeito.
+  const papel = midia?.papel ?? "defeito"
 
   const os = (await OS.findOneAndUpdate(
     { _id: os_id },
@@ -65,7 +77,7 @@ export async function salvarTranscricao(
         "midias.$[m].transcricao.provedor": resultado.provedor,
         "midias.$[m].transcricao.modelo": resultado.modelo,
         "midias.$[m].transcricao.erro": undefined,
-        defeito_transcrito: resultado.texto,
+        ...(papel === "defeito" ? { defeito_transcrito: resultado.texto } : {}),
       },
     },
     {
@@ -75,10 +87,23 @@ export async function salvarTranscricao(
   )) as IOS | null
 
   if (os?.central_id) {
+    if (papel === "peca") {
+      await nomearPecaSePadrao(String(os.central_id), resultado.texto)
+    }
     await acrescentarTermosBusca(String(os.central_id), resultado.texto)
   }
 
   return os
+}
+
+/** `Peça #26` é marcador, não nome — pode ser trocado. Nome de gente, não. */
+async function nomearPecaSePadrao(central_id: string, texto: string) {
+  const atual = await Central.findById(central_id)
+  if (!atual) return
+  const ehPadrao = !atual.apelido || /^Peça #\d+$/.test(atual.apelido)
+  if (!ehPadrao) return
+  atual.apelido = texto.slice(0, 160)
+  await atual.save()
 }
 
 export async function marcarFalha(

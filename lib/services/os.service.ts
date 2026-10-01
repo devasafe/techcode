@@ -37,7 +37,7 @@ export async function listarOS(filtros?: { status?: OSStatus; cliente_id?: strin
   if (filtros?.cliente_id) query.cliente_id = filtros.cliente_id
   return OS.find(query)
     .populate("cliente_id", "nome telefone")
-    .populate("central_id", "marca modelo codigo")
+    .populate("central_id", "marca modelo codigo apelido status_catalogo")
     .sort({ created_at: -1 })
     .lean()
 }
@@ -46,7 +46,7 @@ export async function buscarOSPorId(id: string) {
   await connectDB()
   return OS.findById(id)
     .populate("cliente_id", "nome telefone")
-    .populate("central_id", "marca modelo codigo")
+    .populate("central_id", "marca modelo codigo apelido status_catalogo")
     .populate("tecnico_id", "nome")
     .lean()
 }
@@ -107,7 +107,7 @@ export async function atualizarOS(id: string, data: UpdateOSInput) {
 
   return OS.findByIdAndUpdate(id, { $set: update }, { returnDocument: "after" })
     .populate("cliente_id", "nome telefone")
-    .populate("central_id", "marca modelo codigo")
+    .populate("central_id", "marca modelo codigo apelido status_catalogo")
     .lean()
 }
 
@@ -143,7 +143,7 @@ export async function adicionarRetornoGarantia(id: string, data: RetornoGarantia
     { returnDocument: "after" }
   )
     .populate("cliente_id", "nome telefone")
-    .populate("central_id", "marca modelo codigo")
+    .populate("central_id", "marca modelo codigo apelido status_catalogo")
     .lean()
 }
 
@@ -172,6 +172,6 @@ export async function registrarDevolucao(id: string, data: DevolucaoInput) {
     { returnDocument: "after" }
   )
     .populate("cliente_id", "nome telefone")
-    .populate("central_id", "marca modelo codigo")
+    .populate("central_id", "marca modelo codigo apelido status_catalogo")
     .lean()
 }

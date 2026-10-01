@@ -21,7 +21,8 @@ export function EntradaRapida() {
   const [cliente, setCliente] = useState<ClienteResumo | null>(null)
   const [telefoneNovo, setTelefoneNovo] = useState<string | null>(null)
   const [fotos, setFotos] = useState<File[]>([])
-  const [audio, setAudio] = useState<File | null>(null)
+  const [audioPeca, setAudioPeca] = useState<File | null>(null)
+  const [audioDefeito, setAudioDefeito] = useState<File | null>(null)
   const [digitarDefeito, setDigitarDefeito] = useState(false)
   const [defeito, setDefeito] = useState("")
   const [apelidoPeca, setApelidoPeca] = useState("")
@@ -42,10 +43,16 @@ export function EntradaRapida() {
   function montarMidia() {
     const form = new FormData()
     for (const f of fotos) form.append("foto", f)
-    if (audio) {
-      form.set("audio", audio)
+    // Dois campos com papéis diferentes: um diz o que a peça É, o outro o que
+    // ela TEM. É o que evita o modelo da central cair em "defeito relatado".
+    if (audioPeca) {
+      form.set("audio_peca", audioPeca)
       // O tipo real varia por plataforma; o servidor guarda o que veio.
-      form.set("audio_mime", audio.type)
+      form.set("audio_peca_mime", audioPeca.type)
+    }
+    if (audioDefeito) {
+      form.set("audio_defeito", audioDefeito)
+      form.set("audio_defeito_mime", audioDefeito.type)
     }
     return form
   }
@@ -183,12 +190,24 @@ export function EntradaRapida() {
         <h2 className="text-sm font-bold uppercase tracking-wide text-[#F0F0F0]">Peça</h2>
         <CapturaFoto fotos={fotos} onChange={setFotos} desabilitado={enviando} />
 
+        {/* Qual é a peça: vira o nome dela no acervo */}
+        <GravadorAudio
+          audio={audioPeca}
+          onChange={setAudioPeca}
+          desabilitado={enviando}
+          rotulo="Falar qual é a peça"
+          nomeArquivo="peca"
+        />
+
+        {/* O que ela tem: vira o defeito relatado */}
         {!digitarDefeito ? (
           <GravadorAudio
-            audio={audio}
-            onChange={setAudio}
+            audio={audioDefeito}
+            onChange={setAudioDefeito}
             onPrecisaDigitar={() => setDigitarDefeito(true)}
             desabilitado={enviando}
+            rotulo="Falar o defeito"
+            nomeArquivo="defeito"
           />
         ) : (
           <div className="space-y-2">
@@ -227,8 +246,9 @@ export function EntradaRapida() {
         )}
 
         <p className="text-sm text-[#B4B4B4]">
-          Sem nome, a peça entra como <span className="text-[#F0F0F0]">Peça #nº da OS</span> e dá
-          para identificar depois, com a bancada parada.
+          O áudio da peça vira o nome dela no acervo; o do defeito vai para
+          &ldquo;defeito relatado&rdquo;. Sem nenhum dos dois, a peça entra como{" "}
+          <span className="text-[#F0F0F0]">Peça #nº da OS</span> e dá para identificar depois.
         </p>
       </section>
 

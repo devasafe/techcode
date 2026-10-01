@@ -6,6 +6,8 @@ import { Wand2, Loader2, Pencil, Check, X, AlertTriangle } from "lucide-react"
 export type MidiaAudio = {
   _id: string
   url: string
+  /** Ausente nas mídias criadas antes dos dois campos existirem. */
+  papel?: "peca" | "defeito"
   duracao_s?: number
   transcricao?: {
     status: "pendente" | "processando" | "concluida" | "falhou"
@@ -20,18 +22,39 @@ type Props = {
   onAtualizado: () => void
 }
 
+const TITULO: Record<string, string> = {
+  peca: "Qual é a peça (áudio)",
+  defeito: "Defeito relatado (áudio)",
+}
+
 export function BlocoAudio({ osId, midias, onAtualizado }: Props) {
   const audios = midias.filter(Boolean)
   if (!audios.length) return null
 
+  // Agrupa por papel para o áudio da peça não se confundir com o do defeito —
+  // era exatamente essa mistura que punha o modelo da central no campo errado.
+  const daPeca = audios.filter((m) => m.papel === "peca")
+  const doDefeito = audios.filter((m) => m.papel !== "peca")
+
   return (
-    <div className="space-y-2">
-      <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
-        Descrição em áudio
-      </p>
-      {audios.map((m) => (
-        <ItemAudio key={m._id} osId={osId} midia={m} onAtualizado={onAtualizado} />
-      ))}
+    <div className="space-y-4">
+      {[
+        ["peca", daPeca],
+        ["defeito", doDefeito],
+      ].map(([papel, lista]) => {
+        const itens = lista as MidiaAudio[]
+        if (!itens.length) return null
+        return (
+          <div key={papel as string} className="space-y-2">
+            <p className="text-[12px] font-bold uppercase tracking-wide text-[#B4B4B4]">
+              {TITULO[papel as string]}
+            </p>
+            {itens.map((m) => (
+              <ItemAudio key={m._id} osId={osId} midia={m} onAtualizado={onAtualizado} />
+            ))}
+          </div>
+        )
+      })}
     </div>
   )
 }

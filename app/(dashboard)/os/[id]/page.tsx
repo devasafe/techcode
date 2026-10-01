@@ -29,7 +29,14 @@ type OS = {
   created_at: string
   closed_at?: string
   cliente_id: { _id: string; nome: string; telefone: string } | null
-  central_id: { _id: string; marca: string; modelo: string; codigo: string } | null
+  central_id: {
+    _id: string
+    marca?: string
+    modelo?: string
+    codigo?: string
+    apelido?: string
+    status_catalogo?: "rascunho" | "confirmada"
+  } | null
   tecnico_id: { _id: string; nome: string } | null
   tipo_cliente?: "mecanico" | "usuario"
   tipo_os?: "reparo" | "teste"
@@ -38,6 +45,7 @@ type OS = {
   midias?: {
     _id: string
     tipo: "foto" | "audio"
+    papel?: "peca" | "defeito"
     url: string
     duracao_s?: number
     transcricao?: {
@@ -417,9 +425,23 @@ export default function OSDetalhePage() {
             <>
               <Link href={`/centrais/${os.central_id._id}`}
                 className="text-base font-medium text-[#F0F0F0] hover:text-[#E8FF47] transition-colors">
-                {os.central_id.marca} <span className="font-mono text-[#E8FF47]">{os.central_id.modelo}</span>
+                {os.central_id.marca || os.central_id.modelo ? (
+                  <>
+                    {os.central_id.marca}{" "}
+                    <span className="font-mono text-[#E8FF47]">{os.central_id.modelo}</span>
+                  </>
+                ) : (
+                  os.central_id.apelido || "Peça sem identificação"
+                )}
               </Link>
-              <p className="font-mono text-[12px] text-[#B4B4B4] mt-0.5">{os.central_id.codigo}</p>
+              {os.central_id.codigo && (
+                <p className="font-mono text-[12px] text-[#B4B4B4] mt-0.5">{os.central_id.codigo}</p>
+              )}
+              {os.central_id.status_catalogo === "rascunho" && (
+                <p className="text-[12px] font-bold uppercase tracking-wide text-[#F59E0B] mt-1">
+                  a identificar
+                </p>
+              )}
             </>
           ) : (
             <p className="text-base text-[#B4B4B4]">—</p>
@@ -484,6 +506,7 @@ export default function OSDetalhePage() {
           .map((m) => ({
             _id: m._id,
             url: m.url,
+            papel: m.papel,
             duracao_s: m.duracao_s,
             transcricao: m.transcricao as never,
           }))}
