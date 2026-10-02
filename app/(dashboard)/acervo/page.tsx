@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Search, X, Archive, PackageSearch, ChevronRight } from "lucide-react"
+import { Search, X, Archive, PackageSearch, ChevronRight, Plus } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { CentralForm } from "@/components/centrais/CentralForm"
 
 type ItemAcervo = {
   _id: string
@@ -31,6 +33,9 @@ export default function AcervoPage() {
   const [incluirRascunhos, setIncluirRascunhos] = useState(true)
   const [carregando, setCarregando] = useState(true)
   const [aIdentificar, setAIdentificar] = useState(0)
+  const [abrirForm, setAbrirForm] = useState(false)
+  // Muda para forçar a busca a rodar de novo quando uma peça é cadastrada.
+  const [recarregar, setRecarregar] = useState(0)
 
   // O acesso à fila de identificação fica aqui, onde a pessoa já está olhando
   // o acervo — em vez de ocupar mais um lugar no menu.
@@ -60,15 +65,24 @@ export default function AcervoPage() {
       clearTimeout(timer)
       controller.abort()
     }
-  }, [busca, incluirRascunhos])
+  }, [busca, incluirRascunhos, recarregar])
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold uppercase tracking-wide text-[#F0F0F0]">Acervo</h1>
-        <p className="text-sm text-[#B4B4B4] mt-1">
-          Tudo que já passou pela bancada. A busca inclui o que foi falado nos áudios.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold uppercase tracking-wide text-[#F0F0F0]">Acervo</h1>
+          <p className="text-sm text-[#B4B4B4] mt-1">
+            Tudo que já passou pela bancada. A busca inclui o que foi falado nos áudios.
+          </p>
+        </div>
+        <button
+          onClick={() => setAbrirForm(true)}
+          className="shrink-0 flex items-center gap-2 bg-[#E8FF47] text-black text-sm font-bold uppercase tracking-wide px-4 py-3 rounded-sm hover:brightness-110 transition-all"
+        >
+          <Plus size={16} />
+          <span className="hidden sm:inline">Nova peça</span>
+        </button>
       </div>
 
       {aIdentificar > 0 && (
@@ -171,6 +185,23 @@ export default function AcervoPage() {
           </div>
         </>
       )}
+
+      <Dialog open={abrirForm} onOpenChange={setAbrirForm}>
+        <DialogContent className="bg-[#111111] border-[#1C1C1C]">
+          <DialogHeader>
+            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">
+              Nova peça
+            </DialogTitle>
+          </DialogHeader>
+          <CentralForm
+            onSalvo={() => {
+              setAbrirForm(false)
+              setRecarregar((n) => n + 1)
+            }}
+            onCancelar={() => setAbrirForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
