@@ -11,6 +11,7 @@ import {
   buscarAcervo,
   contarRascunhos,
   listarRascunhosComContexto,
+  resumoDaCentral,
 } from "@/lib/services/central.service"
 import { criarCliente } from "@/lib/services/cliente.service"
 import Central from "@/models/Central"
@@ -293,5 +294,78 @@ describe("confirmarCentral: limite do que a bancada pode mexer", () => {
     expect(final!.marca).toBe("Bosch")
     expect(final!.criado_por).toBeUndefined()
     expect(final!.termos_busca).toBeUndefined()
+  })
+})
+
+describe("resumoDaCentral", () => {
+  async function osDoModelo(central: { _id: unknown }, nomeCliente: string, valor: number) {
+    const cliente = await criarCliente({
+      nome: nomeCliente,
+      telefone: `2299988${String(Math.floor(Math.random() * 9000) + 1000)}`,
+    })
+    return OS.create({
+      cliente_id: cliente._id,
+      central_id: central._id,
+      status: "concluida",
+      servico_tag: "reparo ECU",
+      valor_cobrado: valor,
+      custo_total_pecas: 0,
+      lucro_liquido: valor,
+      closed_at: new Date(),
+    })
+  }
+
+  it("conta reparos, clientes distintos e lucro do modelo", async () => {
+    const central = await criarCentral({
+      marca: "Bosch", modelo: "ME 7.4.9", codigo: "X", status_catalogo: "confirmada",
+    })
+    await osDoModelo(central, "Oficina A", 200)
+    await osDoModelo(central, "Oficina B", 300)
+
+    const r = await resumoDaCentral(String(central._id))
+    expect(r.n_reparos).toBe(2)
+    expect(r.n_clientes).toBe(2)
+    expect(r.lucro).toBe(500)
+    expect(r.servicos_comuns[0]).toEqual({ servico: "reparo ECU", vezes: 2 })
+  })
+
+  it("o mesmo cliente duas vezes conta UM cliente", async () => {
+    const central = await criarCentral({
+      marca: "Bosch", modelo: "MT80", codigo: "Y", status_catalogo: "confirmada",
+    })
+    const cliente = await criarCliente({ nome: "Unico", telefone: "22999887766" })
+    for (const valor of [100, 150]) {
+      await OS.create({
+        cliente_id: cliente._id, central_id: central._id, status: "concluida",
+        valor_cobrado: valor, custo_total_pecas: 0, lucro_liquido: valor, closed_at: new Date(),
+      })
+    }
+    const r = await resumoDaCentral(String(central._id))
+    expect(r.n_reparos).toBe(2)
+    expect(r.n_clientes).toBe(1)
+    expect(r.lucro).toBe(250)
+  })
+
+  it("modelo sem reparo devolve zeros em vez de quebrar", async () => {
+    const central = await criarCentralRascunho({ apelido: "nunca reparada" })
+    const r = await resumoDaCentral(String(central._id))
+    expect(r).toMatchObject({ n_reparos: 0, n_clientes: 0, lucro: 0, servicos_comuns: [] })
+  })
+
+  it("historico do modelo passa a incluir substituida", async () => {
+    // Uma central que precisou ser trocada e exatamente o que a bancada quer
+    // saber antes de aceitar a proxima igual.
+    const central = await criarCentral({
+      marca: "Bosch", modelo: "EDC16", codigo: "Z", status_catalogo: "confirmada",
+    })
+    const cliente = await criarCliente({ nome: "Ze", telefone: "22999887766" })
+    await OS.create({
+      cliente_id: cliente._id, central_id: central._id, status: "substituida",
+      valor_cobrado: 300, custo_total_pecas: 0, lucro_liquido: 300, closed_at: new Date(),
+      devolucao: { tipo: "substituicao", motivo: "nao recuperou", custo_central: 100, novo_valor_cobrado: 400, data: new Date() },
+    })
+    const reparos = await listarReparosDaCentral(String(central._id))
+    expect(reparos).toHaveLength(1)
+    expect(reparos[0].status).toBe("substituida")
   })
 })

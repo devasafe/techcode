@@ -148,3 +148,78 @@ describe("medirAdocao", () => {
     expect(a.por_usuario).toEqual([])
   })
 })
+
+describe("reembolso desconta do lucro", () => {
+  it("OS devolvida com reembolso total vira prejuizo do custo da peca", async () => {
+    // Cobrou 300, gastou 50 de peca, devolveu os 300: perdeu os 50.
+    // Antes desta regra o sistema dizia lucro 250 -- erro de 300 numa OS so.
+    const cliente = await Cliente.create({ nome: "Ze", telefone: "22999887766" })
+    const central = await Central.create({ apelido: "peca" })
+    const os = await OS.create({
+      cliente_id: cliente._id,
+      central_id: central._id,
+      status: "devolvida",
+      valor_cobrado: 300,
+      custo_total_pecas: 50,
+      lucro_liquido: 250, // valor obsoleto da conclusao, de proposito
+      closed_at: new Date(),
+      devolucao: {
+        tipo: "reembolso",
+        motivo: "voltou com problema",
+        valor_reembolsado: 300,
+        data: new Date(),
+      },
+    })
+    expect(os.status).toBe("devolvida")
+
+    const r = await buscarRelatorioFinanceiro("tudo")
+    expect(r.totais.receita).toBe(0) // 300 cobrado - 300 devolvido
+    expect(r.totais.custo).toBe(50)
+    expect(r.totais.lucro).toBe(-50)
+  })
+
+  it("reembolso parcial desconta so o que foi devolvido", async () => {
+    const cliente = await Cliente.create({ nome: "Ze", telefone: "22999887766" })
+    const central = await Central.create({ apelido: "peca" })
+    await OS.create({
+      cliente_id: cliente._id,
+      central_id: central._id,
+      status: "devolvida",
+      valor_cobrado: 300,
+      custo_total_pecas: 50,
+      lucro_liquido: 250,
+      closed_at: new Date(),
+      devolucao: { tipo: "reembolso", motivo: "x", valor_reembolsado: 100, data: new Date() },
+    })
+    const r = await buscarRelatorioFinanceiro("tudo")
+    expect(r.totais.receita).toBe(200)
+    expect(r.totais.lucro).toBe(150)
+  })
+
+  it("substituicao continua usando os valores da devolucao", async () => {
+    // Regressao: a regra que ja existia nao pode ter mudado.
+    const cliente = await Cliente.create({ nome: "Ze", telefone: "22999887766" })
+    const central = await Central.create({ apelido: "peca" })
+    await OS.create({
+      cliente_id: cliente._id,
+      central_id: central._id,
+      status: "substituida",
+      valor_cobrado: 300,
+      custo_total_pecas: 50,
+      lucro_liquido: 250,
+      closed_at: new Date(),
+      devolucao: {
+        tipo: "substituicao",
+        motivo: "x",
+        central_adquirida: "ME17 recondicionada",
+        custo_central: 120,
+        novo_valor_cobrado: 400,
+        data: new Date(),
+      },
+    })
+    const r = await buscarRelatorioFinanceiro("tudo")
+    expect(r.totais.receita).toBe(400)
+    expect(r.totais.custo).toBe(120)
+    expect(r.totais.lucro).toBe(280)
+  })
+})

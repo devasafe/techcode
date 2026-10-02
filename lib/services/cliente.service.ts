@@ -4,6 +4,7 @@ import OS from "@/models/OS"
 import "@/models/Central"
 import type { Types } from "mongoose"
 import { normalizarE164, formatarBR } from "@/lib/telefone"
+import { ADD_FINANCEIRO, ADD_LUCRO } from "./financeiro.stages"
 
 export type CreateClienteInput = {
   nome: string
@@ -21,7 +22,18 @@ export type UpdateClienteInput = Partial<CreateClienteInput> & {
 
 export type ScoreCliente = "verde" | "amarelo" | "vermelho"
 
-type StatsOS = { total: number; devolvidas: number; canceladas: number; retornos: number; testes: number; concluidas: number }
+type StatsOS = {
+  total: number
+  devolvidas: number
+  canceladas: number
+  retornos: number
+  testes: number
+  concluidas: number
+  /** Só os status que movem dinheiro entram. Ver financeiro.stages.ts. */
+  receita: number
+  custo: number
+  lucro: number
+}
 
 function calcularScore(stats: StatsOS, flagProblematico: boolean): ScoreCliente {
   if (flagProblematico) return "vermelho"
@@ -37,10 +49,43 @@ function calcularScore(stats: StatsOS, flagProblematico: boolean): ScoreCliente 
 async function buscarStatsOS(clienteIds: Types.ObjectId[]) {
   return OS.aggregate<StatsOS & { _id: Types.ObjectId }>([
     { $match: { cliente_id: { $in: clienteIds } } },
+    // A mesma conta do /financeiro e do dashboard: reembolso desconta,
+    // substituída usa os valores da devolução. Somar `lucro_liquido` direto
+    // daria número diferente do resto do sistema.
+    ADD_FINANCEIRO,
+    ADD_LUCRO,
     {
       $group: {
         _id: "$cliente_id",
         total: { $sum: 1 },
+        // Só os três status que movem dinheiro somam; o resto entra com zero.
+        receita: {
+          $sum: {
+            $cond: [
+              { $in: ["$status", ["concluida", "substituida", "devolvida"]] },
+              "$_receita",
+              0,
+            ],
+          },
+        },
+        custo: {
+          $sum: {
+            $cond: [
+              { $in: ["$status", ["concluida", "substituida", "devolvida"]] },
+              "$_custo",
+              0,
+            ],
+          },
+        },
+        lucro: {
+          $sum: {
+            $cond: [
+              { $in: ["$status", ["concluida", "substituida", "devolvida"]] },
+              "$_lucro",
+              0,
+            ],
+          },
+        },
         devolvidas: { $sum: { $cond: [{ $eq: ["$status", "devolvida"] }, 1, 0] } },
         canceladas: { $sum: { $cond: [{ $eq: ["$status", "cancelada"] }, 1, 0] } },
         retornos: { $sum: { $size: { $ifNull: ["$retornos_garantia", []] } } },
@@ -69,7 +114,7 @@ export async function listarClientesComScore(q?: string) {
   const statsMap = new Map(statsRaw.map((s) => [s._id.toString(), s]))
 
   return clientes.map((c) => {
-    const stats = statsMap.get(c._id.toString()) ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0, concluidas: 0 }
+    const stats = statsMap.get(c._id.toString()) ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0, concluidas: 0, receita: 0, custo: 0, lucro: 0 }
     return { ...c, score: calcularScore(stats, c.flag_problematico ?? false), _stats: stats }
   })
 }
@@ -80,7 +125,7 @@ export async function buscarClientePorId(id: string) {
   if (!cliente) return null
 
   const statsRaw = await buscarStatsOS([cliente._id as Types.ObjectId])
-  const stats = statsRaw[0] ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0, concluidas: 0 }
+  const stats = statsRaw[0] ?? { total: 0, devolvidas: 0, canceladas: 0, retornos: 0, testes: 0, concluidas: 0, receita: 0, custo: 0, lucro: 0 }
   return { ...cliente, score: calcularScore(stats, cliente.flag_problematico ?? false), _stats: stats }
 }
 

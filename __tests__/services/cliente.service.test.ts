@@ -1,3 +1,5 @@
+import OS from "@/models/OS"
+import Central from "@/models/Central"
 import {
   criarCliente,
   listarClientes,
@@ -5,6 +7,7 @@ import {
   atualizarCliente,
   listarOSDoCliente,
   obterOuCriarClientePorTelefone,
+  listarClientesComScore,
 } from "@/lib/services/cliente.service"
 
 describe("cliente.service", () => {
@@ -109,5 +112,67 @@ describe("obterOuCriarClientePorTelefone", () => {
       obterOuCriarClientePorTelefone("11999990000"),
     ]).catch(() => {})
     expect(await listarClientes()).toHaveLength(1)
+  })
+})
+
+describe("lucro acumulado do cliente", () => {
+  const dadosBase = { nome: "Maria Silva", telefone: "11999990000" }
+
+  async function osDoCliente(clienteId: unknown, dados: Record<string, unknown>) {
+    const central = await Central.create({ apelido: "peca" })
+    return OS.create({ cliente_id: clienteId, central_id: central._id, ...dados })
+  }
+
+  it("soma o lucro das OS concluidas", async () => {
+    const c = await criarCliente(dadosBase)
+    await osDoCliente(c._id, {
+      status: "concluida", valor_cobrado: 300, custo_total_pecas: 50,
+      lucro_liquido: 250, closed_at: new Date(),
+    })
+    await osDoCliente(c._id, {
+      status: "concluida", valor_cobrado: 200, custo_total_pecas: 0,
+      lucro_liquido: 200, closed_at: new Date(),
+    })
+    const achado = await buscarClientePorId(String(c._id))
+    expect(achado!._stats.lucro).toBe(450)
+    expect(achado!._stats.receita).toBe(500)
+  })
+
+  it("DESCONTA o reembolso, igual ao /financeiro", async () => {
+    const c = await criarCliente(dadosBase)
+    await osDoCliente(c._id, {
+      status: "devolvida", valor_cobrado: 300, custo_total_pecas: 50,
+      lucro_liquido: 250, closed_at: new Date(),
+      devolucao: { tipo: "reembolso", motivo: "x", valor_reembolsado: 300, data: new Date() },
+    })
+    const achado = await buscarClientePorId(String(c._id))
+    // Cobrou 300, devolveu 300, gastou 50 de peca: perdeu 50.
+    expect(achado!._stats.lucro).toBe(-50)
+  })
+
+  it("OS aberta com valor nao entra na conta", async () => {
+    const c = await criarCliente(dadosBase)
+    await osDoCliente(c._id, { status: "aberta", valor_cobrado: 999 })
+    const achado = await buscarClientePorId(String(c._id))
+    expect(achado!._stats.lucro).toBe(0)
+    expect(achado!._stats.receita).toBe(0)
+    expect(achado!._stats.total).toBe(1)
+  })
+
+  it("cliente sem OS tem lucro zero e score verde", async () => {
+    const c = await criarCliente(dadosBase)
+    const achado = await buscarClientePorId(String(c._id))
+    expect(achado!._stats.lucro).toBe(0)
+    expect(achado!.score).toBe("verde")
+  })
+
+  it("o lucro tambem vem na LISTA de clientes, sem request extra", async () => {
+    const c = await criarCliente(dadosBase)
+    await osDoCliente(c._id, {
+      status: "concluida", valor_cobrado: 100, custo_total_pecas: 0,
+      lucro_liquido: 100, closed_at: new Date(),
+    })
+    const lista = await listarClientesComScore()
+    expect(lista[0]._stats.lucro).toBe(100)
   })
 })

@@ -1,7 +1,9 @@
+import { Types } from "mongoose"
 import { connectDB } from "@/lib/db"
 import Central from "@/models/Central"
 import OS from "@/models/OS"
 import "@/models/Cliente"
+import { ADD_FINANCEIRO, ADD_LUCRO, matchFinanceiro } from "./financeiro.stages"
 
 export type CreateCentralInput = {
   marca?: string
@@ -72,9 +74,19 @@ export async function atualizarCentral(id: string, data: UpdateCentralInput) {
   }).lean()
 }
 
+/**
+ * O histórico de reparos daquele modelo.
+ *
+ * Inclui `substituida` e `devolvida`, não só `concluida`: uma central que
+ * precisou ser trocada, ou que voltou e foi reembolsada, é exatamente o
+ * conhecimento que a bancada quer ver antes de aceitar a próxima igual.
+ */
 export async function listarReparosDaCentral(centralId: string) {
   await connectDB()
-  return OS.find({ central_id: centralId, status: "concluida" })
+  return OS.find({
+    central_id: centralId,
+    status: { $in: ["concluida", "substituida", "devolvida"] },
+  })
     .populate("cliente_id", "nome")
     .sort({ closed_at: -1 })
     .lean()
@@ -253,4 +265,58 @@ export async function listarRascunhosComContexto(limite = 50) {
         })),
     }
   })
+}
+
+/**
+ * Resumo da gaveta da central: quantas vezes passou, para quantos clientes
+ * diferentes, e quanto esse modelo já rendeu.
+ *
+ * Usa os mesmos stages do /financeiro — reembolso desconta, substituída usa os
+ * valores da devolução. Número de gaveta tem de fechar com número de relatório.
+ */
+export async function resumoDaCentral(central_id: string) {
+  await connectDB()
+
+  const [resumo] = await OS.aggregate<{
+    n_reparos: number
+    receita: number
+    custo: number
+    lucro: number
+    clientes: unknown[]
+  }>([
+    { $match: { central_id: new Types.ObjectId(central_id), ...matchFinanceiro() } },
+    ADD_FINANCEIRO,
+    ADD_LUCRO,
+    {
+      $group: {
+        _id: null,
+        n_reparos: { $sum: 1 },
+        receita: { $sum: "$_receita" },
+        custo: { $sum: "$_custo" },
+        lucro: { $sum: "$_lucro" },
+        clientes: { $addToSet: "$cliente_id" },
+      },
+    },
+  ])
+
+  const defeitos = await OS.aggregate<{ _id: string; n: number }>([
+    {
+      $match: {
+        central_id: new Types.ObjectId(central_id),
+        servico_tag: { $nin: [null, ""] },
+      },
+    },
+    { $group: { _id: "$servico_tag", n: { $sum: 1 } } },
+    { $sort: { n: -1 } },
+    { $limit: 3 },
+  ])
+
+  return {
+    n_reparos: resumo?.n_reparos ?? 0,
+    n_clientes: resumo?.clientes?.length ?? 0,
+    receita: resumo?.receita ?? 0,
+    custo: resumo?.custo ?? 0,
+    lucro: resumo?.lucro ?? 0,
+    servicos_comuns: defeitos.map((d) => ({ servico: d._id, vezes: d.n })),
+  }
 }
