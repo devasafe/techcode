@@ -100,6 +100,11 @@ const OSSchema = new Schema<IOS>({
   chave_idempotencia: { type: String, unique: true, sparse: true },
 })
 
+// Filtro de listarOSDoCliente, listarReparosDaCentral, buscarStatsOS e das duas
+// gavetas. Antes só existia índice em numero_os e chave_idempotencia.
+OSSchema.index({ cliente_id: 1, created_at: -1 })
+OSSchema.index({ central_id: 1, closed_at: -1 })
+
 OSSchema.pre("save", async function () {
   if (this.isNew && this.numero_os == null) {
     this.numero_os = await proximoNumero("os")

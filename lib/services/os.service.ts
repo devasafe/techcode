@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/db"
 import OS from "@/models/OS"
+import ArquivoECU from "@/models/ArquivoECU"
 import "@/models/Cliente"
 import "@/models/Central"
 import "@/models/Usuario"
@@ -107,10 +108,30 @@ export async function atualizarOS(id: string, data: UpdateOSInput) {
     // already concluded — skip financial recalculation, just update non-financial fields
   }
 
-  return OS.findByIdAndUpdate(id, { $set: update }, { returnDocument: "after" })
+  const atualizada = await OS.findByIdAndUpdate(id, { $set: update }, { returnDocument: "after" })
     .populate("cliente_id", "nome telefone")
     .populate("central_id", "marca modelo codigo apelido status_catalogo")
     .lean()
+
+  // Corrigir a OS tem de corrigir a proveniência dos arquivos de ECU junto.
+  //
+  // `cliente_id` e `central_id` são editáveis aqui, e os arquivos de ECU guardam
+  // os dois desnormalizados. Sem isto, trocar o cliente de uma OS faria o
+  // binário do carro do João aparecer na gaveta do Pedro — e gravar o arquivo
+  // errado numa central pode estragar o carro.
+  //
+  // Roda sempre que o campo vem no update, sem esperteza condicional. E se
+  // falhar, o erro PROPAGA: em todo o resto deste sistema "degradar sem travar"
+  // é a política certa, mas aqui não — proveniência errada é pior que operação
+  // recusada.
+  if (atualizada && (data.cliente_id !== undefined || data.central_id !== undefined)) {
+    const sincronizar: Record<string, unknown> = {}
+    if (data.cliente_id !== undefined) sincronizar.cliente_id = data.cliente_id
+    if (data.central_id !== undefined) sincronizar.central_id = data.central_id
+    await ArquivoECU.updateMany({ os_id: id }, { $set: sincronizar })
+  }
+
+  return atualizada
 }
 
 export async function listarOSFila() {
