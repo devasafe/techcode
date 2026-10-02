@@ -3,6 +3,7 @@ import OS from "@/models/OS"
 import Comissao from "@/models/Comissao"
 import "@/models/Cliente"
 import "@/models/Usuario"
+import Central from "@/models/Central"
 
 export type Periodo = "este_mes" | "mes_anterior" | "este_ano" | "tudo"
 
@@ -268,5 +269,157 @@ export async function buscarRelatorioFinanceiro(periodo: Periodo) {
     periodo,
     totais: { ...totaisBase, comissoes: totalComissoes, lucro: totaisBase.lucro - totalComissoes },
     os,
+  }
+}
+
+/**
+ * Medição de adoção. Existe porque a v1 deste sistema foi ABANDONADA, e a
+ * explicação ("era fricção no cadastro") é hipótese declarada, não medida.
+ *
+ * Sem este número, duas semanas de uso não produzem informação nenhuma — só a
+ * impressão de quem lembrar. Com ele dá para responder três perguntas:
+ *  1. estão registrando? (entradas por dia)
+ *  2. estão usando a entrada nova ou o formulário antigo? (origem da peça)
+ *  3. estão gravando áudio e foto, ou pulando? (uso da captura)
+ */
+export async function medirAdocao(dias = 14) {
+  await connectDB()
+  const desde = new Date()
+  desde.setDate(desde.getDate() - dias)
+  desde.setHours(0, 0, 0, 0)
+
+  const [porDia, porUsuario, captura, viaEntradaRapida, aIdentificar] = await Promise.all([
+    OS.aggregate<{ _id: string; n: number }>([
+      { $match: { created_at: { $gte: desde } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$created_at" } },
+          n: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]),
+
+    OS.aggregate<{ _id: unknown; nome: string; n: number }>([
+      { $match: { created_at: { $gte: desde } } },
+      { $group: { _id: "$tecnico_id", n: { $sum: 1 } } },
+      { $lookup: { from: "usuarios", localField: "_id", foreignField: "_id", as: "u" } },
+      { $project: { n: 1, nome: { $ifNull: [{ $first: "$u.nome" }, "sem técnico"] } } },
+      { $sort: { n: -1 } },
+    ]),
+
+    // Quantas entradas tiveram foto, áudio da peça e áudio do defeito.
+    OS.aggregate<{
+      total: number
+      com_foto: number
+      com_audio: number
+      com_audio_peca: number
+      com_defeito_escrito: number
+    }>([
+      { $match: { created_at: { $gte: desde } } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          com_foto: {
+            $sum: {
+              $cond: [
+                {
+                  $gt: [
+                    {
+                      $size: {
+                        $filter: {
+                          input: { $ifNull: ["$midias", []] },
+                          cond: { $eq: ["$$this.tipo", "foto"] },
+                        },
+                      },
+                    },
+                    0,
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          com_audio: {
+            $sum: {
+              $cond: [
+                {
+                  $gt: [
+                    {
+                      $size: {
+                        $filter: {
+                          input: { $ifNull: ["$midias", []] },
+                          cond: { $eq: ["$$this.tipo", "audio"] },
+                        },
+                      },
+                    },
+                    0,
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          com_audio_peca: {
+            $sum: {
+              $cond: [
+                {
+                  $gt: [
+                    {
+                      $size: {
+                        $filter: {
+                          input: { $ifNull: ["$midias", []] },
+                          cond: { $eq: ["$$this.papel", "peca"] },
+                        },
+                      },
+                    },
+                    0,
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          com_defeito_escrito: {
+            $sum: {
+              $cond: [{ $gt: [{ $strLenCP: { $ifNull: ["$defeito_descricao", ""] } }, 0] }, 1, 0],
+            },
+          },
+        },
+      },
+    ]),
+
+    // `origem: entrada_rapida` só é gravado pela tela nova — é o que distingue
+    // "estão usando a entrada" de "voltaram para o formulário antigo".
+    Central.countDocuments({ origem: "entrada_rapida", created_at: { $gte: desde } }),
+
+    Central.countDocuments({ status_catalogo: "rascunho" }),
+  ])
+
+  const c = captura[0] ?? {
+    total: 0,
+    com_foto: 0,
+    com_audio: 0,
+    com_audio_peca: 0,
+    com_defeito_escrito: 0,
+  }
+
+  return {
+    dias,
+    desde,
+    por_dia: porDia.map((d) => ({ dia: d._id, n: d.n })),
+    por_usuario: porUsuario.map((u) => ({ nome: u.nome, n: u.n })),
+    total: c.total,
+    media_por_dia: Number((c.total / dias).toFixed(1)),
+    com_foto: c.com_foto,
+    com_audio: c.com_audio,
+    com_audio_peca: c.com_audio_peca,
+    com_defeito_escrito: c.com_defeito_escrito,
+    via_entrada_rapida: viaEntradaRapida,
+    a_identificar: aIdentificar,
   }
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { AlertTriangle } from "lucide-react"
+import { PainelAdocao } from "@/components/PainelAdocao"
 
 const moeda = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`
 
@@ -146,6 +147,10 @@ export default function DashboardPage() {
           </span>
         </div>
       </div>
+
+      {/* Mede se o sistema esta sendo usado de verdade. So aparece para admin
+          (a rota devolve 403 para os outros) e quando ha movimento. */}
+      <PainelAdocao />
 
       {/* Breakdown de abertos */}
       {emAberto > 0 && (

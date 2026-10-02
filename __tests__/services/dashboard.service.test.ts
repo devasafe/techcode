@@ -1,7 +1,10 @@
+import OS from "@/models/OS"
 import { connectDB } from "@/lib/db"
 import Cliente from "@/models/Cliente"
 import Central from "@/models/Central"
-import { buscarEstatisticas, buscarRelatorioFinanceiro } from "@/lib/services/dashboard.service"
+import { buscarEstatisticas, buscarRelatorioFinanceiro,
+  medirAdocao,
+} from "@/lib/services/dashboard.service"
 import { criarOS, atualizarOS, registrarDevolucao } from "@/lib/services/os.service"
 
 let clienteId: string
@@ -85,5 +88,63 @@ describe("dashboard service", () => {
     const osSubstituida = rel.os.find((o) => o._id.toString() === os._id.toString())
     expect(osSubstituida).toBeDefined()
     expect(osSubstituida!.status).toBe("substituida")
+  })
+})
+
+describe("medirAdocao", () => {
+  it("conta entradas por dia e a media", async () => {
+    const central = await Central.create({ apelido: "p", origem: "entrada_rapida" })
+    const cliente = await Cliente.create({ nome: "Ze", telefone: "22999887766" })
+    await OS.create({ cliente_id: cliente._id, central_id: central._id })
+    await OS.create({ cliente_id: cliente._id, central_id: central._id })
+
+    const a = await medirAdocao(14)
+    expect(a.total).toBe(2)
+    expect(a.por_dia.reduce((s, d) => s + d.n, 0)).toBe(2)
+    expect(a.via_entrada_rapida).toBe(1)
+  })
+
+  it("mede o uso da captura: foto, audio e audio da peca", async () => {
+    const central = await Central.create({ apelido: "p" })
+    const cliente = await Cliente.create({ nome: "Ze", telefone: "22999887766" })
+    await OS.create({
+      cliente_id: cliente._id,
+      central_id: central._id,
+      midias: [
+        { tipo: "foto", url: "u", public_id: "p", resource_type: "image", origem: "camera" },
+        {
+          tipo: "audio",
+          papel: "peca",
+          url: "u2",
+          public_id: "p2",
+          resource_type: "video",
+          origem: "camera",
+        },
+      ],
+    })
+    // Esta sem midia nenhuma: entra no total, nao nos contadores de captura.
+    await OS.create({ cliente_id: cliente._id, central_id: central._id })
+
+    const a = await medirAdocao(14)
+    expect(a.total).toBe(2)
+    expect(a.com_foto).toBe(1)
+    expect(a.com_audio).toBe(1)
+    expect(a.com_audio_peca).toBe(1)
+  })
+
+  it("ignora OS fora da janela de dias", async () => {
+    const central = await Central.create({ apelido: "p" })
+    const cliente = await Cliente.create({ nome: "Ze", telefone: "22999887766" })
+    const antiga = new Date()
+    antiga.setDate(antiga.getDate() - 40)
+    await OS.create({ cliente_id: cliente._id, central_id: central._id, created_at: antiga })
+    expect((await medirAdocao(14)).total).toBe(0)
+  })
+
+  it("sem movimento devolve zero em vez de quebrar", async () => {
+    const a = await medirAdocao(14)
+    expect(a.total).toBe(0)
+    expect(a.media_por_dia).toBe(0)
+    expect(a.por_usuario).toEqual([])
   })
 })
