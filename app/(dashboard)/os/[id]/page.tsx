@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react"
 import { BlocoAudio } from "@/components/os/BlocoAudio"
+import { DialogCancelarOS } from "@/components/os/DialogCancelarOS"
+import { DialogRetornoGarantia } from "@/components/os/DialogRetornoGarantia"
+import { DialogDevolucao } from "@/components/os/DialogDevolucao"
+import { DialogConcluirOS } from "@/components/os/DialogConcluirOS"
 import { useParams, useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Trash2, FileDown, Pencil } from "lucide-react"
+import { ArrowLeft, FileDown, Pencil } from "lucide-react"
 import type { OSStatus } from "@/types"
 import { OSPrint } from "@/components/os/OSPrint"
 
@@ -91,39 +93,14 @@ export default function OSDetalhePage() {
   const [carregando, setCarregando] = useState(true)
   const [abrirConcluir, setAbrirConcluir] = useState(false)
 
-  const [solucao, setSolucao] = useState("")
-  const [valorCobrado, setValorCobrado] = useState("0")
-  const [garantiaDias, setGarantiaDias] = useState("90")
-  const [pecas, setPecas] = useState<Peca[]>([])
-  const [nomePeca, setNomePeca] = useState("")
-  const [custoPeca, setCustoPeca] = useState("")
-  const [salvando, setSalvando] = useState(false)
-  const [erroConcluir, setErroConcluir] = useState("")
-  const [tecnicos, setTecnicos] = useState<{ _id: string; nome: string; comissao_pct: number }[]>([])
-  const [tecnicoId, setTecnicoId] = useState("")
   const [atualizando, setAtualizando] = useState(false)
 
   const [abrirRetorno, setAbrirRetorno] = useState(false)
-  const [descricaoRetorno, setDescricaoRetorno] = useState("")
-  const [salvandoRetorno, setSalvandoRetorno] = useState(false)
-  const [erroRetorno, setErroRetorno] = useState("")
 
-  const [centralEmBomEstado, setCentralEmBomEstado] = useState(false)
 
   const [abrirCancelar, setAbrirCancelar] = useState(false)
-  const [motivoCancelamento, setMotivoCancelamento] = useState("")
-  const [salvandoCancelamento, setSalvandoCancelamento] = useState(false)
-  const [erroCancelamento, setErroCancelamento] = useState("")
 
   const [abrirDevolucao, setAbrirDevolucao] = useState(false)
-  const [tipoDevolucao, setTipoDevolucao] = useState<"reembolso" | "substituicao">("reembolso")
-  const [motivoDevolucao, setMotivoDevolucao] = useState("")
-  const [valorReembolsado, setValorReembolsado] = useState("0")
-  const [centralAdquirida, setCentralAdquirida] = useState("")
-  const [custoCentral, setCustoCentral] = useState("0")
-  const [novoValorCobrado, setNovoValorCobrado] = useState("0")
-  const [salvandoDevolucao, setSalvandoDevolucao] = useState(false)
-  const [erroDevolucao, setErroDevolucao] = useState("")
 
   async function carregar() {
     setCarregando(true)
@@ -132,27 +109,12 @@ export default function OSDetalhePage() {
       if (!res.ok) { router.push("/os"); return }
       const data = await res.json()
       setOS(data)
-      setPecas(data.pecas ?? [])
     } finally {
       setCarregando(false)
     }
   }
 
   useEffect(() => { carregar() }, [id])
-
-  useEffect(() => {
-    fetch("/api/usuarios")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((lista: { _id: string; nome: string; perfis: string[]; comissao_pct: number }[]) => {
-        const tecnicos = lista.filter((u) => u.perfis.includes("tecnico"))
-        setTecnicos(tecnicos)
-        if (session?.user?.perfis?.includes("tecnico") && session.user.id) {
-          const estaNaLista = tecnicos.some((t) => t._id === session.user.id)
-          if (estaNaLista) setTecnicoId(session.user.id)
-        }
-      })
-      .catch(() => {})
-  }, [session])
 
   async function atualizarStatus(novoStatus: OSStatus) {
     if (atualizando) return
@@ -184,140 +146,14 @@ export default function OSDetalhePage() {
     }
   }
 
-  async function enviarRetorno() {
-    if (!descricaoRetorno.trim()) return
-    setSalvandoRetorno(true)
-    setErroRetorno("")
-    try {
-      const res = await fetch(`/api/os/${id}/retorno`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ descricao: descricaoRetorno }),
-      })
-      if (!res.ok) {
-        let data: { error?: string } = {}
-        try { data = await res.json() } catch { /* ignore */ }
-        setErroRetorno(data.error ?? "Erro ao registrar retorno.")
-        return
-      }
-      setAbrirRetorno(false)
-      setDescricaoRetorno("")
-      carregar()
-    } catch {
-      setErroRetorno("Erro de conexão. Tente novamente.")
-    } finally {
-      setSalvandoRetorno(false)
-    }
-  }
-
-  async function enviarDevolucao() {
-    if (!motivoDevolucao.trim()) return
-    setSalvandoDevolucao(true)
-    setErroDevolucao("")
-    try {
-      const body: Record<string, unknown> = { tipo: tipoDevolucao, motivo: motivoDevolucao }
-      if (tipoDevolucao === "reembolso") {
-        body.valor_reembolsado = parseFloat(valorReembolsado) || 0
-      } else {
-        body.central_adquirida = centralAdquirida
-        body.custo_central = parseFloat(custoCentral) || 0
-        body.novo_valor_cobrado = parseFloat(novoValorCobrado) || 0
-      }
-      const res = await fetch(`/api/os/${id}/devolucao`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      })
-      if (!res.ok) {
-        let data: { error?: string } = {}
-        try { data = await res.json() } catch { /* ignore */ }
-        setErroDevolucao(data.error ?? "Erro ao registrar devolução.")
-        return
-      }
-      setAbrirDevolucao(false)
-      carregar()
-    } catch {
-      setErroDevolucao("Erro de conexão. Tente novamente.")
-    } finally {
-      setSalvandoDevolucao(false)
-    }
-  }
-
-  async function cancelarOS() {
-    setSalvandoCancelamento(true)
-    setErroCancelamento("")
-    try {
-      const res = await fetch(`/api/os/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: "cancelada",
-          ...(motivoCancelamento.trim() && { motivo_cancelamento: motivoCancelamento.trim() }),
-        }),
-      })
-      if (!res.ok) {
-        let data: { error?: string } = {}
-        try { data = await res.json() } catch { /* ignore */ }
-        setErroCancelamento(data.error ?? "Erro ao cancelar OS.")
-        return
-      }
-      setAbrirCancelar(false)
-      carregar()
-    } catch {
-      setErroCancelamento("Erro de conexão. Tente novamente.")
-    } finally {
-      setSalvandoCancelamento(false)
-    }
-  }
-
-  function adicionarPeca() {
-    if (!nomePeca.trim() || !custoPeca) return
-    setPecas((prev) => [...prev, { nome: nomePeca.trim(), custo: parseFloat(custoPeca) || 0 }])
-    setNomePeca("")
-    setCustoPeca("")
-  }
-
-  async function concluirOS() {
-    setErroConcluir("")
-    setSalvando(true)
-    try {
-      const res = await fetch(`/api/os/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: "concluida",
-          tipo_os: centralEmBomEstado ? "teste" : "reparo",
-          solucao_descricao: solucao,
-          pecas,
-          valor_cobrado: parseFloat(valorCobrado) || 0,
-          garantia_dias: parseInt(garantiaDias) || 0,
-          ...(tecnicoId && { tecnico_id: tecnicoId }),
-        }),
-      })
-      if (!res.ok) {
-        let data: { error?: string } = {}
-        try { data = await res.json() } catch { /* ignore */ }
-        setErroConcluir(data.error ?? "Erro ao concluir OS.")
-        return
-      }
-      setAbrirConcluir(false)
-      carregar()
-    } catch {
-      setErroConcluir("Erro de conexão. Tente novamente.")
-    } finally {
-      setSalvando(false)
-    }
+  function exportarPDF() {
+    window.print()
   }
 
   if (carregando) return <p className="text-sm uppercase tracking-wide text-[#B4B4B4]">Carregando...</p>
   if (!os) return null
 
   const badge = STATUS_BADGE[os.status] ?? STATUS_BADGE.aberta
-  const custoTotal = pecas.reduce((s, p) => s + p.custo, 0)
-
-  function exportarPDF() {
-    window.print()
-  }
 
   return (
     <div className="space-y-4 max-w-2xl">
@@ -649,321 +485,38 @@ export default function OSDetalhePage() {
         </div>
       )}
 
-      {/* Dialog — Cancelar OS */}
-      <Dialog open={abrirCancelar} onOpenChange={(open) => { setAbrirCancelar(open); if (!open) { setMotivoCancelamento(""); setErroCancelamento("") } }}>
-        <DialogContent className="bg-[#111111] border-[#1C1C1C] max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">
-              Cancelar OS #{os.numero_os}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-[#B4B4B4]">
-              A OS será marcada como cancelada. Essa ação não pode ser desfeita.
-            </p>
-            <div>
-              <label className={labelCls}>Motivo (opcional)</label>
-              <textarea
-                value={motivoCancelamento}
-                onChange={(e) => setMotivoCancelamento(e.target.value)}
-                rows={3}
-                placeholder="Ex: cliente não aceitou o orçamento..."
-                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A] resize-none"
-              />
-            </div>
-            {erroCancelamento && <p className="text-sm text-[#FF4444]">{erroCancelamento}</p>}
-            <div className="flex gap-2">
-              <button
-                onClick={cancelarOS}
-                disabled={salvandoCancelamento}
-                className="bg-[#2A0D0D] text-[#FF4444] text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
-              >
-                {salvandoCancelamento ? "Cancelando..." : "Confirmar cancelamento"}
-              </button>
-              <button
-                onClick={() => setAbrirCancelar(false)}
-                className="text-sm font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
-              >
-                Voltar
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DialogCancelarOS
+        osId={id}
+        numeroOS={os.numero_os}
+        aberto={abrirCancelar}
+        onFechar={() => setAbrirCancelar(false)}
+        onSucesso={carregar}
+      />
 
-      {/* Dialog — Concluir OS */}
-      <Dialog open={abrirConcluir} onOpenChange={setAbrirConcluir}>
-        <DialogContent className="bg-[#111111] border-[#1C1C1C] max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">
-              Concluir OS #{os.numero_os}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {/* Central em bom estado */}
-            <button
-              type="button"
-              onClick={() => {
-                const próximo = !centralEmBomEstado
-                setCentralEmBomEstado(próximo)
-                if (próximo) setSolucao("Central testada — em bom estado, sem defeito identificado.")
-                else setSolucao("")
-              }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-sm border text-left transition-colors ${
-                centralEmBomEstado
-                  ? "border-[#22C55E] bg-[#0D2A1A]"
-                  : "border-[#1C1C1C] bg-[#0C0C0C] hover:border-[#2A2A2A]"
-              }`}
-            >
-              <div className={`w-4 h-4 rounded-sm border flex items-center justify-center shrink-0 ${
-                centralEmBomEstado ? "border-[#22C55E] bg-[#22C55E]" : "border-[#B4B4B4]"
-              }`}>
-                {centralEmBomEstado && (
-                  <svg viewBox="0 0 10 8" fill="none" className="w-2.5 h-2.5">
-                    <path d="M1 4l3 3 5-6" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </div>
-              <div>
-                <p className={`text-sm font-semibold ${centralEmBomEstado ? "text-[#22C55E]" : "text-[#F0F0F0]"}`}>
-                  Central em bom estado
-                </p>
-                <p className="text-[12px] text-[#B4B4B4]">Nenhum defeito encontrado — apenas teste</p>
-              </div>
-            </button>
+      <DialogConcluirOS
+        osId={id}
+        numeroOS={os.numero_os}
+        aberto={abrirConcluir}
+        onFechar={() => setAbrirConcluir(false)}
+        onSucesso={carregar}
+      />
 
-            {tecnicos.length > 0 && (
-              <div>
-                <label className={labelCls}>Técnico responsável</label>
-                <Select value={tecnicoId} onValueChange={(v) => setTecnicoId(v ?? "")}>
-                  <SelectTrigger className="bg-[#0C0C0C] border-[#1C1C1C] text-[#F0F0F0] text-sm rounded-sm focus:ring-0 focus:border-[#E8FF47]">
-                    <SelectValue placeholder="Sem técnico (sem comissão)" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#111111] border-[#1C1C1C]">
-                    {tecnicos.map((t) => (
-                      <SelectItem key={t._id} value={t._id} className="text-[#F0F0F0] focus:bg-[#1C1C1C] text-sm">
-                        {t.nome} — {t.comissao_pct}%
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <div>
-              <label className={labelCls}>Solução aplicada *</label>
-              <textarea
-                value={solucao}
-                onChange={(e) => setSolucao(e.target.value)}
-                rows={3}
-                required
-                placeholder="Descreva o que foi feito..."
-                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A] resize-none"
-              />
-            </div>
-
-            {!centralEmBomEstado && (
-              <div>
-                <label className={labelCls}>Peças utilizadas</label>
-                <div className="space-y-1.5 mb-2">
-                  {pecas.map((p, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm bg-[#0C0C0C] border border-[#1C1C1C] px-3 py-1.5 rounded-sm">
-                      <span className="flex-1 text-[#F0F0F0]">{p.nome}</span>
-                      <span className="font-mono text-[#B4B4B4]">R$ {p.custo.toFixed(2).replace(".", ",")}</span>
-                      <button type="button" onClick={() => setPecas(pecas.filter((_, idx) => idx !== i))}>
-                        <Trash2 size={12} className="text-[#B4B4B4] hover:text-[#FF4444] transition-colors" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <input value={nomePeca} onChange={(e) => setNomePeca(e.target.value)}
-                    placeholder="Nome da peça"
-                    className={`${inputCls} flex-1`} />
-                  <input value={custoPeca} onChange={(e) => setCustoPeca(e.target.value)}
-                    placeholder="R$" type="number" step="0.01" min="0"
-                    className={`${inputCls} w-24`} />
-                  <button type="button" onClick={adicionarPeca}
-                    className="bg-[#1C1C1C] text-[#F0F0F0] text-sm font-semibold px-3 py-2 rounded-sm hover:bg-[#2A2A2A] transition-colors">
-                    +
-                  </button>
-                </div>
-                {pecas.length > 0 && (
-                  <p className="font-mono text-[12px] text-[#B4B4B4] mt-1">
-                    Total: R$ {custoTotal.toFixed(2).replace(".", ",")}
-                  </p>
-                )}
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelCls}>Valor cobrado (R$) *</label>
-                <input value={valorCobrado} onChange={(e) => setValorCobrado(e.target.value)}
-                  type="number" step="0.01" min="0" className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Garantia (dias)</label>
-                <input value={garantiaDias} onChange={(e) => setGarantiaDias(e.target.value)}
-                  type="number" min="0" className={inputCls} />
-              </div>
-            </div>
-
-            {parseFloat(valorCobrado) > 0 && (() => {
-              const lucro = parseFloat(valorCobrado) - custoTotal
-              return (
-                <p className={`font-mono text-sm ${lucro >= 0 ? "text-[#22C55E]" : "text-[#FF4444]"}`}>
-                  Lucro estimado: R$ {lucro.toFixed(2).replace(".", ",")}
-                </p>
-              )
-            })()}
-
-            {erroConcluir && <p className="text-sm text-[#FF4444]">{erroConcluir}</p>}
-
-            <div className="flex gap-2 pt-1">
-              <button
-                onClick={concluirOS}
-                disabled={salvando || !solucao.trim()}
-                className="bg-[#E8FF47] text-black text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
-              >
-                {salvando ? "Salvando..." : "Confirmar conclusão"}
-              </button>
-              <button
-                onClick={() => setAbrirConcluir(false)}
-                className="text-sm font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog — Retorno de garantia */}
-      <Dialog open={abrirRetorno} onOpenChange={setAbrirRetorno}>
-        <DialogContent className="bg-[#111111] border-[#1C1C1C]">
-          <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">
-              Registrar retorno de garantia
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className={labelCls}>Descrição do problema *</label>
-              <textarea
-                value={descricaoRetorno}
-                onChange={(e) => setDescricaoRetorno(e.target.value)}
-                rows={3}
-                placeholder="Descreva o que o cliente relatou..."
-                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A] resize-none"
-              />
-            </div>
-            {erroRetorno && <p className="text-sm text-[#FF4444]">{erroRetorno}</p>}
-            <div className="flex gap-2">
-              <button
-                onClick={enviarRetorno}
-                disabled={salvandoRetorno || !descricaoRetorno.trim()}
-                className="bg-[#E8FF47] text-black text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
-              >
-                {salvandoRetorno ? "Salvando..." : "Confirmar"}
-              </button>
-              <button
-                onClick={() => setAbrirRetorno(false)}
-                className="text-sm font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DialogRetornoGarantia
+        osId={id}
+        aberto={abrirRetorno}
+        onFechar={() => setAbrirRetorno(false)}
+        onSucesso={carregar}
+      />
 
       {/* View de impressão — só aparece ao imprimir */}
       <OSPrint os={os} />
 
-      {/* Dialog — Devolução */}
-      <Dialog open={abrirDevolucao} onOpenChange={setAbrirDevolucao}>
-        <DialogContent className="bg-[#111111] border-[#1C1C1C] max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-[#F0F0F0] text-base uppercase tracking-wide">
-              Registrar devolução
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className={labelCls}>Tipo de devolução</label>
-              <Select value={tipoDevolucao} onValueChange={(v) => setTipoDevolucao(v as "reembolso" | "substituicao")}>
-                <SelectTrigger className="bg-[#0C0C0C] border-[#1C1C1C] text-[#F0F0F0] text-sm rounded-sm focus:ring-0 focus:border-[#E8FF47]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#111111] border-[#1C1C1C]">
-                  <SelectItem value="reembolso" className="text-[#F0F0F0] focus:bg-[#1C1C1C] text-sm">Reembolso</SelectItem>
-                  <SelectItem value="substituicao" className="text-[#F0F0F0] focus:bg-[#1C1C1C] text-sm">Substituição de central</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className={labelCls}>Motivo *</label>
-              <textarea
-                value={motivoDevolucao}
-                onChange={(e) => setMotivoDevolucao(e.target.value)}
-                rows={2}
-                placeholder="Motivo da devolução..."
-                className="w-full bg-[#0C0C0C] border border-[#1C1C1C] text-base text-[#F0F0F0] px-3 py-2 rounded-sm focus:outline-none focus:border-[#E8FF47] transition-colors placeholder:text-[#8A8A8A] resize-none"
-              />
-            </div>
-
-            {tipoDevolucao === "reembolso" && (
-              <div>
-                <label className={labelCls}>Valor reembolsado (R$)</label>
-                <input value={valorReembolsado} onChange={(e) => setValorReembolsado(e.target.value)}
-                  type="number" step="0.01" min="0" className={inputCls} />
-              </div>
-            )}
-
-            {tipoDevolucao === "substituicao" && (
-              <div className="space-y-3">
-                <div>
-                  <label className={labelCls}>Central substituta</label>
-                  <input value={centralAdquirida} onChange={(e) => setCentralAdquirida(e.target.value)}
-                    placeholder="Ex: Bosch ME17 recondicionada" className={inputCls} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className={labelCls}>Custo da central (R$)</label>
-                    <input value={custoCentral} onChange={(e) => setCustoCentral(e.target.value)}
-                      type="number" step="0.01" min="0" className={inputCls} />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Novo valor cobrado (R$)</label>
-                    <input value={novoValorCobrado} onChange={(e) => setNovoValorCobrado(e.target.value)}
-                      type="number" step="0.01" min="0" className={inputCls} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {erroDevolucao && <p className="text-sm text-[#FF4444]">{erroDevolucao}</p>}
-
-            <div className="flex gap-2">
-              <button
-                onClick={enviarDevolucao}
-                disabled={salvandoDevolucao || !motivoDevolucao.trim()}
-                className="bg-[#E8FF47] text-black text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-sm hover:brightness-110 disabled:opacity-50 transition-all"
-              >
-                {salvandoDevolucao ? "Salvando..." : "Confirmar devolução"}
-              </button>
-              <button
-                onClick={() => setAbrirDevolucao(false)}
-                className="text-sm font-bold uppercase tracking-wide text-[#B4B4B4] hover:text-white px-4 py-2 border border-[#1C1C1C] rounded-sm transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DialogDevolucao
+        osId={id}
+        aberto={abrirDevolucao}
+        onFechar={() => setAbrirDevolucao(false)}
+        onSucesso={carregar}
+      />
     </div>
   )
 }
